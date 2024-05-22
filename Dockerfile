@@ -1,4 +1,4 @@
-# Use the official Python image from the DockerHub
+# Use the official Python image from DockerHub
 FROM python:3.8-slim
 
 # Set the working directory
@@ -18,3 +18,4 @@ ENV NAME World
 
 # Run secrets-agent when the container launches
 CMD ["python", "secrets-agent.py"]
+
