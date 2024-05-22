@@ -1,0 +1,30 @@
+apiVersion: v1
+data:
+  cacert.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDOzCCAiOgAwIBAgIUH1FeRUknJ+75ro8V2iL+tpomeIcwDQYJKoZIhvcNAQEL
+    BQAwLTELMAkGA1UEAxMCQ0ExDTALBgNVBAsTBFRLR0kxDzANBgNVBAoTBlZNd2Fy
+    ZTAeFw0yMzA2MzAwNjI5MTVaFw0yNzA2MzAwNjI5MTVaMC0xCzAJBgNVBAMTAkNB
+    MQ0wCwYDVQQLEwRUS0dJMQ8wDQYDVQQKEwZWTXdhcmUwggEiMA0GCSqGSIb3DQEB
+    AQUAA4IBDwAwggEKAoIBAQDE+CAXQgf1LfoBq1Lv4hvfU0zBcmzo/WZ57/lVmIDl
+    iBftbpQghi2QQtdF6acaLK0FlXJFtB1OWG6GUxomPXZFOgXbYnrxYfe/77immxny
+    bgc9AUu4fwAgByqN7w0aNiwBUVdpL+oSotlnUcmErnReuPQupaim1uwUiSi8gAJQ
+    uyTDBJ0qmRFVqlvD1nlrpOJ92l0O8d8mfkhxzrFGgY8ixiSege37zxIkMvuptzUS
+    xVUtUApQkan9XkAvS1Vj3NsGi/ubUiokwFD900A5WxnM9WCfzONMvf3Xs60zKIHe
+    Fj9OcrI7MFTkVhWCB6EV4vv95dtZANq5TJFuYpHms3WBAgMBAAGjUzBRMB0GA1Ud
+    DgQWBBS9GoPsLFO9vgGnoT+SscNTHt4+qTAfBgNVHSMEGDAWgBS9GoPsLFO9vgGn
+    oT+SscNTHt4+qTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAU
+    TDsAe6UbiPyVtjFlo2nenXiqCjFz1fC+TIwGVOS+zACV/oALpIMzW9Fi7oUvhfGS
+    1a6hEBxqjx7cBulKvyVHIZHjR5E2a7fFf8RP507ASFnbRITkTfiJ4LBRTOJ4ZA/l
+    wDriUmq/neHXQIkaZ1gKUbYyx2Yct0bCcxd/exO2b2YHHl/e9qefckx2MtJYBreO
+    Fv3QacxyCu4x2gQKIA/qC6zLLPwAmsTlHKkZkmR+IngHifg7DICI/IX7z3V40GS9
+    5+vBuEZLoruy/3FwmHS2eU0t0bQhfnttDP6Jd8NEGenyrEdr0vR0g/0sJFXbmkPY
+    2KahFkBUj9idthug8D6F
+    -----END CERTIFICATE-----
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2024-02-21T23:09:55Z"
+  name: cacert-configmap
+  namespace: default
+  resourceVersion: "157220489"
+  uid: edaff446-6781-48ab-8eb5-df18a9b8fc94

@@ -1,0 +1,8 @@
+***************************************
+Feedback REST API application
+
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.fbconfig.image.tag }}
+Enterprises: {{ range .Values.enterprises }}{{ .name }} {{ end }}
+***************************************

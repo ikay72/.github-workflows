@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"ClusterRole","metadata":{"annotations":{},"name":"use-pks-privileged-psp"},"rules":[{"apiGroups":["policy"],"resourceNames":["pks-privileged"],"resources":["podsecuritypolicies"],"verbs":["use"]}]}
+  creationTimestamp: "2023-11-17T17:18:57Z"
+  name: use-pks-privileged-psp
+  resourceVersion: "25323315"
+  uid: 1c19f1c6-b697-4e12-937c-f6730c3d94a6
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - pks-privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+

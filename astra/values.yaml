@@ -1,0 +1,28 @@
+astra:
+  django:
+    secret_key: "asdfasdfadsfasdfasdfasdfasdfasdfasdfaasdfasdffd"
+
+  amqp:
+    host: rabbitmq
+    user: guest
+    password: guest
+
+  db:
+    username: someuser
+    password: somepassword
+    host: "172.23.0.3"
+    port: "3306"
+    name: "gke_st_feedback_tmp"
+    default_name: "fb_default"
+
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 384Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+
+  ingressAnnotations: {}

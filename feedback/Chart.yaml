@@ -1,0 +1,4 @@
+apiVersion: v2
+description: Feedback REST API
+name: feedback
+version: 11.14.10

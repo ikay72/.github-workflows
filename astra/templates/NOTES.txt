@@ -1,0 +1,6 @@
+***************************************
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.astra.image.tag }}
+{{ range .Values.enterprises }}{{ .name }} {{ end -}}
+***************************************

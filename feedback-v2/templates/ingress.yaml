@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: feedback-v2
+  annotations:
+  {{- if .Values.global.externalDNSHostTarget }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.global.externalDNSHostTarget }}
+  {{- end }}
+  {{- range $k, $v := merge .Values.fbv2.ingressAnnotations .Values.global.ingressAnnotations }}
+    {{ $k }}: {{ $v | quote }}
+  {{- end }}
+    nginx.ingress.kubernetes.io/server-alias: {{ template "feedback-v2.aliaseslist" . }}
+
+spec:
+{{- if .Values.global.ingressClass }}
+  ingressClassName: {{ .Values.global.ingressClass | quote }}
+{{- end }}
+  rules:
+  - host: {{ .Values.fbv2.static.host }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: feedback-v2
+            port:
+              name: fb-v2-http-port
+  {{- range .Values.enterprises }}
+  - host: {{ .surveyhost }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: feedback-v2
+            port:
+              name: fb-v2-http-port
+  {{- if .surveyhost_alias }}
+  {{- range split " " .surveyhost_alias }}
+
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: feedback-v2
+            port:
+              name: fb-v2-http-port
+  {{- end }}
+  {{- end }}
+  {{ end }}

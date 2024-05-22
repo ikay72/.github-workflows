@@ -1,0 +1,119 @@
+sso:
+  replicas: 3
+  ingress:
+    disabled: false
+    hosts: [gke-st-sso.surv.biz]
+    annotations: {}
+
+  db:
+    run_create: true
+    run_migration: true
+    firstUserId: 1
+    username: someuser
+    password: somepassword
+    host: "172.23.0.3"
+    port: "3306"
+    name: "gke_st_sso_tmp"
+
+  django:
+    debug: false
+    password_reset_timeout_days: 14
+    secret_key: "asdfasdfadsfasdfasdfasdfasdfasdfasdfaasdfasdffd"
+    secret_salt: "lkasjdflaskjdflaksjdflka"
+    rest:
+      secret_key: "lsdkjflsjfdlsdkjflsdkjfsldkjfsldjflskdjflsdjkfs"
+
+  smsgw:
+    uri: https://apiv1.websms.com/api/smsmessaging/simple
+    username: websms@sandsiv.com
+    password: "********"
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 500Mi
+    limits:
+      cpu: 1000m
+      memory: 1500Mi
+
+  zendesk:
+    url: https://sandsiv.zendesk.com/
+    user_urlpath: api/v2/users/create_or_update.json
+    list_user_urlpath: api/v2/users/create_many.json
+    job_status_urlpath: api/v2/job_statuses/{id}.json
+    email: not_used@sandsiv.com/token
+    token: tokentokentokentokentokentokentokentoken
+    support_email: support@sandsiv.com
+    support_url: https://support.sandsiv.com
+    password_reset_url: https://sandsiv.zendesk.com/auth/v2/login/password_reset
+    education_url: https://support.sandsiv.com/hc/en-us/categories/360002337660-Education
+
+  initial_apps:
+    - name: xircl
+      secret: unique2secretsecretsecretsecretsecretsecret
+    - name: feedback
+      secret: unique1secretsecretsecretsecretsecretsecret
+
+adfs:
+  sso_config:
+    - configcontent: |
+        [adfs_enterprise]
+        referer_hostname = beta01.surv.biz
+        enterprise_name = beta01
+        enterprise_id = 2
+        strict = True
+        debug = True
+        remote_metadata_url = https://adfs.sandsiv.com/FederationMetadata/2007-06/FederationMetadata.xml
+        adfs_login_error_page = https://beta01.surv.biz/adfs/error
+
+        [sp]
+        entityId = urn:sandsiv:beta01
+        assertionConsumerService.url = https://sso-dev01.surv.biz/adfs/
+        assertionConsumerService.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+        singleLogoutService.url = https://sso-dev01.surv.biz/adfs/slo/beta01/
+        singleLogoutService.binding = urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect
+        NameIDFormat = urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
+
+        x509cert = jhasdfjklhsdfjkhsdfkl;jhsdkljfhskdhfkljh9018409124hajlfdhasjf
+        privateKey = 12kjfkjjdfklgsdlkfgsdkjhf92139r54y1oruh9hfpuiohdfp8ywe90ty
+
+        ; [idp] block must be received from remote ADFS server metadata and parsed
+
+        [security]
+        nameIdEncrypted = False
+        authnRequestsSigned = True
+        logoutRequestSigned = True
+        logoutResponseSigned = True
+        signMetadata = False
+        wantMessagesSigned = False
+        wantAssertionsSigned = False
+        wantNameId = False
+        wantNameIdEncrypted = False
+        wantAssertionsEncrypted = False
+
+        signatureAlgorithm = http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+        digestAlgorithm = http://www.w3.org/2001/04/xmlenc#sha256
+
+        [contactPerson]
+        technical.givenName = SandSIV Support
+        technical.emailAddress = support@sandsiv.com
+        support.givenName = SandSIV Support
+        support.emailAddress = support@sandsiv.com
+
+        [organization]
+        en-US.name = SandSIV Group
+        en-US.displayname = SandSIV Group
+        en-US.url = https://sandsiv.com/
+
+        [roles_mapping]
+        xircl_role_all = XIRCL_ROLE_ALL:XIRCL_ROLE_ALL
+        visual_role = VISUAL_CREATE:VISUAL_CREATE
+        visual_read_role = ROLE_VISUAL_READ:ROLE_VISUAL_READ
+        act_role = ACT:ACT
+        sso_shared_info_role = SSO_ENTERPRISE_SHARED_INFO:SSO_ENTERPRISE_SHARED_INFO
+        mine_role = MINE:MINE
+        classify_role = CLASSIFY:CLASSIFY
+        store_role = STORE:STORE
+        feedback_role = ROLE_FEEDBACK:ROLE_FEEDBACK
+
+argocd: false

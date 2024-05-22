@@ -1,0 +1,78 @@
+image:
+  tag: 1.4.5.2
+
+resources:
+  bearerbox:
+    requests:
+      cpu: 20m
+      memory: 100Mi
+    limits:
+      cpu: 100m
+      memory: 400Mi
+  smsbox:
+    requests:
+      cpu: 20m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 32Mi
+
+nfs_volumes:
+  host: false
+  share: kannel-store-dema
+
+kannel:
+  - name: "dema"
+    config: |
+      group = core
+      admin-port = 13000
+      admin-password = test
+      admin-deny-ip = "*.*.*.*"
+      admin-allow-ip = "127.0.0.1"
+      smsbox-port = 13001
+      log-level = 0
+      box-deny-ip = "*.*.*.*"
+      box-allow-ip = "127.0.0.1"
+      ssl-trusted-ca-file = "/etc/ssl/certs/ca-certificates.crt"
+      unified-prefix = "41,+41,0041,0"
+
+      group = smsbox
+      bearerbox-host="localhost"
+      sendsms-port = 13013
+      global-sender = 43318
+      log-level = 2
+      mo-recode = 1
+
+      group = smsc
+      smsc = smpp
+      smsc-id = smpp-gm
+      host = 217.192.8.32
+      port = 4200
+      transceiver-mode = true
+      throughput = 10
+      smsc-username = someusername
+      smsc-password = somepassword
+      system-type = ""
+      source-addr-ton = 5
+      source-addr-npi = 0
+      dest-addr-ton = 1
+      log-level = 0
+      alt-charset = "ISO-8859-15"
+
+      group = sendsms-user
+      username = someusername
+      password = somepassword
+      forced-smsc = smpp-gm
+      name = users
+      user-deny-ip = ""
+      user-allow-ip = "*.*.*.*"
+      max-messages = 20
+      concatenation = true
+
+      group = sms-service
+      keyword = default
+      name = "smsmo-handler"
+      get-url = https://dema-rest.surv.biz/api/rest/gateway-answer-view/sms/GM/inbox/gm/?from=%p&to=%P&text=%a&charset=%C
+      catch-all = true
+      concatenation = true
+      max-messages = 0

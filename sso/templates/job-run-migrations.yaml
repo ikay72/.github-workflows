@@ -1,0 +1,172 @@
+{{- if .Values.sso.db.run_migration }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-run-migrations
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: "Sync"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-1"
+  {{- end }}
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "sso.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Release.Name }}-run-migrations
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - >
+            {{- if not .Values.sso.db.run_create }}
+              sso-mgm migrate;
+            {{- end }}
+              sso-mgm loaddata enterprise_setting_name_local;
+              sso-mgm loaddata enterprise_setting_type_local;
+            {{- $ssohost := index .Values.sso.ingress.hosts 0 }}
+            {{- range .Values.enterprises }}
+              sso-mgm add_enterprise --enterprise_id {{ .id }} --slug {{ .name }} --enterprise_name {{ .name }};
+              sso-mgm add_accesscode --appname {{ .name }} --enterprise_id {{ .id }} --access_code {{ .ssoac }};
+              {{- if .fb_export_ssoac }}
+              sso-mgm link_accesscode_user --enterprise_id {{ .id }} --access_code {{ .fb_export_ssoac }};
+              {{- end }}
+              {{- if .user }}
+              sso-mgm makeusers --enterprise {{ .id }} -f /etc/sso/user-{{ .name }}.csv --notify yes --address {{ $ssohost }} --domainhub https://{{ .hubhost }} -C y;
+              {{- end }}
+            {{- end }}
+              sso-mgm makesettings -y
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SSO_DB_HOST
+              value: {{ .Values.sso.db.host | quote }}
+            - name: SSO_DB_PORT
+              value: {{ .Values.sso.db.port | quote }}
+            - name: SSO_DB_NAME
+              value: {{ .Values.sso.db.name | quote }}
+            - name: SSO_DB_USER
+              value: {{ .Values.sso.db.username | quote }}
+            - name: SSO_DB_PASSWORD
+              value: {{ .Values.sso.db.password | quote }}
+          {{- if .Values.mysql.tls }}
+            - name: DB_SSL_MODE
+              value: VERIFY_IDENTITY
+            - name: DB_SSL_CA
+              value: /etc/ssl/certs/ca-certificates.crt
+          {{- end }}
+          volumeMounts:
+            - name: sso-config
+              mountPath: /etc/sso/
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+
+      volumes:
+        - name: sso-config
+          configMap:
+            name: sso-config
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+              sso-mgm add_enterprise --enterprise_id {{ .id }} --slug {{ .name }} --enterprise_name {{ .name }};
+              sso-mgm add_accesscode --appname {{ .name }} --enterprise_id {{ .id }} --access_code {{ .ssoac }};
+              {{- if .fb_export_ssoac }}
+{{- if .Values.sso.db.run_migration }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-run-migrations
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: "Sync"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-1"
+  {{- end }}
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "sso.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Release.Name }}-run-migrations
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - >
+            {{- if not .Values.sso.db.run_create }}
+              sso-mgm migrate;
+            {{- end }}
+              sso-mgm loaddata enterprise_setting_name_local;
+              sso-mgm loaddata enterprise_setting_type_local;
+            {{- $ssohost := index .Values.sso.ingress.hosts 0 }}
+            {{- range .Values.enterprises }}
+              sso-mgm add_enterprise --enterprise_id {{ .id }} --slug {{ .name }} --enterprise_name {{ .name }};
+              sso-mgm add_accesscode --appname {{ .name }} --enterprise_id {{ .id }} --access_code {{ .ssoac }};
+              {{- if .fb_export_ssoac }}
+              sso-mgm link_accesscode_user --enterprise_id {{ .id }} --access_code {{ .fb_export_ssoac }};
+              {{- end }}
+              {{- if .user }}
+              sso-mgm makeusers --enterprise {{ .id }} -f /etc/sso/user-{{ .name }}.csv --notify yes --address {{ $ssohost }} --domainhub https://{{ .hubhost }} -C y;
+              {{- end }}
+            {{- end }}
+              sso-mgm makesettings -y
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SSO_DB_HOST
+              value: {{ .Values.sso.db.host | quote }}
+            - name: SSO_DB_PORT
+              value: {{ .Values.sso.db.port | quote }}
+            - name: SSO_DB_NAME
+              value: {{ .Values.sso.db.name | quote }}
+            - name: SSO_DB_USER
+              value: {{ .Values.sso.db.username | quote }}
+            - name: SSO_DB_PASSWORD
+              value: {{ .Values.sso.db.password | quote }}
+          {{- if .Values.mysql.tls }}
+            - name: DB_SSL_MODE
+              value: VERIFY_IDENTITY
+            - name: DB_SSL_CA
+              value: /etc/ssl/certs/ca-certificates.crt
+          {{- end }}
+          volumeMounts:
+            - name: sso-config
+              mountPath: /etc/sso/
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+
+      volumes:
+        - name: sso-config
+          configMap:
+            name: sso-config
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{- end }}{{- end }}

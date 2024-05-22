@@ -1,0 +1,215 @@
+xircl:
+  replicas: 2
+  ingressAnnotations: {}
+
+  db:
+    run_create: true
+    run_migration: true
+    username: someuser
+    password: somepassword
+    host: "172.23.0.3"
+    port: "3306"
+    name: "gke_st_xircl"
+
+  mongodb:
+    host: vochub-mongo
+    authentication: false
+    port: 27017
+    auth_source: "admin"
+    replica_set: "rs0"
+    username: "st_vochub"
+    password: "passw0rd"
+    tls: false
+
+  redis:
+    host: redis-server
+
+  sso:
+    main_host: https://sso
+    verify_tls: true
+    appname: xircl
+    appsecret: 76273119da51c860ba6b1d73bd762fb45b1c4b8d
+    fbappname: feedback
+    fbappsecret: be2232da566e2a1bcfeb00628f13be799991eae9
+
+  rabbitmq:
+    connection:
+      socket_notification:
+        host: "rabbitmq"
+        port: "5672"
+        user: "guest"
+        password: "guest"
+
+  socket_notification:
+    host: "wss://notify.surv.biz/nmserver"
+    jwt_secret: "temp_key"
+
+  persistence:
+    storage: 50G
+    claims:
+      bg: xircl-bg-images
+      cache: xircl-cache
+      sessions: xircl-sessions
+      uploads: xircl-uploads
+
+  nfs_volumes:
+    host: false
+    uploads_share: "/srv/data/nfs/xircl-uploads"
+    cache_share: "/srv/data/nfs/xircl-cache"
+    session_share: "/srv/data/nfs/xircl-sessions"
+    bg_share: "/srv/data/nfs/xircl-bg-images"
+
+  volumes:
+    uploads: xircl-uploads
+    cache: xircl-cache
+    sessions: xircl-sessions
+    bg: xircl-bg-images
+
+  php_settings:
+    pm_max_children: "25"
+    pm_start_servers: "15"
+    pm_min_spare_servers: "15"
+    pm_max_spare_servers: "20"
+    pm_max_requests: "1000"
+    fpm_memory_limit: "768M"
+    cli_memory_limit: "1536M"
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  consumers:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 10Mi
+    replicas: 1
+    stabilizationWindowSeconds: 600
+    restoreToOriginalReplicaCount: true
+    minReplicaCount: 0
+    idleReplicaCount: 0
+    maxReplicaCount: 1
+    config:
+      classify-classification-task:
+        # resources: {}
+        # stabilizationWindowSeconds: 3600
+        # restoreToOriginalReplicaCount: false
+        queueNamePattern: "classify_classification_task_%s"
+        keda: true
+      classify-training-export:
+        queueNamePattern: "classify_training_export_%s"
+        keda: true
+      classify-etalon-export:
+        queueNamePattern: "classify_etalon_classification_export_%s"
+        keda: true
+      classify-classification-export:
+        queueNamePattern: "classify_classification_export_%s"
+        keda: true
+      classify-errors-export:
+        queueNamePattern: "classify_errors_export_%s"
+        keda: true
+      classify-upload-file:
+        queueNamePattern: "classify_upload_file_%s"
+        keda: true
+      classify-send-text:
+        queueNamePattern: "classify_send_text_%s"
+        keda: true
+      classify-upload-reprocess:
+        queueNamePattern: "classify_upload_reprocess_%s"
+        keda: true
+      classify-text-import:
+        queueNamePattern: "classify_text_import_%s"
+        keda: true
+      classify-tune-params:
+        queueNamePattern: "classify_tune_params_%s"
+        keda: true
+      dashboard-cache:
+        queueNamePattern: "dashboard_cache_scheduler_%s"
+        maxReplicaCount: 5
+        keda: true
+      dashboard-send:
+        queueNamePattern: "dashboard_send_%s"
+        keda: true
+      dashboard-schedules:
+        queueNamePattern: "dashboard_schedules_send_%s"
+        keda: true
+      mine-text:
+        queueNamePattern: "mine_text_export_%s"
+        keda: true
+      mine-lemmata:
+        queueNamePattern: "mine_lemmata_export_%s"
+        keda: true
+      mine-classify:
+        queueNamePattern: "mine_classify_export_%s"
+        keda: true
+      store-delete:
+        queueNamePattern: "store_delete_upload_%s"
+        keda: true
+      store-errors:
+        queueNamePattern: "store_errors_export_%s"
+        keda: true
+      store-export:
+        queueNamePattern: "store_export_%s"
+        keda: true
+      lemma-process:
+        queueNamePattern: "lemma_process_%s"
+        keda: true
+      data-import:
+        queueNamePattern: "data_import_%s"
+        keda: true
+      store-upload:
+        queueNamePattern: "store_upload_%s"
+        keda: true
+      store-prepare:
+        queueNamePattern: "store_prepare_upload_%s"
+        keda: true
+      store-truncate:
+        queueNamePattern: "store_truncate_upload_%s"
+        keda: true
+
+  # TODO: clean after supervisor deprecation
+  consumers_resources:
+    common:
+      limits:
+        cpu: 750m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    dashboard:
+      limits:
+        cpu: 200m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    cache_scheduler:
+      limits:
+        cpu: 750m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    go_executor:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  superchartsrebuild:
+    resources:
+      requests:
+        ephemeral-storage: 256Mi
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+argocd: false

@@ -1,0 +1,75 @@
+{{- range .Values.kannel }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kannel-{{ .name }}
+  labels:
+    app: kannel-{{ .name }}
+  annotations:
+    configmap.reloader.stakater.com/reload: "kannel-{{.name}}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kannel-{{ .name }}
+  template:
+    metadata:
+      labels:
+        app: kannel-{{ .name }}
+    spec:
+      serviceAccountName: {{ $.Release.Namespace }}-main
+      containers:
+      - name: bearerbox
+        image: {{ $.Values.image.repository }}/kannel:{{ $.Values.image.tag }}
+        command: ["/bin/sh", "-ec"]
+        args:
+          - >
+            install -d /var/log/kannel;
+            /usr/local/kannel/sbin/bearerbox -v 1 /etc/kannel/kannel.conf
+        env:
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+        resources:
+          {{- toYaml $.Values.resources.bearerbox | nindent 10 }}
+
+        volumeMounts:
+          - name: kannel-store
+            mountPath: /var/lib/kannel
+            readOnly: false
+          - name: kannel-conf
+            mountPath: /etc/kannel/kannel.conf
+            subPath: kannel.conf
+            readOnly: true
+
+      - name: smsbox
+        image: {{ $.Values.image.repository }}/kannel:{{ $.Values.image.tag }}
+        command: ["/bin/sh", "-ec"]
+        args:
+          - >
+            install -d /var/log/kannel;
+            /usr/local/kannel/sbin/smsbox -v 1 /etc/kannel/kannel.conf
+        env:
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+        resources:
+          {{- toYaml $.Values.resources.smsbox | nindent 10 }}
+
+        volumeMounts:
+          - name: kannel-store
+            mountPath: /var/lib/kannel
+            readOnly: false
+          - name: kannel-conf
+            mountPath: /etc/kannel/kannel.conf
+            subPath: kannel.conf
+            readOnly: true
+
+      volumes:
+        - name: kannel-conf
+          configMap:
+            name: kannel-{{.name}}
+
+        - name: kannel-store
+          persistentVolumeClaim:
+            claimName: kannel-{{ .name }}
+---
+{{- end }}

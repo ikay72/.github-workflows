@@ -1,0 +1,11 @@
+cli:
+    discoverySources:
+        - oci:
+            name: default
+            image: projects.registry.vmware.com/tanzu_cli/plugins/plugin-inventory:latest
+    cliId: d71ede70-db6d-45fc-91ed-923b439a5c45
+    telemetry:
+        source: /home/ikay/.config/tanzu-cli-telemetry/cli_metrics.db
+    eulaStatus: accepted
+    ceipOptIn: "true"
+certs: []

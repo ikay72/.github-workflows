@@ -1,0 +1,27 @@
+{{- if .Values.fbconfig.nfs_volumes.host }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.fbconfig.import_export_volume }}
+{{- if .Values.argocd }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+{{- end }}
+spec:
+  capacity:
+    storage: {{ .Values.fbconfig.persistence.storage }}
+  storageClassName: {{ template "fbconfig.storageClass" . }}
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.fbconfig.claim }}
+  nfs:
+    server: {{ .Values.fbconfig.nfs_volumes.host }}
+    path: {{ .Values.fbconfig.nfs_volumes.share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+{{- end }}

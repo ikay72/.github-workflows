@@ -1,0 +1,18 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.fbconfig.claim }}
+{{- if .Values.argocd }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+{{- end }}
+spec:
+  {{- if .Values.fbconfig.nfs_volumes.host }}
+  volumeName: {{ .Values.fbconfig.import_export_volume }}
+  {{- end }}
+  storageClassName: {{ template "fbconfig.storageClass" . }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.fbconfig.persistence.storage }}

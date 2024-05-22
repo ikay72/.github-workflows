@@ -1,0 +1,7 @@
+***************************************
+Notification Manager server (nodejs version)
+
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Image: {{ .Values.image.repository }}/notification-manager-node:{{ .Values.nm.image.tag }}
+***************************************

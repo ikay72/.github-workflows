@@ -1,0 +1,4 @@
+clientOptions:
+    features:
+        global:
+            context-target-v2: "true"

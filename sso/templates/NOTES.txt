@@ -1,0 +1,9 @@
+***************************************
+SSO service will be available soon at: {{ index .Values.sso.ingress.hosts 0 }}
+You can add --set sso.db.run_create=true or --set sso.db.run_migration=true
+to create new databases and/or run migrations
+
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+***************************************

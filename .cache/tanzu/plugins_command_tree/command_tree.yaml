@@ -1,0 +1,34 @@
+commandTree:
+    /home/ikay/.local/share/tanzu-cli/telemetry/v1.1.0_4258f6f99711847d96784f0dbd86d74f710d18e526a2175a4262e0788d0220a1_global:
+        subcommands:
+            cli-usage-analytics:
+                subcommands:
+                    collect:
+                        subcommands: {}
+                        aliases: {}
+                    status:
+                        subcommands: {}
+                        aliases: {}
+                    update:
+                        subcommands: {}
+                        aliases: {}
+                aliases: {}
+            metadata:
+                subcommands:
+                    status:
+                        subcommands: {}
+                        aliases: {}
+                    update:
+                        subcommands: {}
+                        aliases: {}
+                aliases: {}
+            participation:
+                subcommands:
+                    status:
+                        subcommands: {}
+                        aliases: {}
+                    update:
+                        subcommands: {}
+                        aliases: {}
+                aliases: {}
+        aliases: {}

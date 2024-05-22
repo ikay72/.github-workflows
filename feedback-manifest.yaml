@@ -1,0 +1,411 @@
+---
+# Source: feedback/templates/configmap-api.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-nginx
+data:
+  nginx.conf: |
+    user  nginx;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  4096;
+    }
+
+    http {
+        real_ip_header X-Forwarded-For;
+        set_real_ip_from 0.0.0.0/0;
+        access_log off;
+        server_names_hash_bucket_size 128;
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+        client_max_body_size 200m;
+
+        keepalive_timeout  0;
+
+        gzip  on;
+
+        upstream fbapi-uwsgi {
+            server unix:///var/run/feedback/api/uwsgi.sock;
+        }
+
+        server {
+            listen 8080 default_server;
+            server_name _;
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+        }
+
+        
+        server {
+            listen 8080;
+            server_name mtnrwanda-rest.mtn.co.rw ;
+
+            location / {
+                include uwsgi_params;
+                uwsgi_pass fbapi-uwsgi;
+                uwsgi_param FEEDBACK_ENTERPRISE mtnrwanda;
+                uwsgi_param SSL_VERIFIED $ssl_client_verify;
+                uwsgi_param SSL_CLIENT_SERIAL $ssl_client_serial;
+                uwsgi_param SSL_CLIENT_CERT $ssl_client_cert;
+                uwsgi_param SSL_USER_DN $ssl_client_s_dn;
+            }
+
+            location /static {
+                root /www;
+            }
+        }
+        
+    }
+---
+# Source: feedback/templates/configmap-api.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-uwsgi
+data:
+  uwsgi.ini: |
+    [uwsgi]
+    strict = true
+    master = true
+    chmod-socket = 666
+    socket = /var/run/feedback/api/uwsgi.sock
+    pidfile = /var/run/uwsgi.pid
+    if-not-env = FEEDBACK_UWSGI_NODAEMON
+    daemonize = /var/log/feedback/api/uwsgi.log
+    endif =
+    vacuum = true
+    uid=feedback
+    gid=feedback
+    processes = 25
+    threads = 1
+    harakiri = 60
+    harakiri-verbose = 1
+    procname = fbapi-uwsgi: worker process
+    procname-master = fbapi-uwsgi: MASTER process
+    stats = /tmp/statsock
+    wsgi-file = feedback_api/wsgi.py
+    honour-stdin = true
+    buffer-size = 65535
+    log-format = [%(ltime)] %(addr) - %(user) %(method) "%(uri)" %(proto) %(status) %(size) "%(var.HTTP_X_REQUEST_ID)"
+    log-req-encoder = json {"message": ${msg}, "level": "INFO"}
+    disable-logging = true
+---
+# Source: feedback/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedback
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: feedback-http
+    protocol: TCP
+    name: fb-http-port
+  selector:
+    app: fb-api
+---
+# Source: feedback/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback
+  labels:
+    app: fb-api
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-nginx,feedback-uwsgi,feedback-gdpr-settings,feedback-sms-gateways,feedback-enterprises,feedback-config,databases.yaml,feedback-logging,celery-yaml"
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-api
+
+  template:
+    metadata:
+      labels:
+        app: fb-api
+        grp: fb
+    spec:
+      serviceAccountName: default-main
+
+      containers:
+      # fbapi-uwsgi process
+      - name: fb-api
+        image: europe-docker.pkg.dev/sandsiv-infrastructure/vochub/feedback-rest-api:11.14.8.3
+
+        command: ["uwsgi"]
+        args: ["/etc/feedback/uwsgi.ini"]
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/feedback/api/uwsgi.sock
+          initialDelaySeconds: 20
+          timeoutSeconds: 2
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 2
+        readinessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/feedback/api/uwsgi.sock
+          initialDelaySeconds: 20
+          timeoutSeconds: 2
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 5
+
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+          requests:
+            cpu: 200m
+            memory: 2Gi
+        lifecycle:
+          preStop:
+            exec:
+              command: ["uwsgi", "--stop", "/var/run/uwsgi.pid"]
+        env:
+          - name: TZ
+            value: Europe/Zurich
+          - name: PYTHONIOENCODING
+            value: "UTF-8"
+          - name: FEEDBACK_UWSGI_NODAEMON
+            value: "true"
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/api
+          - name: feedback-config
+            mountPath: /etc/feedback/common.yaml
+            subPath: common.yaml
+          - name: feedback-databases
+            mountPath: /etc/feedback/databases.yaml
+            subPath: databases.yaml
+          - name: uwsgi-ini
+            mountPath: /etc/feedback/uwsgi.ini
+            subPath: uwsgi.ini
+          - name: feedback-logging
+            mountPath: /etc/feedback/logging.yaml
+            subPath: logging.yaml
+          - name: export-data
+            mountPath: /opt/feedback
+            readOnly: false
+          - name: feedback-gdpr-settings
+            mountPath: /etc/feedback/gdpr_settings.yaml
+            subPath: gdpr_settings.yaml
+          - name: feedback-sms-gateways
+            mountPath: /etc/feedback/sms_gateways.yaml
+            subPath: sms_gateways.yaml
+          - name: feedback-enterprises
+            mountPath: /etc/feedback/enterprise_specific_configs.yaml
+            subPath: enterprise_specific_configs.yaml
+          - name: celery-yaml
+            mountPath: /etc/feedback/celery.yaml
+            subPath: celery.yaml
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: nginx:latest
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+        env:
+          - name: TZ
+            value: Europe/Zurich
+
+        ports:
+        - name: feedback-http
+          containerPort: 8080
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: feedback-http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: feedback-http
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 3
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/api
+            readOnly: false
+          - name: nginx-conf
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+            readOnly: true
+          - name: feedback-static
+            mountPath: /www
+            readOnly: true
+          - name: export-data
+            mountPath: /opt/feedback
+            readOnly: false
+
+      initContainers:
+        
+        - name: collectstatic
+          image: europe-docker.pkg.dev/sandsiv-infrastructure/vochub/feedback-rest-api:11.14.8.3
+          command: ["/bin/sh", "-c"]
+          args: ["fbapi-mgm.py collectstatic && cp -rp venv/share/static /www/"]
+          volumeMounts:
+            - mountPath: /www
+              name: feedback-static
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+
+        - name: check
+          image: europe-docker.pkg.dev/sandsiv-infrastructure/vochub/feedback-rest-api:11.14.8.3
+          command:
+            - runuser
+            - -u
+            - feedback
+            - --
+            - fbapi-mgm.py
+            - check
+
+          volumeMounts:
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+              readOnly: true
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: uwsgi-ini
+              mountPath: /etc/feedback/uwsgi.ini
+              subPath: uwsgi.ini
+              readOnly: true
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+              readOnly: true
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: export-data
+              mountPath: /opt/feedback
+              readOnly: false
+            - name: celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+      volumes:
+        - name: uwsgi-socket
+          emptyDir: {}
+
+        - name: nginx-conf
+          configMap:
+            name: feedback-nginx
+
+        - name: feedback-static
+          emptyDir:
+            medium: Memory
+
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+
+        - name: uwsgi-ini
+          configMap:
+            name: feedback-uwsgi
+
+        - name: feedback-logging
+          configMap:
+            name: feedback-logging
+
+        - name: export-data
+          persistentVolumeClaim:
+            claimName: feedback
+
+        - name: celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+---
+# Source: feedback/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: feedback
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
+
+spec:
+  ingressClassName: "vochub"
+  rules:
+  - host: mtnrwanda-rest.mtn.co.rw
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: feedback
+            port:
+              name: fb-http-port
+

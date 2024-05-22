@@ -1,0 +1,230 @@
+{{- range $enterprise := .Values.enterprises }}
+{{- range $consumerName, $consumerConfig := $.Values.xircl.consumers.config }}
+{{- $fullName := printf "xc-%s-%s" $consumerName $enterprise.name }}
+{{- $hashSuffix := sha256sum $fullName | trunc 8 }}
+{{- $shortName := trunc 50 $fullName | trimSuffix "-" | trimSuffix "." }}
+{{- $standartName := printf "%s-%s" $shortName $hashSuffix }}
+{{- $queueName := printf $consumerConfig.queueNamePattern $enterprise.hubhost }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $standartName | quote }}
+  labels:
+    app: {{ $standartName | quote }}
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "xircl-enterprises,xircl-php-cli-ini,xircl-config"
+
+spec:
+  {{- if not $consumerConfig.keda }}
+  replicas: 1
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ $standartName | quote }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $standartName | quote }}
+        grp: xircl
+        filtering: "kedadriven"
+    spec:
+      serviceAccountName: {{ $.Release.Namespace }}-main
+      terminationGracePeriodSeconds: 600
+      containers:
+      - name: {{ $fullName | quote }}
+        image: {{ $.Values.image.repository }}/xircl-api:{{ $.Values.xircl.image.tag }}
+        {{- $res := $consumerConfig.resources | default $.Values.xircl.consumers.resources }}
+        resources:
+        {{- toYaml $res | nindent 10 }}
+        command: [ "dumb-init" ]
+        args:
+          - "/var/www/xircl/app/console"
+          - "xircl:enqueue:consume"
+          - {{ $queueName | quote }}
+          - "--env=prod"
+          - "--enterprise={{ $enterprise.hubhost }}"
+          - "--setup-broker"
+        env:
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+          - name: SF_ENVIRONMENT
+            value: "prod"
+          - name: SYMFONY_ENV
+            value: "prod"
+          - name: GO_QUERY_EXECUTOR_URL
+            value: "xircl-qry-exec"
+          - name: FD_SETSIZE
+            value: "4096"
+
+        # Probes
+        {{- include "xircl.consumers_probes" $ | nindent 8}}
+
+        # volumeMounts:
+        {{- include "xircl.consumers_volumeMounts" $ | nindent 8 }}
+
+      - name: tail
+        image: {{ $.Values.image.repository }}/tailout:{{ $.Values.tailout.image.tag }}
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+
+        volumeMounts:
+          - name: xircl-logs
+            mountPath: /var/www/xircl/app/logs
+            readOnly: false
+
+        args:
+          - -m1
+          - /var/www/xircl/app/logs
+
+        env:
+          - name: TAILOUT_SLACK_TOKEN
+            value: {{ $.Values.tailout.slackToken | default "" | quote }}
+          - name: TAILOUT_SLACK_CHANNEL
+            value: {{ $.Values.tailout.slackChannel | default "" | quote }}
+
+      # volumes:
+      {{- include "xircl.consumers_volumes" $ | nindent 6 }}
+---
+{{- /*
+KEDA autoscaler start
+*/ -}}
+{{- if $consumerConfig.keda }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $standartName | quote }}
+  labels:
+    deploymentName: {{ $standartName | quote }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $standartName | quote }}
+  minReplicaCount: {{ $consumerConfig.minReplicaCount | default $.Values.xircl.consumers.minReplicaCount }}
+  idleReplicaCount: {{ $consumerConfig.idleReplicaCount | default $.Values.xircl.consumers.idleReplicaCount }}
+  maxReplicaCount: {{ $consumerConfig.maxReplicaCount | default $.Values.xircl.consumers.maxReplicaCount }}
+  advanced:
+    restoreToOriginalReplicaCount: {{ $consumerConfig.restoreToOriginalReplicaCount | default $.Values.xircl.consumers.restoreToOriginalReplicaCount }}
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: {{ $consumerConfig.stabilizationWindowSeconds | default $.Values.xircl.consumers.stabilizationWindowSeconds }}
+  triggers:
+  - type: rabbitmq
+    metadata:
+      protocol: "auto"
+      queueName: "enqueue.app.{{ $queueName }}"
+      queueLength: "1"
+      allowSubpathsInUrl: "true"
+      vhostName: "/"
+    authenticationRef:
+      name: keda-rabbitmq-trigger
+---
+{{- /*
+KEDA autoscaler end
+*/ -}}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.enterprises }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xircl-consumers-go-executor
+  labels:
+    app: {{ template "xircl.name" $ }}-go-executor
+
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: xircl-consumers-go-executor
+
+  template:
+    metadata:
+      labels:
+        app: xircl-consumers-go-executor
+        grp: xircl
+        filtering: "kedadriven"
+    spec:
+      serviceAccountName: {{ $.Release.Namespace }}-main
+      terminationGracePeriodSeconds: 15
+    {{- if $.Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "xircl.customCaInitContainer" $ | nindent 8 }}
+    {{- end }}
+      containers:
+      - name: xircl-consumers-go-executor
+        image: {{ $.Values.image.repository }}/xircl-api:{{ $.Values.xircl.image.tag }}
+        resources:
+          {{- toYaml $.Values.xircl.consumers_resources.go_executor | nindent 10 }}
+
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "chown -R xircl:xircl /var/www/xircl/app/cache || true"]
+
+        ports:
+        - name: xircl-qry-exec
+          containerPort: 7777
+
+        command:
+            - /bin/sh
+            - -c
+        args:
+            - runuser -u xircl -- /var/www/xircl/bin/go-query-executer/build
+
+        env:
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+          - name: SF_ENVIRONMENT
+            value: "prod"
+          - name: SYMFONY_ENV
+            value: "prod"
+          - name: GO_QUERY_EXECUTOR_URL
+            value: "xircl-qry-exec"
+          - name: FD_SETSIZE
+            value: "4096"
+
+        # Probes
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 7777
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 7777
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 7777
+          periodSeconds: 60
+          successThreshold: 1
+          failureThreshold: 5
+
+        # volumeMounts:
+        {{- include "xircl.consumers_volumeMounts" $ | nindent 8 }}
+
+      # volumes:
+      {{- include "xircl.consumers_volumes" $ | nindent 6 }}
+{{- end }}

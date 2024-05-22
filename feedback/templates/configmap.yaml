@@ -1,0 +1,372 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-gdpr-settings
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+
+data:
+  gdpr_settings.yaml: |
+{{- range .Values.enterprises }}
+  {{- if and (hasKey . "gdpr_settings") .gdpr_settings }}
+    {{ .name }}:
+      {{- toYaml .gdpr_settings | nindent 6 }}
+  {{ end -}}
+{{ end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-sms-gateways
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+  {{- end }}
+
+data:
+  sms_gateways.yaml: |
+    gateways:
+{{- range .Values.enterprises }}
+{{- if .sms_gateways }}
+    - enterprise: {{ .name | quote }}
+      sms_gateways:
+      {{- toYaml .sms_gateways | nindent 6 }}
+
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-enterprises
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+  {{- end }}
+
+data:
+  enterprise_specific_configs.yaml: |
+{{- range .Values.enterprises }}
+{{- if .timeFrame }}
+    {{ .name }}:
+      timezone: {{ .timeZone | default $.Values.global.timeZone }}
+      invite_priorities_criteria:
+        high: {{ .invite_priorities_criteria.high }}
+        average: {{ .invite_priorities_criteria.average }}
+      {{- toYaml .timeFrame | nindent 6 }}
+{{- end }}
+      xircl_export_api_url: http://xircl/public_api/store/export/feedback
+      xircl_export_api_host: {{ .hubhost }}
+      export_api_sso_accesscode: {{ .fb_export_ssoac }}
+{{- if .shortener }}
+      shortener:
+        {{- toYaml .shortener | nindent 8 }}
+{{- end }}
+{{- if .external_ticket_api }}
+      external_ticket_api: {{ .external_ticket_api }}
+{{- end }}
+{{- if .fbapi_test }}
+      fbapi_test: True
+{{- end }}
+{{- if .sent_email_invite_using }}
+      sent_email_invite_using: {{ .sent_email_invite_using }}
+{{- end }}
+{{- if .alternative_messaging_service }}
+      alternative_messaging_service:
+        {{- toYaml .alternative_messaging_service | nindent 8 }}
+{{- end }}
+{{- if .allow_creation_quarantined_blacklisted }}
+      allow_creation_quarantined_blacklisted: {{ .allow_creation_quarantined_blacklisted }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-config
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+
+data:
+  common.yaml: |
+    FEEDBACK_DJANGO_ALLOWED_HOSTS: ["*"]
+    FEEDBACK_DJANGO_SECRET_KEY: {{ .Values.fbconfig.django.secret_key }}
+
+    FEEDBACK_DJANGO_DEBUG: {{ .Values.fbconfig.django.debug | toString | title }}
+    FEEDBACK_DJANGO_DEVEL: {{ .Values.fbconfig.django.devel | toString | title }}
+    FEEDBACK_SWAGGER_CACHE_TIMEOUT: 601
+
+    MODIFICATIONS_TRACKING_ENABLED: true
+    FEEDBACK_MODIFICATIONS_TRACKING_API_URL: 'http://clerk/save-modification-data/'
+
+    # AMQP
+    AMQP_HOST: {{ .Values.fbconfig.amqp.host }}
+    AMQP_USER: {{ .Values.fbconfig.amqp.user }}
+    AMQP_PASSWORD: {{ .Values.fbconfig.amqp.password }}
+    AMQP_VHOST: /
+
+    CLERK_IS_SEND_ENABLED: On
+
+    PRIORITY_CLASSIFICATION_URL: "http://classifier-priority/cs/api/classify/classify.json"
+    CASEALERT_CLASSIFICATION_URL: "http://classifier/cs/api/classify/classify.json"
+    CATEGORY_CLASSIFICATION_BASE_URL: "http://classifier/cs/api/classify/classifiers/"
+
+    FEEDBACK_JWT_EXPIRATION_TIMEOUT: 15000
+    FEEDBACK_IVR_ANSWER_STORAGE: "https://{{ .Values.fbv2.static.host }}/_ivr/"
+    FEEDBACK_IVR_ROOT_DIR: /opt/feedback/ivr/
+    FEEDBACK_CLERK_AMQP_QUEUE: clerk
+    FEEDBACK_CLERK_AMQP_SURVEYS_QUEUE: clerk_surveys
+    FEEDBACK_IMPORT_INPUT_DIR: /opt/feedback/import/
+    FEEDBACK_IMPORT_LOCK_FILES_DIR: .locks
+    FEEDBACK_EXPORT_OUTPUT_DIR: /opt/feedback/export/
+
+    # CELERY
+    CELERY_BROKER: {{ template "fbconfig.celerybroker" . }}
+    CELERY_TASK_ACKS_LATE: true
+    CELERY_WORKER_PER_CHILD: 10000
+
+    SHORTENER_URL: {{ .Values.fbconfig.url_shortener_host }}/yourls-api.php
+    {{- if eq .Values.fbconfig.url_shortener_host "https://surv.biz" }}
+    SHORTENER_URL_CERT_VERIFY: false
+    {{- end }}
+    SHORTENER_USERNAME_PARAM: {{ .Values.fbconfig.url_shortener_username }}
+    SHORTENER_PASSWORD_PARAM: {{ .Values.fbconfig.url_shortener_password }}
+
+    # ASSET
+    FEEDBACK_ASSET_DIR: /opt/feedback/staticfiles/
+    FEEDBACK_ASSET_URL: "https://{{ .Values.fbconfig.static.host }}/"
+
+    # SSO
+    FEEDBACK_SSO_API_URL: "{{ .Values.fbconfig.sso.api_url | default "http://sso/api/" }}"
+    FEEDBACK_SSO_API_APPNAME: {{ .Values.fbconfig.sso.api_appname }}
+    FEEDBACK_SSO_API_SECRET: {{ .Values.fbconfig.sso.api_secret }}
+
+    # CORS
+    FEEDBACK_CORS_ORIGIN_WHITELIST: [{{ template "fbconfig.corsoriginwhitelist" . }}]
+
+    ASTRA_CORS_ORIGIN_WHITELIST:
+      - "http://*"
+      - "https://*"
+    ASTRA_CORS_ORIGIN_ALLOW_ALL: True
+
+    # DIGI
+    FEEDBACK_DIGI_HOSTS:
+    {{- range .Values.enterprises }}
+      {{ .name }}: {{ .astrahost }}
+    {{- end }}
+    DIGI_HTTP_SECURE: True
+
+    # DIGI_RUNNER_URL
+    DIGI_RUNNER_URLS:
+    {{- range .Values.enterprises }}
+      {{ .name }}: https://{{ .astrahost }}
+    {{- end }}
+
+    # IVR
+    IVR_GATEWAY_NAME:
+    {{- range .Values.enterprises }}
+      {{ .name }}: {{ .ivr_gateway }}
+    {{- end }}
+    FEEDBACK_QUEUE_IVR: "live-outbox-voice"
+
+    FEEDBACK_MONGODB_HOST: {{ template "fbconfig.mongodbDSN" .Values.fbconfig.mongodb }}
+    {{- if .Values.fbconfig.mongodb.default_db }}
+    FEEDBACK_MONGODB_DB: {{ .Values.fbconfig.mongodb.default_db }}
+    {{- end }}
+
+    # EMAIL
+    FEEDBACK_EMAIL:
+      EMAIL_FILE_PATH: ''
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      {{- if .Values.smtp.user }}
+      EMAIL_HOST_USER: {{ .Values.smtp.user }}
+      {{- end }}
+      {{- if .Values.smtp.pass }}
+      EMAIL_HOST_PASSWORD: {{ .Values.smtp.pass }}
+      {{- end }}
+      {{- if .Values.smtp.host }}
+      EMAIL_HOST: {{ .Values.smtp.host }}
+      {{- end }}
+      {{- if .Values.smtp.port }}
+      EMAIL_PORT: {{ .Values.smtp.port }}
+      {{- end }}
+      {{- if .Values.smtp.tls }}
+      EMAIL_USE_TLS: True
+      {{- end }}
+    {{- if .Values.smtp.from }}
+    MAIL_SENDER_ADDRESS: {{ .Values.smtp.from }}
+    {{- end }}
+
+    # ASTRA
+    ASTRA_DJANGO_SECRET_KEY: {{ .Values.astra.django.secret_key }}
+    ASTRA_DJANGO_DEBUG: {{ .Values.astra.django.debug | toString | title }}
+
+    MEMCACHED_LOCATION: {{ .Values.fbconfig.memcached.host }}:{{ .Values.fbconfig.memcached.port }}
+    MEMCACHED_ON: {{ .Values.fbconfig.memcached.enabled }}
+
+    NOTIFICATION_MANAGER_SECRET_KEY: {{ .Values.fbconfig.nm.jwt_secret | quote }}
+
+    XIRCL_EXPORT_API_URL: {{ .Values.fbconfig.xircl_export_api_url }}
+
+    OSTICKET_CERT_VERIFY: True
+
+    FEEDBACK_USE_TZ: True
+    FEEDBACK_TIME_ZONE: UTC
+
+    REDIS_HOST: redis-server
+    REDIS_PORT: 6379
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-logging
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+
+data:
+  logging.yaml: |
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+      verbose:
+        format: "%(levelname)s: %(message)s"
+    handlers:
+      console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: verbose
+    loggers:
+      '':
+        handlers:
+          - console
+        level: INFO
+      feedback_api:
+        handlers:
+          - console
+        level: INFO
+        propagate: false
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-celery-yaml
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+  {{- end }}
+
+data:
+  celery.yaml: |
+    CELERY_BROKER_CONNECTION_TIMEOUT: 60
+    WORKER_HIJACK_ROOT_LOGGER: !!bool "true"
+    WORKER_LOG_COLOR: !!bool "false"
+    QUEUE_CASEALERT: queue_casealert
+    QUEUE_CASEALERT_PROCESSOR: queue_casealert_processor
+    QUEUE_CLEAN_CUSTOMER: queue_clean_customer
+    QUEUE_CREATE_VOCACT_TICKETS: queue_create_vocact_tickets
+    QUEUE_DATA_CLEANING: queue_data_cleaning
+    QUEUE_EXPORT: queue_export
+    QUEUE_HOUSEKEEPER: queue_housekeeper
+    QUEUE_IMPORT_VALIDATOR: queue_import_validator
+    QUEUE_IMPORT_FILES_WRITER: queue_import_files_writer
+    QUEUE_INVITE_SELECTOR: queue_invite_selector
+    QUEUE_MAIL: queue_mail
+    QUEUE_PERIODIC_TASKS: queue_periodic_tasks
+    QUEUE_QUESTIONNAIRE_CREATOR: queue_questionnaire_creator
+    QUEUE_QUESTIONNAIRE_DELETE: delete_questionnaires
+    QUEUE_INVITE_CHUNK: queue_chunk_inviter
+    QUEUE_IVR_INVITER: queue_ivr_inviter
+    QUEUE_SMS_INVITER: queue_sms_inviter
+    QUEUE_SMS_INVITER_PRIO: queue_sms_inviter_prio
+    QUEUE_EMAIL_INVITER: queue_email_inviter
+    QUEUE_REMINDER: queue_reminder
+    QUEUE_QUESTIONNAIRE_REMINDER: queue_questionnaire_reminder
+    QUEUE_CLERK_NOTIFIER: queue_clerk_notifier
+
+    CASEALERT_HOUR: {{ .Values.fbconfig.celery.casealert_hour | quote }}
+    CASEALERT_MINUTE: {{ .Values.fbconfig.celery.casealert_minute | quote }}
+
+    DATA_CLEANING_HOUR: '*/2'
+    DATA_CLEANING_MINUTE: '30'
+
+    HOUSEKEEPER_HOUR: {{ .Values.fbconfig.celery.housekeeper_hour | quote }}
+    HOUSEKEEPER_MINUTE: {{ .Values.fbconfig.celery.housekeeper_minute | quote }}
+
+    INVITE_SELECTOR_HOUR: '*'
+    INVITE_SELECTOR_MINUTE: '*/2'
+
+    REMINDER_HOUR: {{ .Values.fbconfig.celery.reminder_hour | quote }}
+    REMINDER_MINUTE: {{ .Values.fbconfig.celery.reminder_minute | quote }}
+
+    # In minutes
+    EXPORT_LAUNCH_INTERVAL: 1
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-databases
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+
+data:
+  databases.yaml: |
+    default:
+      ENGINE: django.db.backends.mysql
+      NAME: {{ .Values.fbconfig.feedbackdb.default_name }}
+      USER: {{ .Values.fbconfig.feedbackdb.username }}
+      PASSWORD: {{ .Values.fbconfig.feedbackdb.password }}
+      HOST: {{ .Values.fbconfig.feedbackdb.host }}
+      PORT: {{ .Values.fbconfig.feedbackdb.port }}
+    {{- if .Values.mysql.tls }}
+      OPTIONS:
+        ssl_mode: VERIFY_IDENTITY
+        ssl:
+          ca: /etc/ssl/certs/ca-certificates.crt
+    {{- end }}
+
+  {{- range .Values.enterprises }}
+    {{ .name }}:
+      ENGINE: django.db.backends.mysql
+      NAME: {{ .dbname }}
+      USER: {{ $.Values.fbconfig.feedbackdb.username }}
+      PASSWORD: {{ $.Values.fbconfig.feedbackdb.password }}
+      HOST: {{ $.Values.fbconfig.feedbackdb.host }}
+      PORT: {{ $.Values.fbconfig.feedbackdb.port }}
+    {{- if $.Values.mysql.tls }}
+      OPTIONS:
+        ssl_mode: VERIFY_IDENTITY
+        ssl:
+          ca: /etc/ssl/certs/ca-certificates.crt
+    {{- end }}
+  {{- end }}

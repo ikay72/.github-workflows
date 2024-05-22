@@ -1,0 +1,47 @@
+# ubuntu:latest is latest LTS, not latest release
+FROM ubuntu:20.04 as build
+
+MAINTAINER Yan Mosyagin "ymo@sandsiv.com"
+
+RUN ln -fs /usr/share/zoneinfo/Europe/Zurich /etc/localtime && \
+    apt update && apt install -y \
+    build-essential m4 libssl-dev libxml2-dev curl bison
+
+RUN cd /usr/src && \
+    # Download kannel
+    #
+    # YM: Sorry for using -k here, admins of kannel.org didn't set up
+    # their web server properly and as a result their LE cert can't
+    # be trusted because of lacking intermediate cert on their side
+    # See https://github.com/certbot/certbot/issues/2026
+    # and https://community.letsencrypt.org/t/curl-does-not-trust-le-certs-on-plain-debian/54091
+    curl -skLO https://kannel.org/download/1.4.5/gateway-1.4.5.tar.gz && \
+    # Extract kannel sources
+    tar xf gateway-1.4.5.tar.gz && \
+    # Patch kannel with Salt fix and Bison fix
+    curl -sLO https://gist.githubusercontent.com/ymo-sandsiv/5e5aa7b4e1eea6c301c80d394f2b0efb/raw/c9ee18587614d137d92f4047313f7803f73f6988/kannel-1.4.5-salt.patch && \
+    curl -sLO https://gist.githubusercontent.com/ymo-sandsiv/1b80527726b09b46c3711dce812048f8/raw/9c2b6a186cd30bb81cc3ef895419d98900e73a49/kannel-1.4.5-bison.patch && \
+    curl -sLO https://gist.githubusercontent.com/ymo-sandsiv/b3e7c5341f6689e29a1c8a908576c80b/raw/1fdad3b8ffad5ff6bd13c46c37897ad02909bd4b/kannel-1.4.5-sni.patch && \
+    patch -R gateway-1.4.5/gw/bb_smscconn.c kannel-1.4.5-salt.patch && \
+    patch -p0 -i kannel-1.4.5-bison.patch && \
+    patch gateway-1.4.5/gwlib/conn.c kannel-1.4.5-sni.patch && \
+    # Configure and compile kannel
+    cd gateway-1.4.5 && \
+    ./configure --prefix=/usr/local/kannel --sysconfdir=/etc/kannel --disable-docs --disable-wap --enable-ssl && \
+    touch .depend && \
+    make && make install
+
+FROM ubuntu:20.04 as base
+RUN ln -fs /usr/share/zoneinfo/Europe/Zurich /etc/localtime && \
+    apt update && apt install -y \
+    openssl libxml2 curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    # Create prerequisite directories for kannel
+    mkdir -p /var/log/kannel /var/spool/kannel
+
+FROM base
+COPY --from=build /usr/local/kannel/ /usr/local/kannel/
+
+VOLUME /etc/kannel /var/log/kannel /var/spool/kannel
+
+CMD ["/bin/bash"]

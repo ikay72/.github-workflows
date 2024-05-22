@@ -1,0 +1,3 @@
+external-scaler-azure-cosmos-db
+keda
+keda-add-ons-http

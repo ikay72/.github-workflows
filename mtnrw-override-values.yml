@@ -1,0 +1,152 @@
+global:
+  enabled: true
+  tlsDisable: false  # Ensure TLS is enabled globally
+
+injector:
+  enabled: true
+  image:
+    repository: "hashicorp/vault-k8s"
+    tag: "1.4.1"
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: 250m
+  config:
+    agent:
+      config: |
+        vault {
+          address = "https://vault-internal.vault.svc.cluster.local:8200"
+          skip_verify = true
+        }
+
+server:
+  image:
+    repository: "hashicorp/vault"
+    tag: "1.16.1"
+  resources:
+    requests:
+      memory: 8Gi
+      cpu: 2000m
+    limits:
+      memory: 16Gi
+      cpu: 2000m
+  readinessProbe:
+    httpGet:
+      path: /v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204
+      port: 8200
+      scheme: HTTPS
+    initialDelaySeconds: 90
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 10
+  livenessProbe:
+    httpGet:
+      path: /v1/sys/health?standbyok=true
+      port: 8200
+      scheme: HTTPS
+    initialDelaySeconds: 120
+    timeoutSeconds: 5
+    periodSeconds: 20
+    failureThreshold: 5
+
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/vault-server-tls/ca.crt
+    VAULT_TLSCERT: /vault/userconfig/vault-server-tls/tls.crt
+    VAULT_TLSKEY: /vault/userconfig/vault-server-tls/tls.key
+    VAULT_PLUGIN_DIRECTORY: "/mnt/vault/plugins"
+ 
+  extraVolumes:
+    - name: vault-server-tls
+      type: secret
+  
+  volumes:
+    - name: vault-plugins
+      nfs:
+        server: 10.150.55.103
+        path: /srv/nfs/vault/plugins
+
+  volumeMounts:
+    - mountPath: /vault/userconfig/vault-server-tls
+      name: vault-server-tls
+      readOnly: true
+    - mountPath: /mnt/vault/plugins
+      name: vault-plugins
+
+
+  auditStorage:
+    enabled: true
+
+  standalone:
+    enabled: false
+
+  ha:
+    enabled: true
+    replicas: 5
+    raft:
+      enabled: true
+      setNodeId: true  # Ensure setNodeId is enabled
+      config: |
+        ui = true
+        cluster_name = "mtnrw-vault-storage"
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "0.0.0.0:8201"  # Update to listen on all interfaces
+          tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+          tls_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+          tls_client_ca_file = "/vault/userconfig/vault-server-tls/ca.crt"
+          tls_require_and_verify_client_cert = false
+        }
+
+        storage "raft" {
+          path = "/vault/data"
+          retry_join {
+            leader_api_addr = "https://vault-0.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            leader_client_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            leader_tls_servername = "vault-0.vault-internal.vault.svc.cluster.local"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-1.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            leader_client_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            leader_tls_servername = "vault-1.vault-internal.vault.svc.cluster.local"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-2.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            leader_client_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            leader_tls_servername = "vault-2.vault-internal.vault.svc.cluster.local"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-3.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            leader_client_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            leader_tls_servername = "vault-3.vault-internal.vault.svc.cluster.local"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-4.vault-internal.vault.svc.cluster.local:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            leader_client_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            leader_tls_servername = "vault-4.vault-internal.vault.svc.cluster.local"
+          }
+        }
+
+        seal "shamir" {
+          recovery_threshold = 3
+          recovery_shares    = 5
+        }
+
+ui:
+  enabled: true
+  serviceType: "LoadBalancer"
+  serviceNodePort: null
+  externalPort: 8200
+

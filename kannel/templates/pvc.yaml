@@ -1,0 +1,41 @@
+{{ range .Values.kannel }}
+{{- if $.Values.nfs_volumes.host }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kannel-{{ .name }}
+spec:
+  capacity:
+    storage: 1G
+  storageClassName: {{ template "kannel.storageClass" $ }}
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    namespace: {{ $.Release.Namespace }}
+    name: kannel-{{ .name }}
+  nfs:
+    server: {{ $.Values.nfs_volumes.host }}
+    path: {{ $.Values.nfs_volumes.share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+  persistentVolumeReclaimPolicy: Retain
+---
+{{- end }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kannel-{{ .name }}
+spec:
+  {{- if $.Values.nfs_volumes.host }}
+  volumeName: kannel-{{ .name }}
+  {{- end }}
+  storageClassName: {{ template "kannel.storageClass" $ }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1G
+---
+{{ end }}

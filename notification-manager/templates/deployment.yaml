@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-manager
+  labels:
+    app: notification-manager
+    rabbitmq-client: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-manager
+  template:
+    metadata:
+      labels:
+        app: notification-manager
+        grp: xircl
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      containers:
+      - name: notification-manager
+        image: {{ .Values.image.repository }}/notification-manager-node:{{ .Values.nm.image.tag }}
+        resources:
+          {{- toYaml .Values.nm.resources | nindent 10 }}
+        command: ["npm", "start"]
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: NM_JWT_ALGORITHM
+            value: {{ .Values.nm.jwt_algorithm | quote }}
+          - name: NM_GROUP_NAME_PREFIX
+            value: {{ .Values.nm.group_name_prefix | quote }}
+          - name: NM_AMQP_OUTGOING_QUEUE_PREFIX
+            value: {{ .Values.nm.rabbitmq.outgoing_queue_prefix | quote }}
+          - name: NM_AMQP_HOST
+            value: {{ .Values.nm.rabbitmq.host | quote }}
+          - name: NM_AMQP_PORT
+            value: {{ .Values.nm.rabbitmq.port | quote }}
+          - name: NM_AMQP_USER
+            value: {{ .Values.nm.rabbitmq.user | quote }}
+          - name: NM_AMQP_PASSWD
+            value: {{ .Values.nm.rabbitmq.password | quote }}
+          - name: NM_AMQP_VHOST
+            value: {{ .Values.nm.rabbitmq.vhost | quote }}
+          - name: NM_AMQP_INSIST
+            value: {{ .Values.nm.rabbitmq.insist | quote }}
+          - name: NM_AMQP_EXCHANGE
+            value: {{ .Values.nm.rabbitmq.exchange | quote }}
+          - name: NM_AMQP_INCOMING_QUEUE
+            value: {{ .Values.nm.rabbitmq.incoming_queue | quote }}
+          - name: NM_AMQP_HEARTBEAT
+            value: {{ .Values.nm.rabbitmq.heartbeat | quote }}
+          - name: PORT
+            value: {{ .Values.nm.ingress.port | quote }}
+          - name: NM_JWT_SECRET
+            value: {{ .Values.nm.jwt_secret | quote }}

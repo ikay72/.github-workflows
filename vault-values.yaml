@@ -1,0 +1,37 @@
+global:
+  tlsDisable: false
+  tls:
+    ca: ""
+    cert: "/vault/userconfig/tls/vault.crt"
+    key: "/vault/userconfig/tls/vault.key"
+    disableHostValidation: false
+
+server:
+  ha:
+    enabled: true
+    replicas: 3
+  dataStorage:
+    enabled: true
+    pvc:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+  extraVolumes:
+    - name: tls-volume
+      secret:
+        secretName: common-tlssecret
+  extraVolumeMounts:
+    - name: tls-volume
+      mountPath: "/vault/userconfig/tls"
+  haStorage:
+    raft:
+      path: "/vault/data"
+      node_id: "node1"
+      config: |
+        autopilot:
+          cleanup_dead_servers: true
+          last_contact_threshold: "200ms"
+          max_trailing_logs: 250
+          min_quorum: 2
+

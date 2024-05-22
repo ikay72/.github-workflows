@@ -1,0 +1,83 @@
+{{ if .Values.sso.db.run_create }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-init-db
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-2"
+    argocd.argoproj.io/hook: "Sync"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-2"
+    {{- end }}
+
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "sso.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Release.Name }}-init-db
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - >
+              mysql {{ include "sso.mysqlCliOptions" . }} ${SSO_DB_NAME} -e "SELECT 1 FROM django_migrations" ||
+              {
+              echo "Creating new SSO database";
+              mysql {{ include "sso.mysqlCliOptions" . }} -e "CREATE DATABASE IF NOT EXISTS ${SSO_DB_NAME} DEFAULT CHARACTER SET UTF8";
+              sso-mgm migrate;
+              mysql {{ include "sso.mysqlCliOptions" . }} ${SSO_DB_NAME} -e "ALTER TABLE user AUTO_INCREMENT={{ .Values.sso.db.firstUserId }}";
+              {{- range .Values.sso.initial_apps }}
+              mysql {{ include "sso.mysqlCliOptions" $ }} ${SSO_DB_NAME} -e "INSERT INTO app (name, secret) VALUES ('{{ .name }}','{{ .secret }}')";
+              {{- end }}
+              sso-mgm loaddata prod_initial_state;
+              }
+
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SSO_DB_HOST
+              value: {{ .Values.sso.db.host | quote }}
+            - name: SSO_DB_PORT
+              value: {{ .Values.sso.db.port | quote }}
+            - name: SSO_DB_NAME
+              value: {{ .Values.sso.db.name | quote }}
+            - name: SSO_DB_USER
+              value: {{ .Values.sso.db.username | quote }}
+            - name: SSO_DB_PASSWORD
+              value: {{ .Values.sso.db.password | quote}}
+          {{- if .Values.mysql.tls }}
+            - name: DB_SSL_MODE
+              value: VERIFY_IDENTITY
+            - name: DB_SSL_CA
+              value: /etc/ssl/certs/ca-certificates.crt
+          {{- end }}
+          volumeMounts:
+            - name: sso-config
+              mountPath: /etc/sso/
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+
+      volumes:
+        - name: sso-config
+          configMap:
+            name: sso-config
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+  parallelism: 1
+  completions: 1
+{{ end }}

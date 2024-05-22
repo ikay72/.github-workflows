@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+    rabbitmq-client: "true"
+  annotations:
+  {{- if .Values.ivr.external_asterisk }}
+    configmap.reloader.stakater.com/reload: "{{ .Release.Name }}-config"
+  {{- else }}
+    configmap.reloader.stakater.com/reload: "{{ .Release.Name }}-config,{{ .Release.Name }}-asterisk"
+  {{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        grp: fb
+
+    spec:
+    {{- if .Values.ivr.spec }}
+      {{- toYaml .Values.ivr.spec | nindent 6 }}
+    {{ end }}
+      serviceAccountName: {{ .Release.Namespace }}-main
+      containers:
+
+      - name: ivr
+        image: {{ .Values.image.repository }}/ivr:{{ .Values.ivr.image.tag }}
+
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: RABBITMQ_HOST
+            value: {{ .Values.ivr.amqp.host | quote }}
+          - name: RABBITMQ_PORT
+            value: {{ .Values.ivr.amqp.port | quote }}
+          - name: RABBITMQ_USER
+            value: {{ .Values.ivr.amqp.user | quote }}
+          - name: RABBITMQ_PASSWORD
+            value: {{ .Values.ivr.amqp.user | quote }}
+          - name: RABBITMQ_OUTBOX_QUEUE
+            value: {{ .Values.ivr.amqp.queue | quote }}
+        {{- if .Values.ivr.speechtotext }}
+          - name: SPEECH_TO_TEXT_AUDIO_SOCKET_HOST
+            value: {{ .Values.ivr.speechtotext }}
+          - name: SPEECH_TO_TEXT_REST_HOST
+            value: {{ .Values.ivr.speechtotext }}
+        {{- end }}
+        {{- if .Values.ivr.external_asterisk }}
+          - name: ASTERISK_HOST
+            value: {{ .Values.ivr.external_asterisk }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.ivr.resources | nindent 10 }}
+
+        volumeMounts:
+          - name: ivr-config
+            mountPath: /config
+            readOnly: true
+
+    {{- range .Values.ivr.enterprises }}
+
+      - name: ivr-{{ . }}
+        image: {{ $.Values.image.repository }}/ivr:{{ $.Values.ivr.image.tag }}
+
+        env:
+          - name: RABBITMQ_HOST
+            value: {{ $.Values.ivr.amqp.host | quote }}
+          - name: RABBITMQ_PORT
+            value: {{ $.Values.ivr.amqp.port | quote }}
+          - name: RABBITMQ_USER
+            value: {{ $.Values.ivr.amqp.user | quote }}
+          - name: RABBITMQ_PASSWORD
+            value: {{ $.Values.ivr.amqp.user | quote }}
+          - name: RABBITMQ_OUTBOX_QUEUE
+            value: {{ $.Values.ivr.amqp.queue }}-{{ . }}
+        {{- if $.Values.ivr.speechtotext }}
+          - name: SPEECH_TO_TEXT_AUDIO_SOCKET_HOST
+            value: {{ $.Values.ivr.speechtotext }}
+          - name: SPEECH_TO_TEXT_REST_HOST
+            value: {{ $.Values.ivr.speechtotext }}
+        {{- end }}
+        {{- if $.Values.ivr.external_asterisk }}
+          - name: ASTERISK_HOST
+            value: {{ $.Values.ivr.external_asterisk }}
+        {{- end }}
+          - name: STASIS_APP
+            value: {{ . }}
+
+        resources:
+          {{- toYaml $.Values.ivr.resources | nindent 10 }}
+
+        volumeMounts:
+          - name: ivr-config
+            mountPath: /config
+            readOnly: true
+    {{- end }}
+    {{- if not .Values.ivr.external_asterisk }}
+
+      - name: asterisk
+        image: {{ .Values.image.repository }}/asterisk:{{ .Values.ivr.image.asterisk_tag }}
+
+      {{- if or .Values.ivr.spec .Values.ivr.loadbalancer }}
+        ports:
+          - name: sip
+            protocol: TCP
+            containerPort: 5071
+        {{- range $i, $e := untilStep 6000 6200 1 }}
+          - name: sipudp-{{ $i }}
+            protocol: UDP
+            containerPort: {{ $e }}
+        {{- end }}
+      {{- end }}
+
+        resources:
+          {{- toYaml .Values.ivr.asterisk_resources | nindent 10 }}
+
+        volumeMounts:
+          - name: asterisk
+            mountPath: /etc/asterisk/pjsip.conf
+            subPath: pjsip.conf
+            readOnly: true
+          - name: asterisk
+            mountPath: /etc/asterisk/rtp.conf
+            subPath: rtp.conf
+            readOnly: true
+          - name: ivr-data
+            mountPath: /opt/feedback/ivr
+            readOnly: false
+          - name: ivr-data
+            mountPath: /var/spool/asterisk/recording
+            subPath: _recording
+            readOnly: false
+    {{- end }}
+
+      volumes:
+        - name: ivr-config
+          configMap:
+            name: {{ .Release.Name }}-config
+      {{- if not .Values.ivr.external_asterisk }}
+        - name: ivr-data
+          persistentVolumeClaim:
+            claimName: ivr
+        - name: asterisk
+          configMap:
+            name: {{ .Release.Name }}-asterisk
+      {{- end }}

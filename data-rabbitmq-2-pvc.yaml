@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"creationTimestamp":"2023-11-24T05:17:24Z","finalizers":["kubernetes.io/pvc-protection"],"labels":{"app.kubernetes.io/instance":"rabbitmq","app.kubernetes.io/name":"rabbitmq"},"name":"data-rabbitmq-2","namespace":"default","resourceVersion":"27227789","uid":"384c9beb-0de8-4ee5-9e8d-da93a3c17c06"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"8Gi"}},"volumeMode":"Filesystem"},"status":{"phase":"Pending"}}
+  creationTimestamp: "2023-11-24T05:20:47Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app.kubernetes.io/instance: rabbitmq
+    app.kubernetes.io/name: rabbitmq
+  name: data-rabbitmq-2
+  namespace: default
+  resourceVersion: "27228685"
+  uid: 5f82846b-ac3e-4eb6-b765-235f03269ae0
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: vochub
+  volumeMode: Filesystem
+status:
+  phase: Pending

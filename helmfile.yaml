@@ -1,0 +1,7 @@
+releases:
+  - name: my-keda-hpa
+    chart: ./home/ikay/keda-hpa
+    values:
+      - /home/ikay/value.yaml
+      - /home/ikay/keda-hpa.yaml.gotmpl
+

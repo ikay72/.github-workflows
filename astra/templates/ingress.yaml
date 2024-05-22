@@ -1,0 +1,54 @@
+{{- if .Values.enterprises }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: astra
+  annotations:
+  {{- if .Values.global.externalDNSHostTarget }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.global.externalDNSHostTarget }}
+  {{- end }}
+  {{- range $k, $v := merge .Values.astra.ingressAnnotations .Values.global.ingressAnnotations }}
+    {{ $k }}: {{ $v | quote }}
+  {{- end }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "240"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "240"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "240"
+    {{ range .Values.enterprises -}}
+    {{ if .astrahost_alias -}}
+    nginx.ingress.kubernetes.io/server-alias:  {{ .astrahost_alias }}
+    {{ end -}}
+    {{ end }}
+
+spec:
+{{- if .Values.global.ingressClass }}
+  ingressClassName: {{ .Values.global.ingressClass | quote }}
+{{- end }}
+  rules:
+  {{- range .Values.enterprises }}
+  - host: {{ .astrahost }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: astra
+            port:
+              name: astra-http-port
+  {{- if .astrahost_alias }}
+  {{- range split " " .astrahost_alias }}
+
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: astra
+            port:
+              name: astra-http-port
+  {{- end }}
+  {{- end }}
+  {{ end }}
+{{ end }}

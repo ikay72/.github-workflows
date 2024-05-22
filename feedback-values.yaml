@@ -1,0 +1,197 @@
+USER-SUPPLIED VALUES:
+argocd: null
+astra:
+  amqp:
+    password: guest
+    user: guest
+  db:
+    default_name: fb_default
+    host: 10.150.55.101
+    password: TK8sDbfed
+    username: feedback_user
+  django:
+    debug: false
+    secret_key: tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q
+  image:
+    tag: 11.14.8.3
+  ingressAnnotations: {}
+  replicas: 1
+  resources: {}
+digirunner:
+  image:
+    tag: 11.14.6.0
+enterprises:
+- astrahost: mtnrwanda-astra.mtn.co.rw
+  dbname: feedback_mtnrwanda
+  fb_export_ssoac: 4wm65UHJZQXvAhS3ISfexdM9UNdLD4rySIokBmtL
+  fbhost: mtnrwanda-rest.mtn.co.rw
+  feedback_mongodb_database: feedback_mtnrwanda
+  hubhost: mtnrwanda-vochub.mtn.co.rw
+  id: 1001
+  mongodb_database: xircl_mtnrwanda
+  name: mtnrwanda
+  ssoac: uXmGytsfUiPRIG9zQuKIg8mf84Um81STzpeu1o2K
+  surveyhost: mtnrwanda-survey.mtn.co.rw
+  timeZone: Europe/Zurich
+  xircldbname: xircl_mtnrwanda
+fbapi:
+  db:
+    host: 10.150.55.101
+    password: TK8sDbfed
+    username: feedback_user
+  image:
+    tag: 11.13.1.2
+  rabbitmq:
+    password: guest
+    user: guest
+  resources:
+    limits:
+      cpu: 300m
+      memory: 192Mi
+    requests:
+      cpu: 150m
+      memory: 128Mi
+fbconfig:
+  amqp:
+    password: guest
+    user: guest
+  claim: feedback
+  corsdebug: false
+  django:
+    debug: false
+    devel: false
+    secret_key: tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q
+  feedbackdb:
+    default_name: fb_default
+    default_password: TK8sDbfed
+    default_user: feedback_user
+    host: 10.150.55.101
+    password: TK8sDbfed
+    run_create: true
+    run_migration: true
+    username: feedback_user
+  hostAliases: []
+  image:
+    db_init_tag: 11.14.8.3
+    tag: 11.14.8.3
+  ingressAnnotations: {}
+  mongodb:
+    auth_source: admin
+    authentication: true
+    default_db: false
+    host: 10.150.55.100:27017
+    password: Myc0mpl3xpassw0rd
+    username: root
+  nfs_volumes:
+    host: 10.150.55.103
+    share: /srv/data/nfs/feedback
+  nm:
+    jwt_secret: 58epkehUC1b8uaTisC8ZNHGxsRS8iKQ5tDKKdu8l
+  resources: {}
+  sso:
+    api_secret: LnBix89GiQvv1PghpQwBhtfjd8PhbUahBxHYYq92
+  static:
+    host: static-staging.mtn.co.rw
+  url_shortener_host: http://yourls
+  url_shortener_password: B7AmdZWNF8WJAuczd28wx6jHnITQEC5vyT45SMiu
+  url_shortener_username: Vm8gV6sU
+  uwsgi_processes: 25
+fbtasks:
+  beatEnabled: true
+  consumers:
+    celeryAutoscale: 1,1
+    config: {}
+    idleReplicaCount: 0
+    maxReplicaCount: 1
+    minReplicaCount: 0
+    replicas: 1
+    resources: {}
+    restoreToOriginalReplicaCount: true
+    stabilizationWindowSeconds: 5
+  customCaCert: false
+  fbtasksdb:
+    host: 10.150.55.101
+    password: TK8sDbfed
+    username: feedback_user
+  image:
+    tag: 11.14.8.3
+  resources:
+    limits:
+      cpu: 100m
+      memory: 384Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+fbv2:
+  db:
+    host: 10.150.55.101
+    password: TK8sDbfed
+    username: feedback_user
+  image:
+    tag: 11.11.3
+  ingressAnnotations: {}
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  static:
+    host: static-staging.mtn.co.rw
+feedbackapi:
+  image:
+    tag: 11.14.8.3
+  password: TK8sDbfed
+  username: feedback_user
+global:
+  externalDNSHostTarget: false
+  imagePullSecrets:
+  - gcr-json-key
+  imageRegistry: https://europe-docker.pkg.dev
+  ingressAnnotations: {}
+  ingressClass: vochub
+  loadBalancerIP: 10.157.11.85
+  nfs: 10.150.55.103
+  nmHost: notify-staging.mtn.co.rw
+  priorityClass: protected-default
+  pullSecret: gcr-json-key
+  readOnlyMany: true
+  redis:
+    password: ""
+  repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+  staticHost: static-staging.mtn.co.rw
+  storageClass: vochub
+  sysctls: {}
+  timeZone: Europe/Zurich
+image:
+  keda:
+    repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+    tag: v2.10-ss
+  metricApiServer:
+    repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+  registry: ""
+  repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+  webhooks:
+    repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+ivr:
+  enabled: false
+mysql:
+  customCaCert: false
+  tls: false
+nginx:
+  image:
+    tag: latest
+  logFormat: |-
+    log_format vochub '$remote_addr $host [$time_local] $status "$request" '
+        '$body_bytes_sent "$http_referer" "$http_user_agent" $request_time "$upstream_http_x_username" $http_x_request_id';
+    access_log    /var/log/nginx/access.log vochub;
+  realIP:
+    header: X-Forwarded-For
+smtp:
+  from: false
+  host: false
+  pass: false
+  port: 25
+  tls: false
+  user: false

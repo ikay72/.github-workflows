@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-nginx
+data:
+  nginx.conf: |
+    user  nginx;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  4096;
+    }
+
+    http {
+        real_ip_header {{ .Values.nginx.realIP.header }};
+        set_real_ip_from 0.0.0.0/0;
+        access_log off;
+        server_names_hash_bucket_size 128;
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+        client_max_body_size {{ .Values.fbconfig.client_max_body_size }};
+
+        keepalive_timeout  0;
+
+        gzip  on;
+
+        upstream fbapi-uwsgi {
+            server unix:///var/run/feedback/api/uwsgi.sock;
+        }
+
+        server {
+            listen 8080 default_server;
+            server_name _;
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+        }
+
+        {{ range .Values.enterprises }}
+        server {
+            listen 8080;
+            server_name {{ .fbhost }} {{ .fbhost_alias }};
+
+            location / {
+            {{- if .fbhost_disabled }}
+                return 503;
+            {{- else }}
+                include uwsgi_params;
+                uwsgi_pass fbapi-uwsgi;
+                uwsgi_param FEEDBACK_ENTERPRISE {{ .name }};
+                uwsgi_param SSL_VERIFIED $ssl_client_verify;
+                uwsgi_param SSL_CLIENT_SERIAL $ssl_client_serial;
+                uwsgi_param SSL_CLIENT_CERT $ssl_client_cert;
+                uwsgi_param SSL_USER_DN $ssl_client_s_dn;
+            }
+
+            location /static {
+                root /www;
+            {{- end }}
+            }
+        }
+        {{ end }}
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-uwsgi
+data:
+  uwsgi.ini: |
+    [uwsgi]
+    strict = true
+    master = true
+    chmod-socket = 666
+    socket = /var/run/feedback/api/uwsgi.sock
+    pidfile = /var/run/uwsgi.pid
+    if-not-env = FEEDBACK_UWSGI_NODAEMON
+    daemonize = /var/log/feedback/api/uwsgi.log
+    endif =
+    vacuum = true
+    uid=feedback
+    gid=feedback
+    processes = {{ .Values.fbconfig.uwsgi_processes }}
+    threads = 1
+    harakiri = {{ .Values.fbconfig.uwsgi_harakiri }}
+    harakiri-verbose = 1
+    procname = fbapi-uwsgi: worker process
+    procname-master = fbapi-uwsgi: MASTER process
+    stats = /tmp/statsock
+    wsgi-file = feedback_api/wsgi.py
+    honour-stdin = true
+    buffer-size = 65535
+    log-format = [%(ltime)] %(addr) - %(user) %(method) "%(uri)" %(proto) %(status) %(size) "%(var.HTTP_X_REQUEST_ID)"
+    log-req-encoder = json {"message": ${msg}, "level": "INFO"}
+    disable-logging = true

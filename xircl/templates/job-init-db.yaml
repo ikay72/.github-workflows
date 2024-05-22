@@ -1,0 +1,59 @@
+{{ if .Values.xircl.db.run_create }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-init-db
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-2"
+    argocd.argoproj.io/hook: "Sync"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-2"
+    {{- end }}
+
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "xircl.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: xircl-init-db
+          image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - >
+            {{- range .Values.enterprises }}
+              echo "creating db for enterprise {{ .name }}";
+              mysql {{ include "xircl.mysqlCliOptions" $ }} -e "CREATE DATABASE IF NOT EXISTS \`{{ .xircldbname }}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin";
+            {{- end }}
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: XIRCL_DB_HOST
+              value: {{ .Values.xircl.db.host | quote }}
+            - name: XIRCL_DB_USER
+              value: {{ .Values.xircl.db.username | quote }}
+            - name: XIRCL_DB_PASSWORD
+              value: {{ .Values.xircl.db.password | quote }}
+
+    {{- if .Values.mysql.customCaCert }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+
+      volumes:
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+    {{- end }}
+{{ end }}

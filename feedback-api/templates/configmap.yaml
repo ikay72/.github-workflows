@@ -1,0 +1,190 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-api-nginx
+data:
+  nginx.conf: |
+    user  www-data;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        access_log off;
+
+        include         /etc/nginx/mime.types;
+        default_type    application/octet-stream;
+
+        sendfile        on;
+
+        keepalive_timeout  0;
+
+        gzip on;
+
+        upstream php-fpm {
+            server unix:/var/run/php-fpm/fpm.socket;
+        }
+
+        server {
+            listen 8080 default_server;
+            server_name _;
+
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+        }
+
+        upstream fbapi-uwsgi {
+            server unix:///var/run/feedback-api/api/uwsgi.sock;
+        }
+        {{ range .Values.enterprises }}
+        server {
+            listen 8080;
+            server_name {{ .hubhost }};
+
+            location / {
+                include uwsgi_params;
+                uwsgi_pass fbapi-uwsgi;
+                uwsgi_param feedback-api_ENTERPRISE {{ .name }};
+                uwsgi_param SSL_VERIFIED $ssl_client_verify;
+                uwsgi_param SSL_CLIENT_SERIAL $ssl_client_serial;
+                uwsgi_param SSL_CLIENT_CERT $ssl_client_cert;
+                uwsgi_param SSL_USER_DN $ssl_client_s_dn;
+            }
+
+            location /static {
+                root /www;
+            }
+        }
+        {{ end }}
+
+        server {
+            listen 8080;
+            server_name feedback-api feedback-api.{{ .Release.Namespace }};
+
+            root /var/www/feedback-api/web;
+
+            rewrite ^/app\.php/?(.*)$ /$1 permanent;
+
+            location / {
+                index app.php;
+                try_files $uri @rewriteapp;
+            }
+
+            location @rewriteapp {
+                rewrite ^(.*)$ /app.php/$1 last;
+            }
+
+            location ~ ^/(app|config|index)\.php(/|$) {
+                fastcgi_pass  unix:/var/run/php-fpm/fpm.socket;
+                fastcgi_split_path_info ^(.+\.php)(/.*)$;
+                fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+                fastcgi_param  QUERY_STRING       $query_string;
+                fastcgi_param  REQUEST_METHOD     $request_method;
+                fastcgi_param  CONTENT_TYPE       $content_type;
+                fastcgi_param  CONTENT_LENGTH     $content_length;
+                fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+                fastcgi_param  REQUEST_URI        $request_uri;
+                fastcgi_param  DOCUMENT_URI       $document_uri;
+                fastcgi_param  DOCUMENT_ROOT      $document_root;
+                fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+                fastcgi_param  REQUEST_SCHEME     $scheme;
+                fastcgi_param  HTTPS              $https if_not_empty;
+                fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+                fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+                fastcgi_param  REMOTE_ADDR        $remote_addr;
+                fastcgi_param  REMOTE_PORT        $remote_port;
+                fastcgi_param  SERVER_ADDR        $server_addr;
+                fastcgi_param  SERVER_PORT        $server_port;
+                fastcgi_param  SERVER_NAME        $server_name;
+                # PHP only, required if PHP was built with --enable-force-cgi-redirect
+                fastcgi_param  REDIRECT_STATUS    200;
+                fastcgi_read_timeout 300;
+                fastcgi_param HTTPS off;
+            }
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-api-php-fpm-conf
+data:
+  php-fpm.conf: |
+    [www]
+    listen = /var/run/php-fpm/fpm.socket
+    listen.owner = www-data
+    listen.group = www-data
+    listen.mode = 0660
+    user = www-data
+    group = www-data
+    pm = dynamic
+    pm.max_children = 50
+    pm.start_servers = 2
+    pm.min_spare_servers = 2
+    pm.max_spare_servers = 5
+
+    [global]
+    daemonize = no
+    error_log = /dev/stderr
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-api-databases
+data:
+  databases.yml: |
+    propel:
+        logging: %kernel.debug%
+        dbal:
+            default_connection: generic
+            connections:
+                generic:
+                    driver: mysql
+                    user: {{ .Values.fbapi.db.username }}
+                    password: {{ .Values.fbapi.db.password }}
+                    dsn: mysql:host={{ .Values.fbapi.db.host }};{{ if .Values.mysql.tls }}--ssl-mode=VERIFY_IDENTITY;{{ end }}charset=utf8;dbname={{ .Values.fbconfig.feedbackdb.default_name }}
+                {{ range .Values.enterprises -}}
+                "{{ .name }}":
+                    driver: mysql
+                    user: {{ $.Values.feedbackapi.username }}
+                    password: {{ $.Values.feedbackapi.password }}
+                    dsn: mysql:host={{ $.Values.fbapi.db.host }};{{ if $.Values.mysql.tls }}--ssl-mode=VERIFY_IDENTITY;{{ end }}charset=utf8;dbname={{ .dbname }}
+                {{ end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-api-parameters
+data:
+  parameters.yml: |
+    parameters:
+        secret: asdfswdfwetrgdfghbdfghj
+        export.output_dir: /opt/feedback/export/
+        import.input_dir: /opt/feedback/import/
+        rabbit.host: {{ .Values.fbapi.rabbitmq.host }}
+        rabbit.outbox.sms: feedback-outbox-sms
+        rabbit.outbox.mail: feedback-outbox-mail
+        rabbit.outbox.importer: feedback-outbox-importer
+        rabbit.casealert.mail: feedback-casealert-mail
+        rabbit.store.api: feedback-store-api
+        rabbit.outbox.voice: live-outbox-voice
+        rabbit.direct.invite: {{ .Values.fbapi.rabbitmq.direct_invite_queue }}
+        rabbit_feedback.host: {{ .Values.fbapi.rabbitmq.host }}
+        rabbit_feedback.exchange.clerk: "clerk"
+        rabbit_feedback.queue.clerk_questionnaires: "clerk_questionnaires"
+        sandsiv.feedback.urls.ivr_answer_storage: 'https://{{ .Values.fbv2.static.host }}/_ivr/'
+        rabbit.heartbeat: 60
+        rabbit.read_write_timeout: 120
+        sso.access_code:
+        {{- range .Values.enterprises }}
+            {{ .name }}: {{ .ssoac }}
+        {{- end }}
+        feedback_api_python.host:
+        {{- range .Values.enterprises }}
+            {{ .name }}: 'https://{{ .fbhost }}'
+        {{- end }}

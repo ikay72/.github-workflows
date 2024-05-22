@@ -1,0 +1,27 @@
+# clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-cluster-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "configmaps", "events", "namespaces"]
+    verbs: ["get", "list", "watch", "patch", "update", "create"]
+
+---
+
+
+# clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: default-main
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: vault-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+

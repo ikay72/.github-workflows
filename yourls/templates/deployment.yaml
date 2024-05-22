@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yourls
+  labels:
+    app: yourls
+  annotations:
+    configmap.reloader.stakater.com/reload: "yourls-php-fpm-conf,yourls-nginx,yourls-config,yourls-loader,yourls-skip-click-count-plugin,yourls-keep-query-string-plugin{{ if .Values.mysql.tls }},yourls-mysql-tls-plugin{{ end }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yourls
+  template:
+    metadata:
+      labels:
+        app: yourls
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      initContainers:
+        - name: copy-static
+          image: {{ .Values.image.registry }}yourls:{{ .Values.yourls.version }}-fpm
+          command: ["/bin/sh", "-ec"]
+          args: ["cp -rp /usr/src/yourls/css /www/css/; cp -rp /usr/src/yourls/js /www/js/; cp -rp /usr/src/yourls/images /www/images"]
+          volumeMounts:
+            - mountPath: /www
+              name: yourls-static
+        {{- include "yourls.customCaInitContainer" . | nindent 8 }}
+      containers:
+      # php-fpm for yourls
+      - name: yourls
+        image: {{ .Values.image.registry }}yourls:{{ .Values.yourls.version }}-fpm
+        resources:
+          {{- toYaml .Values.yourls.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+          periodSeconds: 60
+        readinessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: YOURLS_DB_HOST
+            value: {{ .Values.yourls.db.host }}
+          - name: YOURLS_DB_NAME
+            value: {{ .Values.yourls.db.name }}
+          - name: YOURLS_DB_USER
+            value: {{ .Values.yourls.db.username }}
+          - name: YOURLS_DB_PASS
+            value: {{ .Values.yourls.db.password | quote }}
+          - name: YOURLS_SITE
+            value: https://{{ index .Values.yourls.app.hosts 0 }}
+          - name: YOURLS_USER
+            value: {{ .Values.yourls.app.username }}
+          - name: YOURLS_PASS
+            value: {{ .Values.yourls.app.password }}
+          - name: YOURLS_UNIQUE_URLS
+            value: "false"
+          - name: YOURLS_NOSTATS
+            value: "true"
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+          - name: yourls-php-fpm-conf
+            mountPath: /usr/local/etc/php-fpm.conf
+            subPath: php-fpm.conf
+          - name: yourls-config
+            mountPath: /usr/src/yourls/user/config.php
+            subPath: config.php
+          - name: yourls-skip-click-count-plugin
+            mountPath: /usr/src/yourls/user/plugins/skip-click-count/plugin.php
+            subPath: plugin.php
+          - name: yourls-keep-query-string-plugin
+            mountPath: /usr/src/yourls/user/plugins/keep-query-string/plugin.php
+            subPath: plugin.php
+          - name: yourls-loader
+            mountPath: /usr/src/yourls/yourls-loader.php
+            subPath: yourls-loader.php
+        {{- if .Values.mysql.tls }}
+          - name: yourls-mysql-tls-plugin
+            mountPath: /usr/src/yourls/user/db.php
+            subPath: db.php
+        {{- end }}
+        {{- if .Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+        ports:
+          - name: yourls-http
+            containerPort: 8080
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+          - name: yourls-nginx
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: yourls-static
+            mountPath: /www
+      volumes:
+        - name: yourls-nginx
+          configMap:
+            name: yourls-nginx
+        - name: phpfpm-socket
+          emptyDir: {}
+        - name: yourls-php-fpm-conf
+          configMap:
+            name: yourls-php-fpm-conf
+        - name: yourls-config
+          configMap:
+            name: yourls-config
+        - name: yourls-skip-click-count-plugin
+          configMap:
+            name: yourls-skip-click-count-plugin
+        - name: yourls-keep-query-string-plugin
+          configMap:
+            name: yourls-keep-query-string-plugin
+        - name: yourls-loader
+          configMap:
+            name: yourls-loader
+        - name: yourls-static
+          emptyDir:
+            medium: Memory
+      {{- if .Values.mysql.tls }}
+        - name: yourls-mysql-tls-plugin
+          configMap:
+            name: yourls-mysql-tls-plugin
+      {{- end }}
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}

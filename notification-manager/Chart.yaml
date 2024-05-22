@@ -1,0 +1,4 @@
+apiVersion: v2
+description: notification manager server for VoCHUB
+name: notification-manager
+version: 11.13.1

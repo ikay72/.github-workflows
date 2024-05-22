@@ -1,0 +1,83 @@
+enterprises: []
+
+fbconfig:
+  claim: feedback
+
+  hostAliases: []
+  ingressAnnotations: {}
+
+  corsdebug: false
+  django:
+    debug: false
+    devel: false
+    secret_key: 6s038dq1wi6vql_d=ir*!!ukn@mgxc&70b707d4xen34^82
+
+  client_max_body_size: 200m
+  uwsgi_processes: 25
+  uwsgi_harakiri: 60
+
+  amqp:
+    host: rabbitmq
+    user: guest
+    password: guest
+
+  sso:
+    api_url: http://sso/api/
+    api_appname: xircl
+    api_secret: 76273119da51c860ba6b1d73bd762fb45b1c4b8d
+
+  url_shortener_host: http://yourls
+  url_shortener_username: un
+  url_shortener_password: pwd
+
+  celery:
+    housekeeper_hour: "*/2"
+    housekeeper_minute: "1"
+    casealert_hour: 23
+    casealert_minute: 58
+    reminder_hour: "*"
+    reminder_minute:  "*/2"
+
+  feedbackdb:
+    run_create: true
+    run_migration: true
+    username: someuser
+    password: somepassword
+    host: "172.23.0.3"
+    port: "3306"
+    default_name: "fb_default"
+    default_user: defaultuser
+    default_password: defaultpassword
+
+  static:
+    host: static.surv.biz
+
+  memcached:
+    enabled: false
+    host: memcached
+    port: 11211
+
+  mongodb:
+    authentication: false
+    host: vochub-mongo
+    port: "27017"
+    auth_source: "admin"
+    replica_set: "rs0"
+    username: "st_vochub"
+    password: "passw0rd"
+    default_db: false
+
+  nm:
+    jwt_secret: "temp_key"
+
+  xircl_export_api_url: "http://docker.sandsiv.com/public_api/store/export/feedback"
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+argocd: false

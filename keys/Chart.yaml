@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for VocHUB keys
+name: keys
+version: 11.14.4

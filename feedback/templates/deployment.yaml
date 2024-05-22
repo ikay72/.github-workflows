@@ -1,0 +1,307 @@
+{{- if .Values.enterprises }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback
+  labels:
+    app: fb-api
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-nginx,feedback-uwsgi,feedback-gdpr-settings,feedback-sms-gateways,feedback-enterprises,feedback-config,databases.yaml,feedback-logging,celery-yaml"
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-api
+
+  template:
+    metadata:
+      labels:
+        app: fb-api
+        grp: fb
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      {{- if $.Values.fbconfig.hostAliases }}
+      hostAliases:
+        {{- toYaml $.Values.fbconfig.hostAliases | nindent 8 }}
+      {{- end }}
+
+      containers:
+      # fbapi-uwsgi process
+      - name: fb-api
+        image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.fbconfig.image.tag }}
+
+        command: ["uwsgi"]
+        args: ["/etc/feedback/uwsgi.ini"]
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/feedback/api/uwsgi.sock
+          initialDelaySeconds: 20
+          timeoutSeconds: 2
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 2
+        readinessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/feedback/api/uwsgi.sock
+          initialDelaySeconds: 20
+          timeoutSeconds: 2
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 5
+
+        resources:
+          {{- toYaml .Values.fbconfig.resources | nindent 10 }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["uwsgi", "--stop", "/var/run/uwsgi.pid"]
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: PYTHONIOENCODING
+            value: "UTF-8"
+          - name: FEEDBACK_UWSGI_NODAEMON
+            value: "true"
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/api
+          - name: feedback-config
+            mountPath: /etc/feedback/common.yaml
+            subPath: common.yaml
+          - name: feedback-databases
+            mountPath: /etc/feedback/databases.yaml
+            subPath: databases.yaml
+          - name: uwsgi-ini
+            mountPath: /etc/feedback/uwsgi.ini
+            subPath: uwsgi.ini
+          - name: feedback-logging
+            mountPath: /etc/feedback/logging.yaml
+            subPath: logging.yaml
+          - name: export-data
+            mountPath: /opt/feedback
+            readOnly: false
+          - name: feedback-gdpr-settings
+            mountPath: /etc/feedback/gdpr_settings.yaml
+            subPath: gdpr_settings.yaml
+          - name: feedback-sms-gateways
+            mountPath: /etc/feedback/sms_gateways.yaml
+            subPath: sms_gateways.yaml
+          - name: feedback-enterprises
+            mountPath: /etc/feedback/enterprise_specific_configs.yaml
+            subPath: enterprise_specific_configs.yaml
+          - name: celery-yaml
+            mountPath: /etc/feedback/celery.yaml
+            subPath: celery.yaml
+        {{- if .Values.ivr.enabled }}
+          - name: ivr-data
+            mountPath: /opt/feedback/ivr
+            readOnly: false
+        {{- end }}
+        {{- if .Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+
+        ports:
+        - name: feedback-http
+          containerPort: 8080
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: feedback-http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: feedback-http
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 3
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/api
+            readOnly: false
+          - name: nginx-conf
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+            readOnly: true
+          - name: feedback-static
+            mountPath: /www
+            readOnly: true
+          - name: export-data
+            mountPath: /opt/feedback
+            readOnly: false
+          {{- if .Values.ivr.enabled }}
+          - name: ivr-data
+            mountPath: /opt/feedback/ivr
+            readOnly: false
+          {{- end }}
+
+      initContainers:
+        {{- include "fbconfig.customCaInitContainer" . | nindent 8 }}
+        - name: collectstatic
+          image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.fbconfig.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["fbapi-mgm.py collectstatic && cp -rp venv/share/static /www/"]
+          volumeMounts:
+            - mountPath: /www
+              name: feedback-static
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+
+        - name: check
+          image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.fbconfig.image.tag }}
+          command:
+            - runuser
+            - -u
+            - feedback
+            - --
+            - fbapi-mgm.py
+            - check
+
+          volumeMounts:
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+              readOnly: true
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: uwsgi-ini
+              mountPath: /etc/feedback/uwsgi.ini
+              subPath: uwsgi.ini
+              readOnly: true
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+              readOnly: true
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: export-data
+              mountPath: /opt/feedback
+              readOnly: false
+            - name: celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+          {{- if .Values.ivr.enabled }}
+            - name: ivr-data
+              mountPath: /opt/feedback/ivr
+              readOnly: false
+          {{- end }}
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+      volumes:
+        - name: uwsgi-socket
+          emptyDir: {}
+
+        - name: nginx-conf
+          configMap:
+            name: feedback-nginx
+
+        - name: feedback-static
+          emptyDir:
+            medium: Memory
+
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+
+        - name: uwsgi-ini
+          configMap:
+            name: feedback-uwsgi
+
+        - name: feedback-logging
+          configMap:
+            name: feedback-logging
+
+        - name: export-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.fbconfig.claim }}
+
+        - name: celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+
+      {{- if .Values.ivr.enabled }}
+        - name: ivr-data
+          persistentVolumeClaim:
+            claimName: ivr
+      {{- end }}
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{ end }}

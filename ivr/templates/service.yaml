@@ -1,0 +1,36 @@
+{{ if .Values.ivr.loadbalancer }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-asterisk-lb
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  sessionAffinity: None
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.ivr.loadbalancer.tcp }}
+  ports:
+    - name: sip
+      port: 5071
+      protocol: TCP
+      targetPort: sip
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-asterisk-lb-udp
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  sessionAffinity: None
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  loadBalancerIP: {{ .Values.ivr.loadbalancer.udp }}
+  ports:
+  {{- range $i, $e := untilStep 6000 6200 1 }}
+    - name: sipudp-{{ $i }}
+      port: {{ $e }}
+      protocol: UDP
+      targetPort: sipudp-{{ $i }}
+  {{- end }}
+{{- end }}

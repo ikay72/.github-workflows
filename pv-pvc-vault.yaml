@@ -1,0 +1,286 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-audit-vault-0
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-0
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: audit-vault-0
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-audit-vault-1
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-1
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: audit-vault-1
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-audit-vault-2
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-1
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: audit-vault-2
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-audit-vault-3
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-3
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: audit-vault-3
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-audit-vault-4
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-4
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: audit-vault-4
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-data-vault-0
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-0
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-vault-0
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-data-vault-1
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-1
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-vault-1
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-data-vault-2
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-2
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-vault-2
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-data-vault-3
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-3
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-vault-3
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-data-vault-4
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: vochub
+    nfs:
+      path: /srv/nfs/vault/audit-vault-4
+      server: 10.150.55.103
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-vault-4
+    namespace: vault
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: vochub
+    resources:
+      requests:
+        storage: 10Gi
+
+

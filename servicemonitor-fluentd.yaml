@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fluentd
+  labels:
+    team: frontend
+spec:
+  selector:
+    matchLabels:
+      app: fluentd  # Your Fluentd label
+  namespaceSelector:
+    matchNames:
+      - default  # Namespace where Fluentd is running
+  endpoints:
+  - port: metrics  # Port name or number as defined in your Fluentd service
+    interval: 15s
+

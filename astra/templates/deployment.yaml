@@ -1,0 +1,265 @@
+{{- if .Values.enterprises }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: astra
+  labels:
+    app: astra
+  annotations:
+    configmap.reloader.stakater.com/reload: "astra-nginx,astra-uwsgi,astra-logging,feedback-gdpr-settings,feedback-sms-gateways,feedback-enterprises,feedback-config,feedback-databases,feedback-celery-yaml"
+
+spec:
+  replicas: {{ .Values.astra.replicas }}
+  selector:
+    matchLabels:
+      app: astra
+
+  template:
+    metadata:
+      labels:
+        app: astra
+        grp: fb
+
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      initContainers:
+        {{- include "astra.customCaInitContainer" . | nindent 8 }}
+        - name: digirunner-copy
+          image: {{ .Values.image.repository }}/digirunner:{{ .Values.digirunner.image.tag }}
+          command: ["cp", "digi_runner.js", "/www"]
+
+          volumeMounts:
+            - name: astra-static
+              mountPath: /www
+
+        - name: collectstatic
+          image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.astra.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["fbapi-mgm.py --astra collectstatic && cp -rp venv/share/staticfiles /www/staticfiles"]
+
+          volumeMounts:
+            - name: astra-static
+              mountPath: /www
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: feedback-celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+
+        - name: check
+          image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.astra.image.tag }}
+          command:
+            - runuser
+            - -u
+            - feedback
+            - --
+            - fbapi-mgm.py
+            - --astra
+            - check
+
+          volumeMounts:
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: uwsgi-ini
+              mountPath: /etc/feedback/uwsgi.ini
+              subPath: uwsgi.ini
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: feedback-celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+
+      containers:
+      # astra-uwsgi process
+      - name: astra
+        image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.astra.image.tag }}
+
+        command: ["uwsgi"]
+        args: ["/etc/feedback/uwsgi.ini"]
+
+        resources:
+          {{- toYaml .Values.astra.resources | nindent 10 }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["uwsgi", "--stop", "/var/run/uwsgi.pid"]
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/astra
+            readOnly: false
+          - name: uwsgi-ini
+            mountPath: /etc/feedback/uwsgi.ini
+            subPath: uwsgi.ini
+          - name: feedback-logging
+            mountPath: /etc/feedback/logging.yaml
+            subPath: logging.yaml
+          - name: feedback-config
+            mountPath: /etc/feedback/common.yaml
+            subPath: common.yaml
+          - name: feedback-databases
+            mountPath: /etc/feedback/databases.yaml
+            subPath: databases.yaml
+          - name: feedback-gdpr-settings
+            mountPath: /etc/feedback/gdpr_settings.yaml
+            subPath: gdpr_settings.yaml
+          - name: feedback-sms-gateways
+            mountPath: /etc/feedback/sms_gateways.yaml
+            subPath: sms_gateways.yaml
+          - name: feedback-enterprises
+            mountPath: /etc/feedback/enterprise_specific_configs.yaml
+            subPath: enterprise_specific_configs.yaml
+          - name: feedback-celery-yaml
+            mountPath: /etc/feedback/celery.yaml
+            subPath: celery.yaml
+        {{- if .Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+        startupProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8080
+          periodSeconds: 1
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8080
+          periodSeconds: 10
+          timeoutSeconds: 5
+
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: ASTRA_UWSGI_NODAEMON
+            value: "true"
+
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+
+        ports:
+        - name: astra-http
+          containerPort: 8080
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: astra-http
+          periodSeconds: 1
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: astra-http
+          periodSeconds: 10
+
+        volumeMounts:
+          - name: uwsgi-socket
+            mountPath: /var/run/feedback/astra
+          - name: nginx-conf
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: astra-static
+            mountPath: /www
+
+      volumes:
+        - name: uwsgi-socket
+          emptyDir: {}
+
+        - name: nginx-conf
+          configMap:
+            name: astra-nginx
+
+        - name: astra-ini
+          emptyDir: {}
+
+        - name: uwsgi-ini
+          configMap:
+            name: astra-uwsgi
+
+        - name: feedback-logging
+          configMap:
+            name: astra-logging
+
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+
+        - name: astra-static
+          emptyDir:
+            medium: Memory
+
+        - name: feedback-celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{ end }}

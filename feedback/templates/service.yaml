@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedback
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: feedback-http
+    protocol: TCP
+    name: fb-http-port
+  selector:
+    app: fb-api

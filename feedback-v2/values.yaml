@@ -1,0 +1,23 @@
+fbv2:
+  db:
+    username: someuser
+    password: somepassword
+    host: "172.23.0.3"
+    port: "3306"
+    name: "fb_demo"
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 192Mi
+
+  static:
+    host: static.surv.biz
+
+  ingressAnnotations: {}
+
+fbconfig:
+  claim: feedback

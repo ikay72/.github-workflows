@@ -1,0 +1,42 @@
+# Create PVCs for each Vault node
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: vault-data-0
+  namespace: vault
+spec:
+  storageClassName: "vochub"  # Adjust according to your environment
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: vault-data-1
+  namespace: vault
+spec:
+  storageClassName: "vochub"  # Adjust according to your environment
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+# Repeat the spec block as above
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: vault-data-2
+  namespace: vault
+spec:
+  storageClassName: "vochub"  # Adjust according to your environment
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+# Repeat the spec block as above
+

@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-v2
+  labels:
+    app: {{ template "feedback-v2.name" . }}
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-v2-nginx,feedback-v2-php-fpm-conf,feedback-v2-config"
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "feedback-v2.name" . }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ template "feedback-v2.name" . }}
+        grp: fb
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      containers:
+      # php-fpm for feedback-v2
+      - name: {{ template "feedback-v2.name" . }}
+        image: {{ .Values.image.repository }}/feedback-v2:{{ .Values.fbv2.image.tag }}
+        resources:
+          {{- toYaml .Values.fbv2.resources | nindent 10 }}
+        command: ["/usr/sbin/php-fpm5.6", "-y", "/etc/php-fpm.conf"]
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+          periodSeconds: 60
+        readinessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+            readOnly: false
+          - name: php-fpm-conf
+            mountPath: /etc/php-fpm.conf
+            subPath: php-fpm.conf
+            readOnly: true
+          - name: parameters-yml
+            mountPath: /var/www/feedback-v2/app/config/parameters.yml
+            subPath: parameters.yml
+            readOnly: true
+          - name: feedback-v2-cache
+            mountPath: /var/www/feedback-v2/app/cache
+            readOnly: false
+
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+        resources:
+          requests:
+            cpu: 20m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 192Mi
+
+        ports:
+        - name: fb-v2-http
+          containerPort: 8080
+
+        volumeMounts:
+          - name: feedback-v2-nginx
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+            readOnly: false
+          - name: feedback-v2-static
+            mountPath: /var/www/feedback-v2/web
+            readOnly: true
+          - name: importexport
+            mountPath: /opt/feedback
+          {{- if .Values.ivr.enabled }}
+          - name: ivr-data
+            mountPath: /opt/feedback/ivr
+            readOnly: false
+          {{- end }}
+
+      initContainers:
+        - name: copy-static
+          image: {{ .Values.image.repository }}/feedback-v2:{{ .Values.fbv2.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["cp -rp /var/www/feedback-v2/web/* /static/"]
+          volumeMounts:
+            - mountPath: /static
+              name: feedback-v2-static
+            - mountPath: /var/www/feedback-v2/app/cache
+              name: feedback-v2-cache
+              readOnly: false
+
+      volumes:
+        - name: feedback-v2-nginx
+          configMap:
+            name: feedback-v2-nginx
+
+        - name: phpfpm-socket
+          emptyDir: {}
+
+        - name: php-fpm-conf
+          configMap:
+            name: feedback-v2-php-fpm-conf
+
+        - name: parameters-yml
+          configMap:
+            name: feedback-v2-config
+
+        - name: feedback-v2-static
+          emptyDir:
+            medium: Memory
+
+        - name: feedback-v2-cache
+          emptyDir:
+            medium: Memory
+
+        - name: importexport
+          persistentVolumeClaim:
+            claimName: {{ .Values.fbconfig.claim }}
+
+        {{- if .Values.ivr.enabled }}
+        - name: ivr-data
+          persistentVolumeClaim:
+            claimName: ivr
+        {{- end }}

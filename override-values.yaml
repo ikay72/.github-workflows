@@ -1,0 +1,113 @@
+global:
+  tlsDisable: false
+
+server:
+  image:
+    repository: "hashicorp/vault"
+    tag: "1.16.1"
+
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "2000m"
+    limits:
+      memory: "16Gi"
+      cpu: "2000m"
+
+  ha:
+    enabled: true
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |
+        ui = true
+        cluster_name: "vault-cluster"
+        disable_mlock: true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file = "/etc/vault/tls/tls.crt"
+          tls_key_file = "/etc/vault/tls/tls.key"
+          tls_client_ca_file = "/etc/vault/tls/cacert.crt"
+        }
+        storage "raft" {
+          path = "/vault/data"
+          node_id = "raft_node_1"
+          retry_join {
+            leader_api_addr = "https://vault-0.vault-internal:8200"
+            leader_ca_cert_file = "/etc/vault/tls/cacert.crt"
+            leader_client_cert_file = "/etc/vault/tls/tls.crt"
+            leader_client_key_file = "/etc/vault/tls/tls.key"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-1.vault-internal:8200"
+            leader_ca_cert_file = "/etc/vault/tls/cacert.crt"
+            leader_client_cert_file = "/etc/vault/tls/tls.crt"
+            leader_client_key_file = "/etc/vault/tls/tls.key"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-2.vault-internal:8200"
+            leader_ca_cert_file = "/etc/vault/tls/cacert.crt"
+            leader_client_cert_file = "/etc/vault/tls/tls.crt"
+            leader_client_key_file = "/etc/vault/tls/tls.key"
+          }
+
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+
+  extraVolumes:
+    - type: secret
+      name: common-tlssecret
+      mountPath: "/etc/vault/tls"
+
+  extraVolumeMounts:
+    - name: common-tlssecret
+      mountPath: "/etc/vault/tls"
+      readOnly: true
+
+  extraEnvironmentVars:
+    VAULT_CACERT: "/etc/vault/tls/cacert.crt"
+
+  dataStorage:
+    enabled: true
+    size: "10Gi"
+    storageClassName: "vochub"
+    accessModes:
+      - ReadWriteOnce
+
+  auditStorage:
+    enabled: true
+    size: "10Gi"
+    storageClassName: "vochub"
+    accessModes:
+      - ReadWriteOnce
+
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+
+ui:
+  enabled: true
+  serviceType: "LoadBalancer"
+  externalPort: 8200
+
+injector:
+  enabled: true
+  image:
+    repository: "hashicorp/vault-k8s"
+    tag: "1.4.1"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+
