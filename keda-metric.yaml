@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "23"
+  creationTimestamp: "2024-01-25T20:42:15Z"
+  generation: 23
+  labels:
+    app: keda-metrics-apiserver
+    app.kubernetes.io/name: keda-metrics-apiserver
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: main
+  name: keda-metrics-apiserver
+  namespace: keda
+  resourceVersion: "165119829"
+  uid: 2c3483a5-0fa2-44c9-8872-0d58bfd13481
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: keda-metrics-apiserver
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2024-03-16T01:59:59+03:00"
+      creationTimestamp: null
+      labels:
+        app: keda-metrics-apiserver
+      name: keda-metrics-apiserver
+    spec:
+      containers:
+      - args:
+        - /usr/local/bin/keda-adapter
+        - --secure-port=6443
+        - --logtostderr=true
+        - --stderrthreshold=ERROR
+        - --v=0
+        - --client-ca-file=/certs/cacert.crt
+        - --tls-cert-file=/certs/tls.crt
+        - --tls-private-key-file=/certs/tls.key
+        - --cert-dir=/certs
+        env:
+        - name: WATCH_NAMESPACE
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KEDA_HTTP_DEFAULT_TIMEOUT
+        image: ghcr.io/kedacore/keda-metrics-apiserver:2.13.0
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 6443
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: keda-metrics-apiserver
+        ports:
+        - containerPort: 6443
+          name: https
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /readyz
+            port: 6443
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1000Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - name: certificates
+          mountPath: /certs/tls
+          readOnly: true
+        - mountPath: /certs/ca
+          name: certificates
+          readOnly: true
+        - mountPath: /tmp
+          name: temp-vol
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        kubernetes.io/os: linux
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsNonRoot: true
+      serviceAccount: keda-operator
+      serviceAccountName: keda-operator
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: cacert.crt
+            path: ca.crt
+          name: cacert-keda
+        name: cacert-volume
+      - emptyDir: {}
+        name: temp-vol
+      - name: certificates
+        secret:
+          defaultMode: 420
+          secretName: kedaorg-certs
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2024-03-07T00:01:45Z"
+    lastUpdateTime: "2024-03-07T00:01:45Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2024-03-16T01:58:28Z"
+    lastUpdateTime: "2024-03-16T01:58:29Z"
+    message: ReplicaSet "keda-metrics-apiserver-99747575b" is progressing.
+    reason: ReplicaSetUpdated
+    status: "True"
+    type: Progressing
+  observedGeneration: 23
+  readyReplicas: 1
+  replicas: 2
+  unavailableReplicas: 1
+  updatedReplicas: 1

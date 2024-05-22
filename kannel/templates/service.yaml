@@ -1,0 +1,16 @@
+{{ range .Values.kannel }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kannel-{{ .name }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 13013
+    protocol: TCP
+    name: kannel-{{ .name }}-port
+  selector:
+    app: kannel-{{ .name }}
+{{ end }}

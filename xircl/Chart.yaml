@@ -1,0 +1,4 @@
+apiVersion: v2
+description: A Helm chart for Xircl and xircl-consumers
+name: xircl
+version: 11.14.9

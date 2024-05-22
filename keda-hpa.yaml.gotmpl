@@ -1,0 +1,1 @@
+rabbitmqHost: http://{{ .Values.amqp.user }}:{{ .Values.amqp.password }}@rabbitmq.{{ .Release.Namespace }}:15672{{ if .Values.rabbitmq.ingressClass }}/rabbitmq{{ end }}

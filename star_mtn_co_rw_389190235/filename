@@ -1,0 +1,1000 @@
+   31  # Replace 'your_domain.crt' with the path to your server's certificate file
+   32  openssl verify -untrusted intermediate.crt your_domain.crt
+   33  openssl verify -untrusted intermediate.crt star_mtn_co_rw.crt 
+   34  openssl verify -untrusted DigiCertCA.crt star_mtn_co_rw.crt 
+   35  cd
+   36  # Replace 'your_domain.com' with your server's hostname or IP address
+   37  openssl s_client -connect your_domain.com:443
+   38  openssl s_client -connect mtn.co.rw:443
+   39  clear
+   40  k get secrets -n default 
+   41  clea
+   42  clear
+   43  k get po
+   44  clear
+   45  k logs keda-operator-metrics-apiserver-54d47fdcd5-dnln4
+   46  clear
+   47  k logs keda-operator-metrics-apiserver-54d47fdcd5-dnln4
+   48  clear
+   49  kubectl get serviceaccounts,pods -n default
+   50  clear
+   51  openssl s_client -showcerts -connect hostname:443
+   52  openssl s_client -showcerts -connect voc-mtn.mtn.co.rw:443
+   53  nslookup voc-mtn.mtn.co.rw
+   54  telnet 10.157.11.63 443
+   55  sudo yum install telnet
+   56  sudo yum install nc
+   57  nc -zv 10.157.11.63 443
+   58  clear
+   59  cd star_mtn_co_rw_389190235/
+   60  ls
+   61  openssl x509 -in certificate.crt -text -noout
+   62  openssl x509 -in star_mtn_co_rw.crt -text -noout
+   63  clear
+   64  openssl x509 -in DigiCertCA.crt -text -noout
+   65  clear
+   66  k get secrets -n default
+   67  clear
+   68  ls
+   69  openssl x509 -in star_mtn_co_rw.crt -text -noout
+   70  clear
+   71  openssl verify -CAfile DigiCertCA.crt -untrusted TrustedRoot.crt star_mtn_co_rw.crt
+   72  openssl x509 -in DigiCertCA.crt -text -noout
+   73  openssl x509 -in TrustedRoot.crt -text -noout
+   74  clear
+   75  openssl verify -CAfile combined-ca.crt star_mtn_co_rw.crt
+   76  ls
+   77  openssl verify -CAfile combined_star_mtn_co_rw.crt star_mtn_co_rw.crt
+   78  rm -rf combined_star_mtn_co_rw.crt 
+   79  cat DigiCertCA.crt TrustedRoot.crt > combined-ca.crt
+   80  openssl verify -CAfile combined-ca.crt star_mtn_co_rw.crt
+   81  export CLUSTER_NAME=mtnrwanda-stage
+   82  export GPG_TTY=$(tty)
+   83  kubectl config use-context VOC_CLUSTER
+   84  export KUBECONFIG=~/.kube/config
+   85  chmod 600 /home/ikay/.kube/config
+   86   source <(kubectl completion bash) 
+   87   echo "source <(kubectl completion bash)" >> ~/.bashrc
+   88   alias k=kubectl
+   89  complete -o default -F __start_kubectl k
+   90  clear
+   91  k get secrets -n default 
+   92  clear
+   93  cat private_key_base64.txt
+   94  clea
+   95  clear
+   96  cd star_mtn_co_rw_389190235/
+   97  ls
+   98  cat full_chain_base64.txt 
+   99  clear
+  100  k get po
+  101  k get deployments.apps 
+  102  export CLUSTER_NAME=mtnrwanda-stage
+  103  export GPG_TTY=$(tty)
+  104  kubectl config use-context VOC_CLUSTER
+  105  export KUBECONFIG=~/.kube/config
+  106  chmod 600 /home/ikay/.kube/config
+  107   source <(kubectl completion bash) 
+  108   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  109   alias k=kubectl
+  110  complete -o default -F __start_kubectl k
+  111  clear
+  112  kubectl get nodes
+  113  export CLUSTER_NAME=mtnrwanda-stage
+  114  export GPG_TTY=$(tty)
+  115  kubectl config use-context VOC_CLUSTER
+  116  export KUBECONFIG=~/.kube/config
+  117  chmod 600 /home/ikay/.kube/config
+  118   source <(kubectl completion bash) 
+  119   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  120   alias k=kubectl
+  121  complete -o default -F __start_kubectl k
+  122  clear
+  123  k get po
+  124  k logs keda-operator-metrics-apiserver-54d47fdcd5-dnln4
+  125  export CLUSTER_NAME=mtnrwanda-stage
+  126  export GPG_TTY=$(tty)
+  127  kubectl config use-context VOC_CLUSTER
+  128  export KUBECONFIG=~/.kube/config
+  129  chmod 600 /home/ikay/.kube/config
+  130   source <(kubectl completion bash) 
+  131   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  132   alias k=kubectl
+  133  complete -o default -F __start_kubectl k
+  134  clear
+  135  export CLUSTER_NAME=mtnrwanda-stage
+  136  export GPG_TTY=$(tty)
+  137  kubectl config use-context VOC_CLUSTER
+  138  export KUBECONFIG=~/.kube/config
+  139  chmod 600 /home/ikay/.kube/config
+  140   source <(kubectl completion bash) 
+  141   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  142   alias k=kubectl
+  143  complete -o default -F __start_kubectl k
+  144  clear
+  145  cd sso
+  146  ls
+  147  cd templates/
+  148  ls
+  149  cat configmap.yaml 
+  150  cd
+  151  clear
+  152  cd helm-onprem/env/mtnrwanda-stage
+  153  export CLUSTER_NAME=mtnrwanda-stage
+  154  export GPG_TTY=$(tty)
+  155  kubectl config use-context VOC_CLUSTER
+  156  export KUBECONFIG=~/.kube/config
+  157  chmod 600 /home/ikay/.kube/config
+  158   source <(kubectl completion bash) 
+  159   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  160   alias k=kubectl
+  161  complete -o default -F __start_kubectl k
+  162  clear
+  163  cd helm-onprem/env/mtnrwanda-stage/
+  164  sudo vi vochub.yaml 
+  165  telnet 172.17.84.41 3339
+  166  nc  172.17.84.41 3339
+  167  cd ../..
+  168  helmfile lint
+  169  helmfile sync
+  170  helm value sso
+  171  helm value
+  172  helm get value sso
+  173  clear
+  174  helm ge values sso -n default
+  175  helm get values sso -n default
+  176  clear
+  177  k get po
+  178  clear
+  179  kubectl run test-smpp --namespace=[NAMESPACE] --rm -i --tty --image=appropriate/curl -- /bin/sh
+  180  kubectl run test-smpp --namespace=default --rm -i --tty --image=appropriate/curl -- /bin/sh
+  181  kubectl get namespaces
+  182  kubectl run test-smpp --namespace=default --image=appropriate/curl --restart=Never -- sleep 3600
+  183  kubectl describe pod test-smpp --namespace=default
+  184  clear
+  185  kubectl describe pod test-smpp --namespace=default
+  186  kubectl get namespaces
+  187  kubectl describe pod test-smpp --namespace=default
+  188  clear
+  189  kubectl run test-smpp --namespace=default --image=appropriate/curl --restart=Never -- sleep 3600
+  190  clear
+  191  kubectl exec -it test-smpp --namespace=default -- /bin/sh
+  192  kubectl delete pod test-smpp --namespace=default --force --grace-period=0
+  193  kubectl run test-smpp-$(date +%s) --namespace=default --image=appropriate/curl --restart=Never -- sleep 3600
+  194  kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
+  195  clear
+  196  kubectl run -it --rm dnsutils --image=gcr.io/kubernetes-e2e-test-images/dnsutils:1.3 --restart=Never --command -- nslookup google.com
+  197  clear
+  198  kubectl run test-smpp-$(date +%s) --namespace=default --image=busybox --restart=Never -- sleep 3600
+  199  kubectl get pod test-smpp-1706639668 --namespace=default
+  200  cd env/mtnrwanda-stage/
+  201  sudo vi enterprises.yaml.gotmpl 
+  202  curl http://kannel-mtnrwanda/cgi-bin/sendsms
+  203  kubectl get pod test-smpp-1706639668 --namespace=default
+  204  kubectl describe pod test-smpp-1706639668 --namespace=default
+  205  kubectl delete pod test-smpp-1706639668 --namespace=default
+  206  clear
+  207  ls
+  208  cd
+  209  k get po
+  210  clear
+  211  cd helm-onprem/env/mtnrwanda-stage/
+  212  sudo vi enterprises.yaml.gotmpl 
+  213  sudo vi vochub.yaml 
+  214  cd ../..
+  215  helmfile lint
+  216  helmfile sync
+  217  k get sso
+  218  k get po
+  219  k logs sso-56c7fcfdd9-h8nd6
+  220  clear
+  221  k logs sso-56c7fcfdd9-h8nd6 -c nginx
+  222  export CLUSTER_NAME=mtnrwanda-stage
+  223  export GPG_TTY=$(tty)
+  224  kubectl config use-context VOC_CLUSTER
+  225  export KUBECONFIG=~/.kube/config
+  226  chmod 600 /home/ikay/.kube/config
+  227   source <(kubectl completion bash) 
+  228   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  229   alias k=kubectl
+  230  complete -o default -F __start_kubectl k
+  231  k get po
+  232  k logs sso-56c7fcfdd9-h8nd6
+  233  clear
+  234  k logs sso-56c7fcfdd9-msn5b                                   2/2     Running     0               4d22h
+  235  k logs sso-56c7fcfdd9-msn5b
+  236  export CLUSTER_NAME=mtnrwanda-stage
+  237  export GPG_TTY=$(tty)
+  238  kubectl config use-context VOC_CLUSTER
+  239  export KUBECONFIG=~/.kube/config
+  240  chmod 600 /home/ikay/.kube/config
+  241   source <(kubectl completion bash) 
+  242   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  243   alias k=kubectl
+  244  complete -o default -F __start_kubectl k
+  245  clear
+  246  export CLUSTER_NAME=mtnrwanda-stage
+  247  export GPG_TTY=$(tty)
+  248  kubectl config use-context VOC_CLUSTER
+  249  export KUBECONFIG=~/.kube/config
+  250  chmod 600 /home/ikay/.kube/config
+  251   source <(kubectl completion bash) 
+  252   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  253   alias k=kubectl
+  254  complete -o default -F __start_kubectl k
+  255  clea
+  256  clear
+  257  k get po
+  258  k logs keda-operator-metrics-apiserver-577b8bd6c6-bhvb9
+  259  clear
+  260  k get pod
+  261  k delete po test-smpp-1706639756 test-smpp-1706639756
+  262  clear
+  263  k get po
+  264  clear
+  265  k describe po sso-56c7fcfdd9-h8nd6
+  266  k logs sso-56c7fcfdd9-h8nd6 -c sso
+  267  k logs sso-56c7fcfdd9-h8nd6 -c nginx
+  268  export CLUSTER_NAME=mtnrwanda-stage
+  269  export GPG_TTY=$(tty)
+  270  kubectl config use-context VOC_CLUSTER
+  271  export KUBECONFIG=~/.kube/config
+  272  chmod 600 /home/ikay/.kube/config
+  273   source <(kubectl completion bash) 
+  274   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  275   alias k=kubectl
+  276  complete -o default -F __start_kubectl k
+  277  kubectl exec -it feedback-689fc7858b-8v7mg -c nginx -n default -- cat /etc/nginx/nginx.conf
+  278  k get logs
+  279  k get po
+  280  kubectl exec -it sso-56c7fcfdd9-h8nd6 -c nginx -n default -- cat /etc/nginx/nginx.conf
+  281  clear
+  282  k get svc -n default 
+  283  ps aux | grep uwsgi
+  284  ls -l /var/run/sso/uwsgi.sock
+  285  clear
+  286  kubectl describe pod sso-56c7fcfdd9-h8nd6 -n default
+  287  clear
+  288  kubectl logs sso-56c7fcfdd9-h8nd6 -c sso-uwsgi -n default
+  289  clear
+  290  kubectl logs sso-56c7fcfdd9-h8nd6 -c nginx -n default
+  291  kubectl logs sso-56c7fcfdd9-h8nd6 -c sso -n default
+  292  clear
+  293  kubectl exec -it sso-56c7fcfdd9-h8nd6 -c nginx -n default -- cat /var/log/nginx/error.log
+  294  kubectl get events -n default
+  295  clear
+  296  kubectl get svc -n default
+  297  clear
+  298  kubectl describe svc rabbitmq -n default
+  299  kubectl get scaledobjects.keda.sh -n default
+  300  echo -n 'amqp://guest:guest@rabbitmq:15672' | base64
+  301  kubectl get scaledobjects.keda.sh -n default
+  302  kubectl edit scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  303  nslookup voc-mtn.mtn.co.rw
+  304  nslookup rwrm-tkgapisvr.mtn.co.rw
+  305  curl -k https://voc-mtn.mtn.co.rw:8443
+  306  clear
+  307  kubectl config view
+  308  ckear
+  309  clear
+  310  kubectl config current-context
+  311  kubectl config get-contexts
+  312  kubectl edit scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  313  kubectl get scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  314  kubectl edit scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  315  kubectl get scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  316  clear
+  317  kubectl describe scaledobjects.keda.sh fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  318  kubectl describe deployment fb-casealert-mtnrwanda-e9ce1ab7 -n default
+  319  clear
+  320  k get po
+  321  clear
+  322  k logs sso-56c7fcfdd9-h8nd6
+  323  export CLUSTER_NAME=mtnrwanda-stage
+  324  export GPG_TTY=$(tty)
+  325  kubectl config use-context VOC_CLUSTER
+  326  export KUBECONFIG=~/.kube/config
+  327  chmod 600 /home/ikay/.kube/config
+  328   source <(kubectl completion bash) 
+  329   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  330   alias k=kubectl
+  331  complete -o default -F __start_kubectl k
+  332  clear
+  333  kubectl port-forward --namespace default svc/rabbitmq 15672:15672
+  334  export CLUSTER_NAME=mtnrwanda-stage
+  335  export GPG_TTY=$(tty)
+  336  kubectl config use-context VOC_CLUSTER
+  337  export KUBECONFIG=~/.kube/config
+  338  chmod 600 /home/ikay/.kube/config
+  339   source <(kubectl completion bash) 
+  340   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  341   alias k=kubectl
+  342  complete -o default -F __start_kubectl k
+  343  clear
+  344  k get pods
+  345  k logs xircl-super-charts-rebuild-28444080-4sdhx
+  346  clear
+  347  cd helm-onprem
+  348  helmfile destroy
+  349  clear
+  350  helmfile sync
+  351  clear
+  352  helm list
+  353  helmfile -n default apply
+  354  k get po
+  355  k logs xc-classify-classification-export-mtnrwanda-a637fa8c-6bb7dfh8ms
+  356  export CLUSTER_NAME=mtnrwanda-stage
+  357  export GPG_TTY=$(tty)
+  358  kubectl config use-context VOC_CLUSTER
+  359  export KUBECONFIG=~/.kube/config
+  360  chmod 600 /home/ikay/.kube/config
+  361   source <(kubectl completion bash) 
+  362   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  363   alias k=kubectl
+  364  complete -o default -F __start_kubectl k
+  365  clear
+  366  k get logs
+  367  k get po
+  368  export CLUSTER_NAME=mtnrwanda-stage
+  369  export GPG_TTY=$(tty)
+  370  kubectl config use-context VOC_CLUSTER
+  371  export KUBECONFIG=~/.kube/config
+  372  chmod 600 /home/ikay/.kube/config
+  373   source <(kubectl completion bash) 
+  374   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  375   alias k=kubectl
+  376  complete -o default -F __start_kubectl k
+  377  clear
+  378  k get po
+  379  clear
+  380  k get po
+  381  kubectl exec -it xircl-f897b896f-dzfs2 --namespace=default -- /bin/sh
+  382  kubectl exec -it xircl-86774748c8-jwgdm --namespace=default -- /bin/sh
+  383  clear
+  384  k get po
+  385  k logs xircl-86774748c8-jwgdm
+  386  k logs xircl-consumers-go-executor-6d478cb8f5-qrbz5
+  387  clear
+  388  k get po
+  389  k logs sso-56c7fcfdd9-8kf29
+  390  clear
+  391  helm list
+  392  clear
+  393  export CLUSTER_NAME=mtnrwanda-stage
+  394  export GPG_TTY=$(tty)
+  395  kubectl config use-context VOC_CLUSTER
+  396  export KUBECONFIG=~/.kube/config
+  397  chmod 600 /home/ikay/.kube/config
+  398   source <(kubectl completion bash) 
+  399   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  400   alias k=kubectl
+  401  complete -o default -F __start_kubectl k
+  402  clear
+  403  ls
+  404  openssl x509 -in [certificate-file.crt] -text -noout
+  405  cd star_mtn_co_rw_389190235/
+  406  openssl x509 -in star_mtn_co_rw.crt -text -noout
+  407  clear
+  408  kubectl get validatingwebhookconfigurations
+  409  kubectl get mutatingwebhookconfigurations
+  410  kubectl describe validatingwebhookconfigurations [webhook-name]
+  411  kubectl describe validatingwebhookconfigurations keda-admission 
+  412  kubectl describe mutatingwebhookconfigurations [webhook-name]
+  413  kubectl describe mutatingwebhookconfigurations release-0.12-kube-promethe-admission
+  414  clear
+  415  kubectl describe mutatingwebhookconfigurations release-0.12-kube-promethe-admission
+  416  clear
+  417  kubectl get pods --namespace kube-system
+  418  clear
+  419  k get po -all
+  420  k get po --namespace -all
+  421  kubectl get pods --all-namespaces
+  422  clear
+  423  kubectl get events --all-namespaces
+  424  clear
+  425  cd
+  426  ls
+  427  kubectl get pods --namespace keda
+  428  kubectl get pods --namespace kube-system | grep metrics-server
+  429  kubectl get apiservice | grep external.metrics.k8s.io
+  430  kubectl logs metrics-server-67dd44cd66-bdj6s --namespace kube-system
+  431  clear
+  432  kubectl logs keda-admission-6f9fbcc66d-zn2x6 --namespace keda
+  433  kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
+  434  kubectl get scaledobjects --namespace [your-namespace] -o yaml
+  435  kubectl get scaledobjects --namespace default -o yaml
+  436  clear
+  437  kubectl get hpa --namespace [your-namespace] -o yaml
+  438  kubectl get hpa --namespace default -o yaml
+  439  clear
+  440  kubectl get service keda-operator-metrics-apiserver --namespace default
+  441  kubectl get endpoints keda-operator-metrics-apiserver --namespace default
+  442  kubectl get pods --namespace default -l "app=keda-operator-metrics-apiserver"
+  443  kubectl get clusterrolebindings,clusterroles -o yaml | grep -i keda
+  444  clear
+  445  kubectl get pods --namespace keda
+  446  kubectl logs -l app=keda-operator --namespace keda
+  447  kubectl logs -l app=keda-metrics-apiserver --namespace keda
+  448  kubectl get endpoints keda-operator-metrics-apiserver --namespace default
+  449  kubectl get pods --namespace default -l app=keda-operator-metrics-apiserver
+  450  clear
+  451  kubectl logs -l app=keda-operator-metrics-apiserver --namespace default
+  452  kubectl run curl --rm -i --tty --image curlimages/curl -- curl http://10.157.11.120:8080
+  453  kubectl get networkpolicies --all-namespaces
+  454  clear
+  455  kubectl get pods -n kube-system | grep coredns
+  456  clear
+  457  cd helm-onprem/env/mtnrwanda-stage/
+  458  sudo vi vochub.yaml 
+  459  cd ../..
+  460  helmfile lint
+  461  helmfile -n default apply
+  462  clear
+  463  k get po
+  464  k describe kannel-mtnrwanda-c8b4c9798-4mxfn
+  465  k logs kannel-mtnrwanda-c8b4c9798-4mxfn
+  466  clear
+  467  k describe po kannel-mtnrwanda-c8b4c9798-4mxfn
+  468  clear
+  469  k get deployments.apps 
+  470  clear
+  471  k describe deployments.apps kannel-mtnrwanda
+  472  clear
+  473  k describe sa default-main 
+  474  k rollout restart deployment kannel-mtnrwanda 
+  475  clear
+  476  k get po
+  477  clear
+  478  k get po
+  479  clear
+  480  export CLUSTER_NAME=mtnrwanda-stage
+  481  export GPG_TTY=$(tty)
+  482  kubectl config use-context VOC_CLUSTER
+  483  export KUBECONFIG=~/.kube/config
+  484  chmod 600 /home/ikay/.kube/config
+  485   source <(kubectl completion bash) 
+  486   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  487   alias k=kubectl
+  488  complete -o default -F __start_kubectl k
+  489  clear
+  490  k get po
+  491  kubectl patch serviceaccount keda-operator -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}' -n default
+  492  k get sa -n default 
+  493  clear
+  494  kubectl rollout restart deployment keda-admission-webhooks -n default
+  495  clear
+  496  k get po
+  497  k logs lemmanet-7c769c447d-j89cs
+  498  k describe po lemmanet-7c769c447d-j89cs
+  499  clear
+  500  kubectl edit serviceaccounts default-main 
+  501  kubectl patch serviceaccount default-main   -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'   -n default
+  502  kubectl edit serviceaccounts default-main 
+  503  clear
+  504  k get deploy
+  505  kubectl rollout restart deployment lemmanet -n default
+  506  clear
+  507  k get po
+  508  clear
+  509  k get po
+  510  k logs xircl-consumers-go-executor-6d478cb8f5-qrbz5xircl-consumers-go-executor-6d478cb8f5-qrbz5
+  511  k logs xircl-consumers-go-executor-6d478cb8f5-qrbz5
+  512  k describe po xircl-consumers-go-executor-6d478cb8f5-qrbz5
+  513  clear
+  514  k get po
+  515  k logs xircl-f897b896f-dzfs2
+  516  k logs xircl-f897b896f-dzfs2 -c nginx
+  517  k describe po xircl-f897b896f-dzfs2
+  518  clear
+  519  k rollout restart deployment xircl
+  520  k get po
+  521  clear
+  522  k get deployments.apps 
+  523  clear
+  524  cd helmfile 
+  525  cd helm-onprem
+  526  helmfile lint
+  527  clear
+  528  helmfile sync
+  529  helm history feedback
+  530  helm rollback feedback-11.14.10
+  531  helm rollback feedback
+  532  helm uninstall feedbac
+  533  helm uninstall feedback
+  534  helmfile sync
+  535  k get po
+  536  helmfile -n default apply
+  537  clear
+  538  k get po
+  539  clear
+  540  k logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89
+  541  export CLUSTER_NAME=mtnrwanda-stage
+  542  export GPG_TTY=$(tty)
+  543  kubectl config use-context VOC_CLUSTER
+  544  export KUBECONFIG=~/.kube/config
+  545  chmod 600 /home/ikay/.kube/config
+  546   source <(kubectl completion bash) 
+  547   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  548   alias k=kubectl
+  549  complete -o default -F __start_kubectl k
+  550  clear
+  551  k get po
+  552  k logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89
+  553  clear
+  554  cd helm-onprem/env/mtnrwanda-stage/
+  555  vi vochub.yaml 
+  556  ls
+  557  sudo vi kannel.yaml.gotmpl 
+  558  clear
+  559  sudo vi kannel.yaml.gotmpl 
+  560  cat kannel.yaml.gotmpl 
+  561  export CLUSTER_NAME=mtnrwanda-stage
+  562  export GPG_TTY=$(tty)
+  563  kubectl config use-context VOC_CLUSTER
+  564  export KUBECONFIG=~/.kube/config
+  565  chmod 600 /home/ikay/.kube/config
+  566   source <(kubectl completion bash) 
+  567   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  568   alias k=kubectl
+  569  complete -o default -F __start_kubectl k
+  570  clear
+  571  k get po
+  572  k logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89
+  573  clear
+  574  cat mtn.co.rw.csr 
+  575  cat star_mtn_co_rw
+  576  cd star_mtn_co_rw_389190235/
+  577  cat star_mtn_co_rw.crt 
+  578  clear
+  579  openssl x509 -in star_mtn_co_rw.crt -text -noout
+  580  clear
+  581  kubectl get ingress [ingress-name] -n [namespace] -o yaml
+  582  kubectl get ingress  -n default -o yaml
+  583  clear
+  584  kubectl get ingress  -n default 
+  585  k get svc -n default 
+  586  clear
+  587  kubectl describe ingress [ingress-name] -n default
+  588  kubectl describe ingress astra -n default
+  589  kubectl describe ingress xircl -n default
+  590  kubectl describe ingress feedback -n default
+  591  clear
+  592  k describe svc astra -n default 
+  593  clear
+  594  kubectl get ingress -n default -o yaml
+  595  clear
+  596  kubectl get svc -n default -o yaml
+  597  clear
+  598  k get po
+  599  clear
+  600  kubectl describe deployment keda-operator-metrics-apiserver -n default
+  601  clear
+  602  kubectl describe svc keda-operator-metrics-apiserver -n default
+  603  clear
+  604  kubectl describe secret kedaorg-certs -n default
+  605  kubectl get secret kedaorg-certs -n default -o jsonpath="{.data.tls\.crt}" | base64 -d | openssl x509 -text -noout
+  606  kubectl get secret kedaorg-certs -n default -o jsonpath="{.data.ca\.crt}" | base64 -d | openssl x509 -text -noout
+  607  clear
+  608  kubectl get ingress -n default -o wide
+  609  nslookup voc-mtn.mtn.co.rw
+  610  nslookup  mtnrwanda-astra.mtn.co.rw
+  611  nslookup  mtnrwanda-rest.mtn.co.rw
+  612  nslookup mtnrwanda-survey.mtn.co.rw
+  613  nslookup  mtnrwanda-vochub.mtn.co.rw
+  614  clear
+  615  kubectl get svc --all-namespaces -o wide
+  616  clear
+  617  curl http://10.157.11.63
+  618  ping 10.157.11.63
+  619  traceroute 10.157.11.63
+  620  nc 10.157.11.63
+  621  nmap 10.157.11.63
+  622  sudo dnf install nmap
+  623  clear
+  624  sudo yum install nmap
+  625  sudo yum install epel-release
+  626  sudo yum install nmap
+  627  sudo yum repolist
+  628  sudo yum makecache
+  629  sudo dnf update
+  630  sudo dnf install traceroute
+  631  traceroute --version
+  632  traceroute 8.8.8.8
+  633  traceroute 10.157.11.63
+  634  sudo dnf install nmap
+  635  sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+  636  sudo dnf install nmap
+  637  rpm -vhU https://nmap.org/dist/nmap-4.68-1.i386.rpm
+  638  yum install nmap
+  639  cd
+  640  sudo yum install nmap
+  641  rpmbuild --rebuild https://nmap.org/dist/nmap-4.68-1.src.rpm
+  642  clear
+  643  dig -x 10.157.11.63 +short
+  644  nmap 10.157.11.63
+  645  sudo dnf update
+  646  sudo dnf install epel-release
+  647  sudo dnf install wireshark
+  648  sudo dnf install tcpdump
+  649  clear
+  650  ip addr show
+  651  sudo tcpdump -i ens192 host 10.157.11.63
+  652  clear
+  653  k get svc -n default 
+  654  k get po
+  655  k logs grafana-5c88644c6-pbbfd
+  656  clear
+  657  k get po
+  658  k logs loki-0
+  659  k logs loki-promtail-5jfw7
+  660  clear
+  661  ls
+  662  cat prometheus-server-pv.yaml 
+  663  kubectl port-forward svc/[Prometheus_Service_Name] [Local_Port]:9090 -n default
+  664  k get svc
+  665  export CLUSTER_NAME=mtnrwanda-stage
+  666  export GPG_TTY=$(tty)
+  667  kubectl config use-context VOC_CLUSTER
+  668  export KUBECONFIG=~/.kube/config
+  669  chmod 600 /home/ikay/.kube/config
+  670   source <(kubectl completion bash) 
+  671   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  672   alias k=kubectl
+  673  complete -o default -F __start_kubectl k
+  674  k get svc
+  675  exit
+  676  export CLUSTER_NAME=mtnrwanda-stage
+  677  export GPG_TTY=$(tty)
+  678  kubectl config use-context VOC_CLUSTER
+  679  export KUBECONFIG=~/.kube/config
+  680  chmod 600 /home/ikay/.kube/config
+  681   source <(kubectl completion bash) 
+  682   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  683   alias k=kubectl
+  684  complete -o default -F __start_kubectl k
+  685  clear
+  686  kubectl port-forward svc/grafana 3000:3000 -n default 
+  687  kubectl port-forward svc/grafana 3000:80 -n default
+  688  kubectl port-forward svc/[Prometheus_Service_Name] [Local_Port]:9090 -n default
+  689  kubectl port-forward svc/prometheus-operated 80:9090 -n default
+  690  kubectl port-forward svc/prometheus-operated 9090:80 -n default
+  691  clear
+  692  kubectl get events -n default --sort-by='.lastTimestamp'
+  693  kubectl port-forward svc/prometheus-operated 9090:9090 -n default
+  694  clear
+  695  k get sts
+  696  k delete sts alertmanager-release-0.12-kube-promethe-alertmanager prometheus-release-0.12-kube-promethe-prometheus
+  697  clear
+  698  k get po
+  699  clear
+  700  kubectl get events -n default --sort-by='.lastTimestamp'
+  701  clear
+  702  k get events -n default 
+  703  kubectl get statefulsets -n default
+  704  k describe sts alertmanager-release-0.12-kube-promethe-alertmanager
+  705  clear
+  706  kubectl get statefulsets -n default
+  707  helm list -n default
+  708  k get po
+  709  kubectl edit statefulset alertmanager-release-0.12-kube-promethe-alertmanager -n default
+  710  kubectl get crd | grep -E 'prometheus|alertmanager'
+  711  helm uninstall release-0.12 -n default
+  712  clear
+  713  k get po
+  714  k get sts
+  715  clear
+  716  k get po
+  717  clear
+  718  k logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89
+  719  clear
+  720  k logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89 > prom logs
+  721  kubectl get pod keda-operator-metrics-apiserver-54d47fdcd5-s2n89 -o=jsonpath='{.spec.containers[*].name}'
+  722  kubectl logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89 > my_pod_logs.txt
+  723  cat my_pod_logs.txt 
+  724  clear
+  725  sudo vi my_pod_logs.txt 
+  726  kubectl logs keda-operator-metrics-apiserver-54d47fdcd5-s2n89 --tail=100
+  727  clear
+  728  kubectl exec -it your-kannel-pod-name -- sh -c
+  729  kubectl get po
+  730  clear
+  731  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- sh -c
+  732  kubectl exec -it your-kannel-pod-name -- sh -c 'nc -zv 172.17.84.41 3339'
+  733  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- sh -c 'nc -zv 172.17.84.41 3339'
+  734  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- sh
+  735  clear
+  736  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- curl -v telnet://172.17.84.41:3339
+  737  kubectl logs kannel-mtnrwanda-7c97cc794-wb8ww -c bearerbox
+  738  # or
+  739  kubectl logs kannel-mtnrwanda-7c97cc794-wb8ww -c smsbox
+  740  clear
+  741  # Replace <sendsms-port>, <username>, <password>, and other placeholders with actual values.
+  742  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- curl "http://localhost:<sendsms-port>/?username=<username>&password=<password>&to=<recipient-number>&text=Test+message"
+  743  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- curl https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=%p&to=%P&text=%a&charset=%C
+  744  clear
+  745  k logs kannel-mtnrwanda-7c97cc794-wb8ww 
+  746  kubectl exec -it kannel-mtnrwanda-7c97cc794-wb8ww -- curl 'https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=[100]&to=[+2348032006316]&text=[MessageText]&charset=[Charset]'
+  747  clear
+  748  k logs kannel-mtnrwanda-7c97cc794-wb8ww
+  749  k logs kannel-mtnrwanda-7c97cc794-wb8ww -c bearerbox
+  750  k logs kannel-mtnrwanda-7c97cc794-wb8ww -c bearerbox -c smsbox
+  751  clear
+  752  ls
+  753  clear
+  754  cd helm-onprem/env/mtnrwanda-stage/
+  755  sudo vi vochub.yaml 
+  756  cat kannel.yaml.gotmpl 
+  757  clear
+  758  sudo vi vochub.yaml 
+  759  cd
+  760  cd sso
+  761  cd
+  762  cd kannel/
+  763  ls
+  764  cd templates/
+  765  ls
+  766  sudo vi configmap.yaml 
+  767  sudo vi deployment.yaml 
+  768  sudo vi service.yaml 
+  769  cd ..
+  770  sudo vi values.yaml 
+  771  cd
+  772  cd helm-onprem/env/mtnrwanda-stage/
+  773  clear
+  774  sudo vi vochub.yaml 
+  775  cat kannel.yaml.gotmpl 
+  776  wq
+  777  clear
+  778  cat enterprises.yaml.gotmpl 
+  779  wq
+  780  clear
+  781  sop -d secrets.yaml 
+  782  pwd
+  783  cd ../..
+  784  cd env/mtnrwanda-stage/
+  785  sops -d secrets.yaml 
+  786  ls
+  787  sudo vi secrets.new.yaml 
+  788  clear
+  789  sops -d secrets.yaml > backsecrets.yaml
+  790  cat backsecrets.yaml 
+  791  clear
+  792  rm -rf secrets.yaml 
+  793  clear
+  794  cd ../..
+  795  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  796  cd env/mtnrwanda-stage/
+  797  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  798  sudo vi secrets.new.yaml 
+  799  cd ../..
+  800  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  801  helmfile lint
+  802  clear
+  803  cd env/mtnrwanda-stage/
+  804  sudo vi vochub.yaml 
+  805  cd ../..
+  806  helmfile lint
+  807  cd env/mtnrwanda-stage/
+  808  clear
+  809  sudo vi vochub.yaml 
+  810  cd ../..
+  811  helmfile lint
+  812  clear
+  813  cd env/mtnrwanda-stage/
+  814  sudo vi vochub.yaml 
+  815  cd ../..
+  816  helmfile lint
+  817  clear
+  818  cd env/mtnrwanda-stage/
+  819  cat enterprises.yaml.gotmpl 
+  820  cat kannel.yaml.gotmpl 
+  821  clear
+  822  sudo vi vochub.yaml 
+  823  sudo vi secrets.new.yaml 
+  824  cd ../..
+  825  helmfile lint
+  826  clear
+  827  cd env/mtnrwanda-stage/
+  828  sudo vi secrets.new.yaml 
+  829  cd ../..
+  830  helmfile lint
+  831  clear
+  832  cd env/mtnrwanda-stage/
+  833  cat backsecrets.yaml 
+  834  clear
+  835  sudo vi secrets.new.yaml 
+  836  rm -rf secrets.yaml 
+  837  cd ../..
+  838  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  839  helmfile lint
+  840  clear
+  841  cd env/mtnrwanda-stage/
+  842  sudo vi vochub.yaml 
+  843  cd ../..
+  844  helmfile lint
+  845  clear
+  846  cd env/mtnrwanda-stage/
+  847  cat kannel.yaml.gotmpl 
+  848  clear
+  849  cat enterprises.yaml.gotmpl 
+  850  clear
+  851  sudo vi vochub.yaml 
+  852  sudo vi secrets.new.yaml 
+  853  rm -rf secrets.yaml 
+  854  cd ../..
+  855  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  856  helmfile lint
+  857  helm get values kannels
+  858  helm get values kannel
+  859  sops -d env/mtnrwanda-stage/secrets.yaml
+  860  clear
+  861  cd env/mtnrwanda-stage/
+  862  sudo vi vochub.yaml 
+  863  sudo vi secrets.new.yaml 
+  864  cd ../..
+  865  cd env/mtnrwanda-stage/
+  866  rm -rf secrets.yaml 
+  867  cd ../..
+  868  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  869  helmfile lint
+  870  helmfile diff
+  871  cd env/mtnrwanda-stage/
+  872  sudo vi enterprises.yaml.gotmpl 
+  873  sudo vi vochub.yaml 
+  874  cd ../..
+  875  helmfile lint
+  876  cd env/mtnrwanda-stage/
+  877  sudo vi vochub.yaml 
+  878  cd ../..
+  879  helmfile lint
+  880  helmfile sync
+  881  clear
+  882  k get po
+  883  helmfile -n default apply
+  884  k logs kannel-mtnrwanda-7c97cc794-wb8ww 
+  885  clear
+  886  k get po
+  887  k logs keda-operator-metrics-apiserver-54d47fdcd5-vgd65 
+  888  clear
+  889  helm delete kannel
+  890  k get po
+  891  helm delete kannel
+  892  helmfile sync
+  893  helmfile -n default apply
+  894  k get po
+  895  cd env/mtnrwanda-stage/
+  896  sudo vi vochub.yaml 
+  897  cd ../..
+  898  helmfile lint
+  899  clear
+  900  cd env/mtnrwanda-stage/
+  901  sudo vi secrets.new.yaml 
+  902  sudo vi vochub.yaml 
+  903  rm -rf secrets.yaml 
+  904  cd ../..
+  905  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  906  helmfile lint
+  907  helmfile sync
+  908  clear
+  909  k get po
+  910  cat /tmp/helmfile156801024/kannel-values-97957cb5f
+  911  cd env/mtnrwanda-stage/
+  912  sops -d secrets.yaml 
+  913  clear
+  914  sops -d backsecrets.yaml 
+  915  ls
+  916  cat backsecrets.yaml 
+  917  clear
+  918  sudo vi vochub.yaml 
+  919  sudo vi backsecrets.yaml 
+  920  sudo vi secrets.new.yaml 
+  921  rm -rf secrets.yaml 
+  922  sudo vi vochub.yaml 
+  923  ls
+  924  cd ../..
+  925  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  926  helmfile lint
+  927  clear
+  928  cd env/mtnrwanda-stage/
+  929  sudo vi vochub.yaml
+  930  sudo vi kannel.yaml.gotmpl 
+  931  cd ../..
+  932  helmfile lint
+  933  cd env/mtnrwanda-stage/
+  934  clear
+  935  cd env/mtnrwanda-stage/
+  936  sudo vi vochub.yaml 
+  937  cd ../..
+  938  helmfile lint
+  939  helm list
+  940  helmfile sync
+  941  k get po
+  942  clear
+  943  cd env/mtnrwanda-stage/
+  944  sudo vi vochub.yaml 
+  945  cd ../..
+  946  helmfile lint
+  947  clear
+  948  cd env/mtnrwanda-stage/
+  949  sudo vi vochub.yaml 
+  950  cd ../..
+  951  helmfile lint
+  952  clear
+  953  cd env/mtnrwanda-stage/
+  954  sudo vi vochub.yaml 
+  955  cd ../..
+  956  helmfile lint
+  957  clear
+  958  helmfile lint
+  959  clear
+  960  cd env/mtnrwanda-stage/
+  961  sudo vi vochub.yaml 
+  962  cd ../..
+  963  helmfile lint
+  964  cd
+  965  clear
+  966  cd sso
+  967  cd templates/
+  968  sudo vi configmap.yaml 
+  969  cd
+  970  cd helm-onprem/env/mtnrwanda-stage/
+  971  sudo vi vochub.yaml 
+  972  cd ../..
+  973  helmfile sync
+  974  helmfile -n default apply
+  975  k get pd
+  976  clear
+  977  k get po
+  978  k logs kannel-mtnrwanda-c8b4c9798-87jmn
+  979  clear
+  980  cd env/mtnrwanda-stage/
+  981  sudo vi kannel.yaml.gotmpl 
+  982  sudo vi vochub.yaml 
+  983  sudo vi enterprises.yaml.gotmpl 
+  984  sudo vi kannel.yaml.gotmpl 
+  985  cd ../..
+  986  helmfile sync
+  987  helm get values kannel
+  988  k get po
+  989  k logs kannel-mtnrwanda-cd88c8448-hzn5x 
+  990  clear
+  991  cd env/mtnrwanda-stage/
+  992  sudo vi kannel.yaml.gotmpl 
+  993  cd ../..
+  994  helmfile sync
+  995  helm get values kannel
+  996  helm -n default apply
+  997  helmfile -n default apply
+  998  k logs kannel-mtnrwanda-6549655895-bxx72 
+  999  export CLUSTER_NAME=mtnrwanda-stage
+ 1000  export GPG_TTY=$(tty)
+ 1001  kubectl config use-context VOC_CLUSTER
+ 1002  export KUBECONFIG=~/.kube/config
+ 1003  chmod 600 /home/ikay/.kube/config
+ 1004   source <(kubectl completion bash) 
+ 1005   echo "source <(kubectl completion bash)" >> ~/.bashrc
+ 1006   alias k=kubectl
+ 1007  complete -o default -F __start_kubectl k
+ 1008  k get po
+ 1009  k logs keda-operator-metrics-apiserver-54d47fdcd5-gt7cg
+ 1010  clear
+ 1011  cd star_mtn_co_rw_389190235/
+ 1012  ls
+ 1013  k logs kannel-mtnrwanda-6549655895-bxx72 
+ 1014  cd 
+ 1015  clear
+ 1016  ls
+ 1017  cat private.key
+ 1018  cd star_mtn_co_rw_389190235/
+ 1019  ls
+ 1020  cat full_chain_base64.txt 
+ 1021  clear
+ 1022  cat full_chain.crt 
+ 1023  clear
+ 1024  openssl x509 -in star_mtn_co_rw.crt -text -noout
+ 1025  clear
+ 1026  openssl x509 -in full_chain.crt -text -noout
+ 1027  clear
+ 1028  ls
+ 1029  openssl x509 -in full_chain_base64.txt -text -noout
+ 1030  history | cat > filename

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-test-pod
+spec:
+  serviceAccountName: default-main
+  containers:
+  - name: test-container
+    image: nginx
+    securityContext:
+      privileged: true
+

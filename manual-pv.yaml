@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual-pv
+spec:
+  capacity:
+    storage: 8Gi  # This should match the size requested by your PVC
+  accessModes:
+    - ReadWriteOnce  # This should match the access mode of your PVC
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: vochub  # This should match your PVC's storage class
+  nfs:
+    path: /srv/nfs/redis-data-redis-master-0  # NFS share path, adjust as necessary
+    server: 10.150.55.103  # NFS server IP
+

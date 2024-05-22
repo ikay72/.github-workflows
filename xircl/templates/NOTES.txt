@@ -1,0 +1,13 @@
+***************************************
+Main VoCHUB frontend will be available soon at:
+
+{{ range .Values.enterprises }}
+enterprise: {{ .name }}
+VoCHUB host {{ .hubhost }}
+{{ end -}}
+
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+Image xircl-api: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+Image web-ui: {{ .Values.image.repository }}/web-ui:{{ .Values.webui.image.tag }}
+***************************************

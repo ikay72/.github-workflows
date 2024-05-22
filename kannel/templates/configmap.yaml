@@ -1,0 +1,9 @@
+{{ range .Values.kannel }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kannel-{{ .name }}
+data:
+  kannel.conf: {{ .config | quote }}
+---
+{{ end }}

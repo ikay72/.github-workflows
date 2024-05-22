@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-vault-ports
+  namespace: vault
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 8200
+    - protocol: TCP
+      port: 8201
+    from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: vault
+  egress:
+  - ports:
+    - protocol: TCP
+      port: 8200
+    - protocol: TCP
+      port: 8201
+    to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: vault
+

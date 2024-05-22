@@ -1,0 +1,469 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-php-fpm-conf
+data:
+  php-fpm.conf: |
+    [www]
+    listen = /var/run/php-fpm/fpm.socket
+    listen.owner = www-data
+    listen.group = www-data
+    listen.mode = 0660
+    user = www-data
+    group = www-data
+    pm = dynamic
+    pm.max_children = 50
+    pm.start_servers = 2
+    pm.min_spare_servers = 2
+    pm.max_spare_servers = 5
+    clear_env = no
+
+    [global]
+    daemonize = no
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-nginx
+data:
+  nginx.conf: |
+    user  www-data;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  2048;
+    }
+
+    http {
+        real_ip_header {{ .Values.nginx.realIP.header }};
+        set_real_ip_from 0.0.0.0/0;
+        {{ .Values.nginx.logFormat | nindent 8 }}
+
+        include         /etc/nginx/mime.types;
+        default_type    application/octet-stream;
+
+        sendfile        on;
+
+        server_tokens   off;
+        keepalive_timeout 0;
+
+        gzip on;
+
+        server {
+            listen 8080 default_server;
+            server_name _;
+
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+        }
+
+        server {
+            listen 8080;
+            server_name {{ .Values.yourls.app.hosts |join " " }} yourls;
+
+            root /var/www/html;
+            index index.php;
+
+            location /css {
+                root /www;
+            }
+
+            location /js {
+                root /www;
+            }
+
+            location /images {
+                root /www;
+            }
+
+            location = / {
+                return 404;
+            }
+
+            location /admin {
+                return 403;
+            }
+
+            location / {
+                try_files $uri $uri/ /yourls-loader.php;
+
+                location ~ \.php$ {
+                    include fastcgi_params;
+                    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                    fastcgi_param HOST $http_host;
+                    fastcgi_pass unix:/var/run/php-fpm/fpm.socket;
+                }
+            }
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-config
+data:
+  config.php: |
+    <?php
+    define( 'YOURLS_DB_USER', getenv('YOURLS_DB_USER') ?: 'root' );
+    define( 'YOURLS_DB_PASS', getenv('YOURLS_DB_PASS') );
+    define( 'YOURLS_DB_NAME', getenv('YOURLS_DB_NAME') ?: 'yourls' );
+    define( 'YOURLS_DB_HOST', getenv('YOURLS_DB_HOST') ?: 'mysql' );
+    define( 'YOURLS_DB_PREFIX', getenv('YOURLS_DB_PREFIX') ?: 'yourls_' );
+    // Custom YOURLS_SITE logic. Check if host is in allowed_hosts, then use it as YOURLS_SITE. Otherwise, fall back to yourls
+    $scheme = 'https://';
+    $allowed_hosts = ['{{ .Values.yourls.app.hosts | join "', '" }}'];
+    define( 'YOURLS_SITE', in_array($_SERVER['HTTP_HOST'], $allowed_hosts) ? $scheme.$_SERVER['HTTP_HOST'] : $scheme.'{{ index .Values.yourls.app.hosts 0 }}' );
+    define( 'YOURLS_HOURS_OFFSET', filter_var(getenv('YOURLS_HOURS_OFFSET'), FILTER_VALIDATE_INT) ?: 0 );
+    define( 'YOURLS_LANG', getenv('YOURLS_LANG') ?: '' );
+    define( 'YOURLS_UNIQUE_URLS', getenv('YOURLS_UNIQUE_URLS') === false ?: filter_var(getenv('YOURLS_UNIQUE_URLS'), FILTER_VALIDATE_BOOLEAN) );
+    define( 'YOURLS_PRIVATE', getenv('YOURLS_PRIVATE') === false ?: filter_var(getenv('YOURLS_PRIVATE'), FILTER_VALIDATE_BOOLEAN) );
+    define( 'YOURLS_COOKIEKEY', getenv('YOURLS_COOKIEKEY') ?: 'modify this text with something random' );
+    $yourls_user_passwords = array(
+      getenv('YOURLS_USER') => getenv('YOURLS_PASS'),
+    );
+    define( 'YOURLS_DEBUG', false );
+    define( 'YOURLS_URL_CONVERT', getenv('YOURLS_URL_CONVERT') ?: 62 );
+    define( 'YOURLS_NOSTATS', filter_var(getenv('YOURLS_NOSTATS'), FILTER_VALIDATE_BOOLEAN) );
+    define( 'YOURLS_NO_VERSION_CHECK', true );
+    $yourls_reserved_URL = array(
+    'porn', 'faggot', 'sex', 'nigger', 'fuck', 'cunt', 'dick',
+    );
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-skip-click-count-plugin
+data:
+  plugin.php: |
+    <?php
+    /*
+    Plugin Name: Skip Click Count
+    Plugin URI: https://github.com/YOURLS/YOURLS/issues/2829
+    Description: A swtich to stop click count function
+    Version: 1.0
+    Author: Titan
+    Author URI: https://github.com/YOURLS/YOURLS/issues/2829
+    */
+
+    yourls_add_filter( 'shunt_update_clicks', 'skip_click_count' );
+
+    function skip_click_count( $value ) {
+      return true;
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-loader
+data:
+  yourls-loader.php: |
+    <?php
+    // Handle inexistent root favicon requests and exit
+    if ( '/favicon.ico' == $_SERVER['REQUEST_URI'] ) {
+      header( 'Content-Type: image/gif' );
+      echo base64_decode( "R0lGODlhEAAQAJECAAAAzFZWzP///wAAACH5BAEAAAIALAAAAAAQABAAAAIplI+py+0PUQAgSGoNQFt0LWTVOE6GuX1H6onTVHaW2tEHnJ1YxPc+UwAAOw==" );
+      exit;
+    }
+
+    // Handle inexistent root robots.txt requests and exit
+    if ( '/robots.txt' == $_SERVER['REQUEST_URI'] ) {
+      header( 'Content-Type: text/plain; charset=utf-8' );
+      echo "User-agent: *\n";
+      echo "Disallow:\n";
+      exit;
+    }
+
+    // Load YOURLS
+    require_once __DIR__ . '/includes/load-yourls.php';
+
+    // Get request in YOURLS base (eg in 'http://sho.rt/yourls/abcd' get 'abdc')
+    // At this point, $request is NOT sanitized.
+    $request = yourls_get_request();
+
+    // Now load required template and exit
+    yourls_do_action( 'pre_load_template', $request );
+
+    // Let's look at the request : what we want to catch here is "anything", or "anything+" / "anything+all" (stat page)
+    preg_match( "@^(.+?)(\+(all)?)?/?$@", $request, $matches );
+    $keyword   = isset($matches[1]) ? $matches[1] : null; // 'anything' whatever the request is (keyword, bookmarklet URL...)
+
+    // if request is an existing short URL keyword ('abc'):
+    if ( yourls_keyword_is_taken($keyword) or yourls_is_page($keyword) ) {
+
+        // we have a short URL or a page
+        if( $keyword ) {
+            yourls_do_action( 'load_template_go', $keyword );
+            require_once( YOURLS_ABSPATH.'/yourls-go.php' );
+            exit;
+        }
+    }
+
+    // Past this point this is a request the loader could not understand : not a valid shorturl, not a bookmarklet
+    yourls_do_action( 'redirect_keyword_not_found', $keyword );
+    yourls_do_action( 'loader_failed', $request );
+    yourls_redirect( YOURLS_SITE, 302 );
+    exit;
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-keep-query-string-plugin
+data:
+  plugin.php: |
+    <?php
+    /*
+    Plugin Name: Keep Query String
+    Description: Adds short URL query string, if any, to the long URL
+    Version: 1.0
+    Author: Sergiy Podlubnij <spo@sandsiv.com>
+    */
+    yourls_add_filter( 'redirect_location', 'ozh_kqs' );
+
+    function ozh_kqs($url){
+        if (yourls_is_GO()) {
+            $url = ozh_kqs_yourls_add_query_arg($_SERVER['REQUEST_URI'], $url);
+        }
+        return $url;
+    }
+
+    function ozh_kqs_yourls_add_query_arg() {
+        $req = @func_get_arg( 0 );
+        $url = @func_get_arg( 1 );
+
+        $uri = parse_url($req, PHP_URL_QUERY);
+        parse_str($uri, $arr);
+
+        $qry = http_build_query($arr);
+        $p = parse_url($s, PHP_URL_QUERY);
+
+        if ( strpos( $url, '?' ) !== false ) {
+            $res = $url . '&' . $qry;
+        } else {
+            $res = $url . '?' . $qry;
+        }
+
+        return $res;
+    }
+---
+{{- if .Values.mysql.tls }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-mysql-tls-plugin
+data:
+  db.php: |
+    <?php
+    /*
+    Plugin Name: Secure MySQL
+    Plugin URI: https://github.com/YOURLS/YOURLS/issues/2468
+    Description: SSL/TLS Database Connection
+    Version: 1.0
+    Author: YOURLS
+    Author URI: https://yourls.org/
+    */
+    // No direct call
+    if( !defined( 'YOURLS_ABSPATH' ) ) die();
+    yourls_add_filter( 'db_connect_driver_option', function ( $options ) {
+        // Add your certificate paths
+        // https://secure.php.net/manual/ref.pdo-mysql.php
+        //   return $options;
+      return $options + Array(
+            PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/ca-certificates.crt'
+      );
+    } );
+    // Load DB layer as usual
+    require_once YOURLS_INC.'/class-mysql.php';
+    yourls_db_connect();
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yourls-sql
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+data:
+  yourls.sql: |
+    SET sql_notes = 0;
+
+    DROP PROCEDURE IF EXISTS `AlterTableIfNot506`;
+    DELIMITER //
+    CREATE PROCEDURE `AlterTableIfNot506`()
+    BEGIN
+      IF
+        NOT EXISTS
+        (
+          SELECT
+            *
+          FROM
+            yourls_options
+          WHERE
+            option_name = 'db_version'
+            AND option_value = 506
+        )
+      THEN
+        ALTER TABLE `yourls_options` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        ALTER TABLE `yourls_url` CHANGE `keyword` `keyword` VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '';
+        ALTER TABLE `yourls_url` CHANGE `url` `url` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+        ALTER TABLE `yourls_url` CHANGE `title` `title` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        ALTER TABLE `yourls_url` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+      END IF;
+    END //
+    DELIMITER ;
+
+    CREATE TABLE IF NOT EXISTS `yourls_log` (
+      `click_id` int NOT NULL AUTO_INCREMENT,
+      `click_time` datetime NOT NULL,
+      `shorturl` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+      `referrer` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+      `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+      `ip_address` varchar(41) COLLATE utf8mb4_unicode_ci NOT NULL,
+      `country_code` char(2) COLLATE utf8mb4_unicode_ci NOT NULL,
+      PRIMARY KEY (`click_id`),
+      KEY `shorturl` (`shorturl`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+    CREATE TABLE IF NOT EXISTS `yourls_options` (
+      `option_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+      `option_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+      `option_value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+      PRIMARY KEY (`option_id`,`option_name`),
+      KEY `option_name` (`option_name`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+    CREATE TABLE IF NOT EXISTS `yourls_url` (
+      `keyword` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '',
+      `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+      `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+      `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `ip` varchar(41) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+      `clicks` int unsigned NOT NULL,
+      PRIMARY KEY (`keyword`),
+      KEY `ip` (`ip`),
+      KEY `timestamp` (`timestamp`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+    CALL `AlterTableIfNot506`();
+    DROP PROCEDURE `AlterTableIfNot506`;
+
+    INSERT INTO yourls_options (option_id, option_name, option_value)
+    SELECT
+      NULL,
+      'version',
+      '{{ .Values.yourls.version }}'
+    FROM
+      DUAL
+    WHERE
+      NOT EXISTS
+      (
+        SELECT
+          *
+        FROM
+          yourls_options
+        WHERE
+          option_name = 'version'
+      );
+
+    UPDATE yourls_options
+    SET
+      option_value = '{{ .Values.yourls.version }}'
+    WHERE
+      option_name = 'version';
+
+    INSERT INTO yourls_options (option_id, option_name, option_value)
+    SELECT
+      NULL,
+      'db_version',
+      506
+    FROM
+      DUAL
+    WHERE
+      NOT EXISTS
+      (
+        SELECT
+          *
+        FROM
+          yourls_options
+        WHERE
+          option_name = 'db_version'
+      );
+
+    UPDATE yourls_options
+    SET
+      option_value = 506
+    WHERE
+      option_name = 'db_version';
+
+    INSERT INTO yourls_options (option_id, option_name, option_value)
+    SELECT
+      NULL,
+      'next_id',
+      1
+    FROM
+      DUAL
+    WHERE
+      NOT EXISTS
+      (
+        SELECT
+          *
+        FROM
+          yourls_options
+        WHERE
+          option_name = 'next_id'
+      );
+
+    INSERT INTO yourls_options (option_id, option_name, option_value)
+    SELECT
+      NULL,
+      'active_plugins',
+      'a:3:{i:0;s:27:"random-shorturls/plugin.php";i:1;s:27:"skip-click-count/plugin.php";i:2;s:28:"keep-query-string/plugin.php";}'
+    FROM
+      DUAL
+    WHERE
+      NOT EXISTS
+      (
+        SELECT
+          *
+        FROM
+          yourls_options
+        WHERE
+          option_name = 'active_plugins'
+      );
+
+    UPDATE yourls_options
+    SET
+      option_value = 'a:3:{i:0;s:27:"random-shorturls/plugin.php";i:1;s:27:"skip-click-count/plugin.php";i:2;s:28:"keep-query-string/plugin.php";}'
+    WHERE
+      option_name = 'active_plugins';
+
+    INSERT INTO yourls_options (option_id, option_name, option_value)
+    SELECT
+      NULL,
+      'random_shorturls_length',
+      8
+    FROM
+      DUAL
+    WHERE
+      NOT EXISTS
+      (
+        SELECT
+          *
+        FROM
+          yourls_options
+        WHERE
+          option_name = 'random_shorturls_length'
+      );
+
+    UPDATE yourls_options
+    SET
+      option_value = 8
+    WHERE
+      option_name = 'random_shorturls_length';

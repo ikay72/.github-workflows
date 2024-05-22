@@ -1,0 +1,730 @@
+apiVersion: v1
+entries:
+  astra:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:02.914251916Z"
+    description: Feedback ASTRA
+    digest: d24ea91851d9345dc15e046ac2fc87ac9e76554ff4022a5ab2c003f77052cdfe
+    name: astra
+    urls:
+    - charts/astra-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-12T11:31:23.945Z"
+    description: Feedback ASTRA
+    digest: 086958afa34eaedbabbbb53d2d1e987b8b1fddfa5851d1b95ce552ae264237b6
+    name: astra
+    urls:
+    - charts/astra-11.14.9.tgz
+    version: 11.14.9
+  classifier:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:03.562218087Z"
+    description: Classifier service for VoCHUB
+    digest: faf1b44245c8d4981b5a753cf1e67eb2676958ba3c8fd1fd6a732c60ffb10663
+    name: classifier
+    urls:
+    - charts/classifier-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-20T14:13:49.343Z"
+    description: Classifier service for VoCHUB
+    digest: dbc14ce44bd46ccf887fcf2db83929ce0afc3ecc05010fb5fda79358b0ac5efc
+    name: classifier
+    urls:
+    - charts/classifier-11.14.10.tgz
+    version: 11.14.10
+  clerk:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:04.139343981Z"
+    description: Clerk replication server for VoCHUB
+    digest: 2dc47d921448d2795d498dd85972ae8f5bf5528f79d43a19a979e709bca4e68e
+    name: clerk
+    urls:
+    - charts/clerk-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-05T09:53:03.651Z"
+    description: Clerk replication server for VoCHUB
+    digest: ab935cc3c874713efafa9e42f996119e46cb600acc2ebb94a54c4463fd825666
+    name: clerk
+    urls:
+    - charts/clerk-11.14.8.tgz
+    version: 11.14.8
+  fb-tasks:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:04.768298372Z"
+    description: Feedback Celery tasks
+    digest: 967e41666a7dbf997a51a75f94fce2d7e8ac67cc8a5e8bdbcc1298b5da337e97
+    name: fb-tasks
+    urls:
+    - charts/fb-tasks-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-05T09:53:04.418Z"
+    description: Feedback Celery tasks
+    digest: 45b99afe6828dfced8e932dc0899a7d3e873c9c66cce98d2b2d5f86ff1642e78
+    name: fb-tasks
+    urls:
+    - charts/fb-tasks-11.14.8.tgz
+    version: 11.14.8
+  feedback:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:05.24723861Z"
+    description: Feedback REST API
+    digest: 5c9172fa57c2327e5566c49610d2b198212eb5bdaf7c929b2468b6610b3442de
+    name: feedback
+    urls:
+    - charts/feedback-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-20T14:13:50.042Z"
+    description: Feedback REST API
+    digest: 62152a275cb1c82af9f59a45184d1892f4d9e95860b5f09707ef5a5e5a04fcb3
+    name: feedback
+    urls:
+    - charts/feedback-11.14.10.tgz
+    version: 11.14.10
+  feedback-api:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:05.728684609Z"
+    description: Feedback API old PHP version
+    digest: a5cb8a4dbb0ccf372788c940c20019c76f9c355dfea6968ff0221ea24b60c646
+    name: feedback-api
+    urls:
+    - charts/feedback-api-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-09-04T14:22:18.146Z"
+    description: Feedback API old PHP version
+    digest: 76661ef6a0010c32f1b7ccaf6c0f4ca35033d6c9adf6bcf44dd3dece0780f2ed
+    name: feedback-api
+    urls:
+    - charts/feedback-api-11.14.4.tgz
+    version: 11.14.4
+  feedback-v2:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:06.227690293Z"
+    description: Feedback v2 WEB channel
+    digest: 509229ccde33c40852a62d5cad12415dd270585a75d41adcdedaa1c82602e1a4
+    name: feedback-v2
+    urls:
+    - charts/feedback-v2-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-12T11:31:25.543Z"
+    description: Feedback v2 WEB channel
+    digest: 90e4d2d47892304676686d857a2df833473fdb9887e00e88976c933049288192
+    name: feedback-v2
+    urls:
+    - charts/feedback-v2-11.14.9.tgz
+    version: 11.14.9
+  feedback-volume:
+  - apiVersion: v2
+    created: "2023-10-12T11:31:26.199Z"
+    description: Feedback import-export volume
+    digest: e46d043abe9b458ff63e60c8795cff90d79ef624142efa7b5aaa4bf7a0627d93
+    name: feedback-volume
+    urls:
+    - charts/feedback-volume-11.14.9.tgz
+    version: 11.14.9
+  ingress-nginx:
+  - annotations:
+      artifacthub.io/changes: |-
+        - "update web hook cert gen to latest release v20231226-1a7112e06"
+        - "Update Ingress-Nginx version controller-v1.9.6"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.9.6
+    created: "2024-02-08T21:11:42.804910781Z"
+    description: Ingress controller for Kubernetes using NGINX as a reverse proxy
+      and load balancer
+    digest: cd5bbe096d9dc326edf660069d00882ee1bb2983ab71e863a410886de27385c8
+    home: https://github.com/kubernetes/ingress-nginx
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
+    keywords:
+    - ingress
+    - nginx
+    kubeVersion: '>=1.20.0-0'
+    maintainers:
+    - name: rikatz
+    - name: strongjz
+    - name: tao12345666333
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - charts/ingress-nginx-4.9.1.tgz
+    version: 4.9.1
+  - annotations:
+      artifacthub.io/changes: |
+        - "[8890](https://github.com/kubernetes/ingress-nginx/pull/8890) migrate to endpointslices"
+        - "[9059](https://github.com/kubernetes/ingress-nginx/pull/9059) kubewebhookcertgen sha change after go1191"
+        - "[9046](https://github.com/kubernetes/ingress-nginx/pull/9046) Parameterize metrics port name"
+        - "[9104](https://github.com/kubernetes/ingress-nginx/pull/9104) Fix yaml formatting error with multiple annotations"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.4.0
+    created: "2023-10-17T21:44:30.404Z"
+    description: Ingress controller for Kubernetes using NGINX as a reverse proxy
+      and load balancer
+    digest: 2b2458414f91d98a359de605e2b18e54afc71323945bc98ac90736bf104c1144
+    home: https://github.com/kubernetes/ingress-nginx
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
+    keywords:
+    - ingress
+    - nginx
+    kubeVersion: '>=1.20.0-0'
+    maintainers:
+    - name: rikatz
+    - name: strongjz
+    - name: tao12345666333
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - charts/ingress-nginx-4.3.0.tgz
+    version: 4.3.0
+  - annotations:
+      artifacthub.io/changes: |
+        - "[8896](https://github.com/kubernetes/ingress-nginx/pull/8896) updated to new images built today"
+        - "fix permissions about configmap"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.3.1
+    created: "2023-10-17T20:21:37.723Z"
+    description: Ingress controller for Kubernetes using NGINX as a reverse proxy
+      and load balancer
+    digest: 0c0645c4f2fdac030effc75aeac4c2b8378d50dec46abae6be53deee74dbb2e3
+    home: https://github.com/kubernetes/ingress-nginx
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
+    keywords:
+    - ingress
+    - nginx
+    kubeVersion: '>=1.20.0-0'
+    maintainers:
+    - name: rikatz
+    - name: strongjz
+    - name: tao12345666333
+    name: ingress-nginx
+    sources:
+    - https://github.com/kubernetes/ingress-nginx
+    urls:
+    - charts/ingress-nginx-4.2.5.tgz
+    version: 4.2.5
+  ivr:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:06.727442634Z"
+    description: A Helm chart for IVR
+    digest: cd0bcd8c8c3c8f3cf6855428b17657eeef60a8275788ddf3636dedaa44f25d08
+    name: ivr
+    type: application
+    urls:
+    - charts/ivr-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-06-09T14:31:37.629Z"
+    description: A Helm chart for IVR
+    digest: d578eb4209b92c8aac56242adad06527aab4cda657aa6542269ecdf4cb639e5e
+    name: ivr
+    type: application
+    urls:
+    - charts/ivr-11.13.1.tgz
+    version: 11.13.1
+  kannel:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:07.163103629Z"
+    description: A Kannel Helm chart for Kubernetes
+    digest: 548a831c258cb5d4dd2dbdde3327787ae571b8ef022175582c40a0bc419a2e88
+    name: kannel
+    type: application
+    urls:
+    - charts/kannel-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-07-19T10:53:39.399Z"
+    description: A Kannel Helm chart for Kubernetes
+    digest: fc589490b56b98e342cc4da8e84a68e785d5adfef142670c063b475533e7d5ec
+    name: kannel
+    type: application
+    urls:
+    - charts/kannel-11.13.4.tgz
+    version: 11.13.4
+  keda:
+  - apiVersion: v2
+    appVersion: 2.13.0
+    created: "2024-02-26T15:24:07.946897492Z"
+    description: Event-based autoscaler for workloads on Kubernetes
+    digest: 91fc980de77bd44a3ddd269a8664aa18cb2ccd15fed887f67d5082a43992ce97
+    home: https://github.com/kedacore/keda
+    icon: https://raw.githubusercontent.com/kedacore/keda/main/images/keda-logo-500x500-white.png
+    kubeVersion: '>=v1.23.0-0'
+    maintainers:
+    - email: ahmels@microsoft.com
+      name: Ahmed ElSayed
+    - email: jorge_turrado@hotmail.es
+      name: Jorge Turrado
+    - email: kerkhove.tom@gmail.com
+      name: Tom Kerkhove
+    - email: zbynek@kedify.io
+      name: Zbynek Roubalik
+    name: keda
+    sources:
+    - https://github.com/kedacore/keda
+    urls:
+    - charts/keda-2.13.1.tgz
+    version: 2.13.1
+  - apiVersion: v2
+    appVersion: 2.10.1
+    created: "2023-06-09T14:37:29.695Z"
+    description: Event-based autoscaler for workloads on Kubernetes
+    digest: 73e830de092a5a80418f5d4825639b7f6f86935b3375321560a1c14bddaea6a2
+    home: https://github.com/kedacore/keda
+    icon: https://raw.githubusercontent.com/kedacore/keda/main/images/keda-logo-500x500-white.png
+    kubeVersion: '>=v1.24.0-0'
+    maintainers:
+    - email: ahmels@microsoft.com
+      name: Ahmed ElSayed
+    - email: jorge_turrado@hotmail.es
+      name: Jorge Turrado
+    - email: kerkhove.tom@gmail.com
+      name: Tom Kerkhove
+    - email: zroubali@redhat.com
+      name: Zbynek Roubalik
+    name: keda
+    sources:
+    - https://github.com/kedacore/keda
+    urls:
+    - charts/keda-2.10.2.tgz
+    version: 2.10.2
+  keda-hpa:
+  - apiVersion: v2
+    created: "2023-06-09T14:31:40.873Z"
+    description: keda-hpa
+    digest: c903cadddd3ef6020d06dcce5b475dfad01d090f6c4322f928a400534dff5501
+    name: keda-hpa
+    type: application
+    urls:
+    - charts/keda-hpa-11.13.1.tgz
+    version: 11.13.1
+  keys:
+  - apiVersion: v1
+    created: "2023-09-04T14:22:19.48Z"
+    description: A Helm chart for VocHUB keys
+    digest: e299cc7c1b4282bd17de7ed970a8d4fba2956f8b6bbb42823e5f737ee71c98d3
+    name: keys
+    urls:
+    - charts/keys-11.14.4.tgz
+    version: 11.14.4
+  lemmanet:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:08.42751597Z"
+    description: Chart for lemmanet service
+    digest: 6aa58e51a92199b16c7f0795589d203fc4b040f11cf6d7fe45b9d274d16ff4fb
+    name: lemmanet
+    type: application
+    urls:
+    - charts/lemmanet-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-09-04T14:22:20.167Z"
+    description: Chart for lemmanet service
+    digest: f9641c5c0de666b8d1215816997bc2d4491e469d973941a21c7dd7b7100105ea
+    name: lemmanet
+    type: application
+    urls:
+    - charts/lemmanet-11.14.4.tgz
+    version: 11.14.4
+  lemmatizer:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:08.956713691Z"
+    description: Lemmatizer service for VoCHUB
+    digest: 6bda569a3f00aab36fa3132a9221056da6804f2f975431a1577ef2b3f3a37495
+    name: lemmatizer
+    urls:
+    - charts/lemmatizer-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-09-04T14:22:20.757Z"
+    description: Lemmatizer service for VoCHUB
+    digest: 55ccf08c42d506bc2cce042431040d54bcef93eeaa0a249e7fe6a6d90e8c9c03
+    name: lemmatizer
+    urls:
+    - charts/lemmatizer-11.14.4.tgz
+    version: 11.14.4
+  mysql-ca:
+  - apiVersion: v2
+    created: "2023-06-29T13:59:01.43Z"
+    description: Custom CA support for MySQL
+    digest: 46bd25abd0bdd1e2672a00b80f040ffc37810491574100953df52e78bda82ea4
+    name: mysql-ca
+    urls:
+    - charts/mysql-ca-11.13.2.tgz
+    version: 11.13.2
+  notification-manager:
+  - apiVersion: v2
+    created: "2023-06-09T14:31:43.72Z"
+    description: notification manager server for VoCHUB
+    digest: d719f60e7f603505065e89b87de2f13ba37056fd50d15a0bef724275bcd3c9ae
+    name: notification-manager
+    urls:
+    - charts/notification-manager-11.13.1.tgz
+    version: 11.13.1
+  priorityclass:
+  - apiVersion: v2
+    created: "2023-06-29T13:59:02.135Z"
+    description: PriorityClasses for VocHub
+    digest: 4778dd8cb696ad78d073691438d93ff0e4e9641dfb826031752d484cef9d2ffe
+    name: priorityclass
+    type: application
+    urls:
+    - charts/priorityclass-11.13.2.tgz
+    version: 11.13.2
+  rabbitmq:
+  - annotations:
+      category: Infrastructure
+      licenses: Apache-2.0
+    apiVersion: v2
+    appVersion: 3.11.18
+    created: "2023-09-05T10:30:21.927Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: RabbitMQ is an open source general-purpose message broker that is
+      designed for consistent, highly-available messaging scenarios (both synchronous
+      and asynchronous).
+    digest: 4e6adfbb1b3e8ab81e65ae6b4df9b721853092f9e1ab0e1197511e6745f6be79
+    home: https://bitnami.com
+    icon: https://bitnami.com/assets/stacks/rabbitmq/img/rabbitmq-stack-220x234.png
+    keywords:
+    - rabbitmq
+    - message queue
+    - AMQP
+    maintainers:
+    - name: VMware, Inc.
+      url: https://github.com/bitnami/charts
+    name: rabbitmq
+    sources:
+    - https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq
+    urls:
+    - charts/rabbitmq-11.16.2.tgz
+    version: 11.16.2
+  - annotations:
+      category: Infrastructure
+    apiVersion: v2
+    appVersion: 3.10.8
+    created: "2023-10-03T13:13:44.21Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: RabbitMQ is an open source general-purpose message broker that is
+      designed for consistent, highly-available messaging scenarios (both synchronous
+      and asynchronous).
+    digest: dc5f95c650192cc16ddbeb9d1f9baea8848d843b8982f660a474f74d219b7fa4
+    home: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+    icon: https://bitnami.com/assets/stacks/rabbitmq/img/rabbitmq-stack-220x234.png
+    keywords:
+    - rabbitmq
+    - message queue
+    - AMQP
+    maintainers:
+    - name: Bitnami
+      url: https://github.com/bitnami/charts
+    name: rabbitmq
+    sources:
+    - https://github.com/bitnami/containers/tree/main/bitnami/rabbitmq
+    - https://www.rabbitmq.com
+    urls:
+    - charts/rabbitmq-10.3.9.tgz
+    version: 10.3.9
+  - annotations:
+      category: Infrastructure
+    apiVersion: v2
+    appVersion: 3.8.21
+    created: "2022-02-10T15:35:17.381Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Open source message broker software that implements the Advanced
+      Message Queuing Protocol (AMQP)
+    digest: 8ef63abaebd229e19d0e76b9255d0db0b66fcdb9d74cef6047079604ae90d88b
+    home: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+    icon: https://bitnami.com/assets/stacks/rabbitmq/img/rabbitmq-stack-220x234.png
+    keywords:
+    - rabbitmq
+    - message queue
+    - AMQP
+    maintainers:
+    - email: containers@bitnami.com
+      name: Bitnami
+    name: rabbitmq
+    sources:
+    - https://github.com/bitnami/bitnami-docker-rabbitmq
+    - https://www.rabbitmq.com
+    urls:
+    - charts/rabbitmq-8.20.1.tgz
+    version: 8.20.1
+  rabbitmq-secret:
+  - apiVersion: v2
+    created: "2023-06-09T14:31:44.595Z"
+    description: rabbitmq-secret
+    digest: a31fece54a19eb2243f4a9e55ac60bc7e61f78d743ca83f2fefebe521bbfecb9
+    name: rabbitmq-secret
+    type: application
+    urls:
+    - charts/rabbitmq-secret-11.13.1.tgz
+    version: 11.13.1
+  rbac:
+  - apiVersion: v2
+    created: "2023-09-04T14:22:21.428Z"
+    description: Helm chart for rbac configuration
+    digest: 1e90e788c20782a90fb6bc05be09582515be54bce55498476ec0217a46c228f5
+    name: rbac
+    urls:
+    - charts/rbac-11.14.4.tgz
+    version: 11.14.4
+  redis:
+  - annotations:
+      category: Database
+      images: |
+        - name: os-shell
+          image: docker.io/bitnami/os-shell:11-debian-11-r90
+        - name: redis-exporter
+          image: docker.io/bitnami/redis-exporter:1.55.0-debian-11-r0
+        - name: redis-sentinel
+          image: docker.io/bitnami/redis-sentinel:7.2.1-debian-11-r26
+        - name: redis
+          image: docker.io/bitnami/redis:7.2.1-debian-11-r26
+      licenses: Apache-2.0
+    apiVersion: v2
+    appVersion: 7.2.1
+    created: "2023-10-17T22:37:40.661Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: Redis(R) is an open source, advanced key-value store. It is often
+      referred to as a data structure server since keys can contain strings, hashes,
+      lists, sets and sorted sets.
+    digest: 2742c2f7878b91dec65b52214e926a1e0cfe9617287a60ffe179f7dd21646d48
+    home: https://bitnami.com
+    icon: https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - name: VMware, Inc.
+      url: https://github.com/bitnami/charts
+    name: redis
+    sources:
+    - https://github.com/bitnami/charts/tree/main/bitnami/redis
+    urls:
+    - charts/redis-18.1.5.tgz
+    version: 18.1.5
+  - annotations:
+      category: Database
+    apiVersion: v2
+    appVersion: 7.0.5
+    created: "2022-12-12T12:07:23.646Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: Redis(R) is an open source, advanced key-value store. It is often
+      referred to as a data structure server since keys can contain strings, hashes,
+      lists, sets and sorted sets.
+    digest: 2bf1965895363977226d8eab70f75515a74733a3d8cb9e03914e326227e61167
+    home: https://github.com/bitnami/charts/tree/main/bitnami/redis
+    icon: https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - name: Bitnami
+      url: https://github.com/bitnami/charts
+    name: redis
+    sources:
+    - https://github.com/bitnami/containers/tree/main/bitnami/redis
+    urls:
+    - charts/redis-17.3.14.tgz
+    version: 17.3.14
+  reloader:
+  - apiVersion: v1
+    appVersion: v1.0.43
+    created: "2023-10-17T22:30:14.241Z"
+    description: Reloader chart that runs on kubernetes
+    digest: 75caa13d27ee428f73e9847b13e30b296d7eade2664ffa11906fe398036d9ad6
+    home: https://github.com/stakater/Reloader
+    icon: https://raw.githubusercontent.com/stakater/Reloader/master/assets/web/reloader-round-100px.png
+    keywords:
+    - Reloader
+    - kubernetes
+    maintainers:
+    - email: hello@stakater.com
+      name: Stakater
+    - email: rasheed@stakater.com
+      name: rasheedamir
+    - email: faizan.ahmad55@outlook.com
+      name: faizanahmad055
+    name: reloader
+    sources:
+    - https://github.com/stakater/Reloader
+    urls:
+    - charts/reloader-1.0.43.tgz
+    version: 1.0.43
+  - apiVersion: v1
+    appVersion: v0.0.114
+    created: "2022-06-10T12:58:46.113Z"
+    description: Reloader chart that runs on kubernetes
+    digest: 91ff642beebcf0f42ef7531ebcf04596ef3a228889241217ec9cd627826c07ef
+    home: https://github.com/stakater/Reloader
+    icon: https://raw.githubusercontent.com/stakater/Reloader/master/assets/web/reloader-round-100px.png
+    keywords:
+    - Reloader
+    - kubernetes
+    maintainers:
+    - email: hello@stakater.com
+      name: Stakater
+    - email: rasheed@aurorasolutions.io
+      name: rasheedamir
+    - email: waseemhassan@stakater.com
+      name: waseem-h
+    - email: faizan.ahmad55@outlook.com
+      name: faizanahmad055
+    - email: ali.kahoot@aurorasolutions.io
+      name: kahootali
+    - email: ahmad@aurorasolutions.io
+      name: ahmadiq
+    - email: ahsanmuhammad1@outlook.com
+      name: ahsan-storm
+    - email: waleed@stakater.com
+      name: ahmedwaleedmalik
+    name: reloader
+    sources:
+    - https://github.com/stakater/Reloader
+    urls:
+    - charts/reloader-v0.0.114.tgz
+    version: v0.0.114
+  screener:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:09.441191839Z"
+    description: Screener service deployment for vochub
+    digest: ed1a1b19455608d20480ff67324e5d51e8c0d9310cabbb792bffa4d4cdce7a2a
+    name: screener
+    urls:
+    - charts/screener-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-09-04T14:22:22.044Z"
+    description: Screener service deployment for vochub
+    digest: 7301a9d4ce39af422df84eb287099cfca97ba30ddf61db44438fef05e85d29bc
+    name: screener
+    urls:
+    - charts/screener-11.14.4.tgz
+    version: 11.14.4
+  speech-to-text:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:10.101888244Z"
+    description: speech-to-text helm chart
+    digest: 7589b41de6d837ff98c5fe4ae94e3a19b150fc2439c9c3ed4a67fab6fe176bba
+    name: speech-to-text
+    type: application
+    urls:
+    - charts/speech-to-text-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-06-09T14:31:47.308Z"
+    description: speech-to-text helm chart
+    digest: 7506411825ce725c41dc4c4b739a57c52148b6cdd815983c26ae29fbbd7244a0
+    name: speech-to-text
+    type: application
+    urls:
+    - charts/speech-to-text-11.13.1.tgz
+    version: 11.13.1
+  sso:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:10.527899977Z"
+    description: SSO server for VoCHUB
+    digest: 3e7c30b44f684833188085332e651ab05a505c4d82dc4f3bf21078b80b4b1cd3
+    name: sso
+    urls:
+    - charts/sso-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-20T14:13:50.923Z"
+    description: SSO server for VoCHUB
+    digest: 289e63b345274810124059214d7b65a26ded5d67366f62121b45447526e2517b
+    name: sso
+    urls:
+    - charts/sso-11.14.10.tgz
+    version: 11.14.10
+  storageclass:
+  - apiVersion: v2
+    created: "2022-07-07T17:53:28.572Z"
+    description: A Helm chart for creating a custom storageclass
+    digest: d15a09028b57709679682eaee000344ab8c92ba5795ecc34753f32ddffe426a6
+    name: storageclass
+    type: application
+    urls:
+    - charts/storageclass-11.11.2.tgz
+    version: 11.11.2
+  xircl:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:10.996531481Z"
+    description: A Helm chart for Xircl and xircl-consumers
+    digest: 0d27373142bb0ae7b1e1099fc0c0400c450d4abff18ccf3866810380f64fa0a6
+    name: xircl
+    urls:
+    - charts/xircl-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-12T11:31:27.505Z"
+    description: A Helm chart for Xircl and xircl-consumers
+    digest: b399b059d6ef507e54b8dccf2b78fba5bc1e925d0b64ee87c4374d48d47782de
+    name: xircl
+    urls:
+    - charts/xircl-11.14.9.tgz
+    version: 11.14.9
+  yourls:
+  - apiVersion: v2
+    created: "2024-02-26T15:24:11.464856855Z"
+    description: YOURLS deployment for vochub
+    digest: 01956a0db099553b7c773c8cd01d9e4e577e8c44345e66a917b160f89acaadbb
+    name: yourls
+    urls:
+    - charts/yourls-12.0.3.tgz
+    version: 12.0.3
+  - apiVersion: v2
+    created: "2023-10-12T11:31:28.048Z"
+    description: YOURLS deployment for vochub
+    digest: d9e1b709b5d6006b597c17f529b08e2698d9d960748990a09b051ec2304529b7
+    name: yourls
+    urls:
+    - charts/yourls-11.14.9.tgz
+    version: 11.14.9
+  zeroshot:
+  - apiVersion: v2
+    created: "2024-02-26T15:33:37.042927632Z"
+    description: zeroshot service for VoCHUB
+    digest: 820ced3ba6aa3835e3bea79afd158898f348b4df4da07804c762d050430da3ce
+    name: zeroshot
+    urls:
+    - charts/zeroshot-12.0.3.tgz
+    version: 12.0.3
+generated: "2024-02-26T15:34:31Z"
+serverInfo: {}

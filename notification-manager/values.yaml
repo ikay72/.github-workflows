@@ -1,0 +1,29 @@
+nm:
+  rabbitmq:
+    host: "rabbitmq"
+    port: "5672"
+    outgoing_queue_prefix: "nm-outgoing"
+    user: "guest"
+    password: "guest"
+    vhost: "/"
+    insist: "False"
+    exchange: "notification-manager"
+    incoming_queue: "nm-incoming"
+    heartbeat: "60"
+
+  group_name_prefix: "nmserver"
+  jwt_secret: "temp_key"
+  jwt_algorithm: "HS256"
+
+  ingress:
+    host: "notify.surv.biz"
+    port: 8080
+    annotations: {}
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "192Mi"

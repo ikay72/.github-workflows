@@ -1,0 +1,42 @@
+{{- if eq .Release.Name "ivr" }}
+{{- if not .Values.ivr.external_asterisk }}
+{{- if .Values.ivr.nfs_volumes.host }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.ivr.persistence.volume }}
+spec:
+  capacity:
+    storage: {{ .Values.ivr.persistence.storage }}
+  storageClassName: {{ template "ivr.storageClass" . }}
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: ivr
+  nfs:
+    server: {{ .Values.ivr.nfs_volumes.host }}
+    path: {{ .Values.ivr.nfs_volumes.share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+  persistentVolumeReclaimPolicy: Retain
+---
+{{- end }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ivr
+spec:
+  {{- if .Values.ivr.nfs_volumes.host }}
+  volumeName: {{ .Values.ivr.persistence.volume }}
+  {{- end }}
+  storageClassName: {{ template "ivr.storageClass" . }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.ivr.persistence.storage }}
+{{- end }}
+{{- end }}

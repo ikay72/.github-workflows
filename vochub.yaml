@@ -1,0 +1,678 @@
+global:
+  loadBalancerIP: 10.0.0.100
+  ingressClass: "vochub"
+  imagePullSecrets:
+    - "gcr-json-key"
+  pullSecret: gcr-json-key
+  nfs: 10.0.0.6
+  nmHost: notify-staging.tretennetworks.ca
+  staticHost: static-staging.tretennetworks.ca
+  priorityClass: protected-default
+  storageClass: vochub
+  sysctls: {}
+  timeZone: "Europe/Zurich"
+  redis:
+    password: ""
+  imageRegistry: https://europe-docker.pkg.dev
+  repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub
+
+storageclass:
+  enabled: false
+
+deploy:
+  nm: "11.13.1"
+
+priorityClassName: "protected-default"
+
+nginx:
+  image:
+    tag: "1.22.1"
+
+enterprises:
+  - name: treten
+    id: 1001
+  - name: "feedback"
+    dbname: "feedback_treten"
+    username: "feedback_user"
+    password: "TK8sDbfed"
+  - name: "xircl"
+    dbname: "xircl_treten"
+    username: "xircl_user"
+    password: "K8sDbss0"
+    mongodb_database: xircl_treten
+    fbhost_disabled: false
+    surveyhost_disabled: false
+    astrahost_disabled: false
+    feedback_mongodb_database: feedback_treten
+    fbhost: treten-rest.tretennetworks.ca
+    hubhost: treten-vochub.tretennetworks.ca
+    surveyhost: treten-survey.tretennetworks.ca
+    astrahost_alias: "*.treten-astra.tretennetworks.ca"
+    surveyhost_alias: "*.treten-survey.tretennetworks.ca"
+    astrahost: treten-astra.tretennetworks.ca
+    ssoac: "uXmGytsfUiPRIG9zQuKIg8mf84Um81STzpeu1o2K"
+    fb_export_ssoac: "4wm65UHJZQXvAhS3ISfexdM9UNdLD4rySIokBmtL"
+    timeZone: "Europe/Zurich"
+    fbtasks: ""
+    gdpr_settings: {}
+    sms_gateways:
+    - name: "TestGateway"
+      sms_senders:
+        - name: "SENDER_NAME1"
+          phone: "+380501234567"
+        - name: "SENDER_NAME2"
+          phone: "+380501239999"
+      default_sms_url: "http://localhost:8765/inbox_message"
+    timeFrame:
+      start: ""
+      end: ""
+    invite_priorities_criteria:
+      high: 10
+      average: 5
+    shortener:
+      enabled: true
+      service: ""
+    external_ticket_api: "http://external-ticket-api.example.com"
+    fbapi_test: false
+    sent_email_invite_using: ""
+    alternative_messaging_service:
+      service: "alternative_messaging_service_name"
+    allow_creation_quarantined_blacklisted: false
+
+fbv2:
+  static:
+    host: "static-staging.tretennetworks.ca"
+  resources:  # Resource requests and limits for the feedback-v2 container
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+fbapi:
+  db:
+    host: "10.150.55.101"
+    username: "root"
+    password: "Myc0mpl3xpassw0rd"
+
+    rabbitmqhost: "http://guest:guest@rabbitmq.default:15672"
+    user: "guest"
+    password: "guest"
+    direct_invite_queue: live-direct-invite
+
+  image:
+    tag: "latest"
+
+
+  resources:
+    requests:
+      cpu: 150m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 192Mi
+
+  rabbitmq:
+    host: "rabbitmq"
+    user: "guest"
+    password: "guest"
+    direct_invite_queue: live-direct-invite
+
+feedbackapi:
+  username: "feedback_api"
+  password: "Ks8DbAp1"
+  image:
+    tag: 11.14.8.3
+
+fbconfig:
+  claim: feedback
+  import_export_volume: feedback
+
+  persistence:
+    storage: 100G
+
+  storageClass: "vochub"  # StorageClass for the PV
+
+  nfs_volumes:
+    host: 10.0.0.6
+    share: "/srv/data/nfs/feedback"
+
+
+  feedbackdb:
+    run_create: true
+    run_migration: true
+    host: "10.0.0.18"
+    username: "feedback_user"
+    password: "TK8sDbfed"
+    default_name: "feedback_treten"
+    debug: false
+    devel: false
+
+
+  mongodb:
+    authentication: true
+    host: "10.0.0.4:27017"
+    username: "root"
+    password: "Myc0mpl3xpassw0rd"
+    default_db: "feedback_treten"
+  amqp:
+    host: "http://guest:guest@rabbitmq.default:15672"
+    user: "guest"
+    password: "guest"
+  sso:
+    django:
+      sso: "LnBix89GiQvv1PghpQwBhtfjd8PhbUahBxHYYq92"
+
+  static:
+    global:
+      staticHost: "static-staging.treten"
+
+  nm:
+    image:
+      tag: 11.13.1
+    jwtSecret: "58epkehUC1b8uaTisC8ZNHGxsRS8iKQ5tDKKdu8l"
+
+  django:
+    key: "tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q"
+    feedback:
+      debug: false
+      devel: false
+  xircl_export_api_url: "http://xircl_api_url"
+
+  corsdebug: false
+
+
+  uwsgi_processes: 4
+
+  url_shortener_username:
+    yourls:
+      username: "Vm8gV6sU"
+  url_shortener_password:
+    yourls:
+      password: "B7AmdZWNF8WJAuczd28wx6jHnITQEC5vyT45SMiu"
+  url_shortener_host:
+    feedback:
+      url_shortener_host: yourls-staging.tretennetworks.ca
+
+  image:
+    deploy:
+      feedback: "latest"
+      fbv2: "latest"
+      fbapi: "latest"
+      xircl: "latest"
+      webui: "latest"
+      digirunner: "latest"
+      classifier: "latest"
+
+  resources:
+    feedback: {}
+    fbtasks: {}
+    fbv2: {}
+    fbapi: {}
+    xircl: {}
+    webui: {}
+    astra: {}
+
+#fb-tasks
+fbtasks:
+  enabled: true
+  beatEnabled: true
+  customCaCert: false
+  image:
+    tag: "latest"  # Specify the tag for feedback-rest-api image
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: 100m
+      memory: 384Mi
+  consumers:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 10Mi
+    replicas: 1
+    stabilizationWindowSeconds: 5
+    restoreToOriginalReplicaCount: true
+    maxReplicaCount: 1
+    minReplicaCount: 0
+    idleReplicaCount: 0
+    celeryAutoscale: "1,1"
+    config: {}
+    resources: {}
+  delete_rabbitmq_queues: false  # Enable if needed
+  customCaInitContainer: {}
+
+tailout:
+  image:
+    tag: 0.2.4  # Specify the tag for tailout image
+  slackToken: ""
+  slackChannel: ""
+
+  resources: {}
+  consumers: {}
+
+# Xircl configuration
+xircl:
+  # Ingress Annotations
+  ingressAnnotations: {}
+
+  # Image Configuration
+  image:
+    tag: "latest"
+
+  # MySQL Database Configuration
+  db:
+    host: "10.0.0.18"
+    username: "xircl_user"
+    password: "K8sDbss0"
+    run_create: false
+    run_migration: false
+
+  # MongoDB Configuration
+  mongodb:
+    authentication: true
+    host: "10.0.0.4:27017"
+    tls: false
+    username: "root"
+    password: "Myc0mpl3xpassw0rd"
+    auth_source: "admin"
+
+  # Single Sign-On (SSO) Configuration
+  sso:
+    main_host: "https://sso-staging.tretennetworks.ca"
+    verify_tls: false
+    appsecret: "LnBix89GiQvv1PghpQwBhtfjd8PhbUahBxHYYq92"
+    fbappsecret: "TIifdTSnUmMM6lzl099zcYMwRvKLLpkmrmueqkDK"
+
+  # SMTP Configuration
+  smtp:
+    user: ""
+    pass: ""
+    from: "noreply@sandsiv.com"
+
+  # Time Zone Configuration
+  timeZone: "Europe/Zurich"
+
+  # Socket Notification Configuration
+  socket_notification:
+    host: "wss://notify-staging.mtn.co.rw"
+    jwtSecret: "58epkehUC1b8uaTisC8ZNHGxsRS8iKQ5tDKKdu8l"
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    connection:
+      socket_notification:
+        host: "rabbitmq"
+        port: "5672"
+        user: "guest"
+        password: "guest"
+
+  # Redis Configuration
+  redis:
+    host: "redis-server"
+
+  # NFS Volumes Configuration
+  nfs_volumes:
+    host: "10.0.0.6"
+    uploads_share: "/srv/data/nfs/xircl-uploads"
+    bg_share: "/srv/data/nfs/xircl-bg-images"
+    session_share: "/srv/data/nfs/xircl-sessions"
+    cache_share: "/srv/data/nfs/xircl-cache"
+
+  # Persistence Volume Claims
+  persistence:
+    storage: "50G"
+    claims:
+      bg: "xircl-bg-images"
+      cache: "xircl-cache"
+      sessions: "xircl-sessions"
+      uploads: "xircl-uploads"
+
+  # Volumes Configuration
+  volumes:
+    uploads: "xircl-uploads"
+    cache: "xircl-cache"
+    sessions: "xircl-sessions"
+    bg: "xircl-bg-images"
+
+  # Supercharts Rebuild Configuration
+  superchartsrebuild:
+    enabled: true
+
+# Astra configuration
+
+astra:
+  replicas: 1  # Number of replicas for the Astra deployment
+  django:
+    secret_key: "tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q"
+    debug: false  # Assuming debug mode is off
+  amqp:
+    user: guest
+    password: guest
+  db:
+    username: feedback_user
+    password: TK8sDbfed
+    host: 10.0.0.18
+    default_name: "feedback_treten"
+  image:
+    repository: europe-docker.pkg.dev/sandsiv-infrastructure/vochub  # Replace with your repository URL
+    tag: "latest"  # Replace with the specific image tag if needed
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+
+# Digirunner configuration
+digirunner:
+  image:
+    deploy:
+      digirunner: "latest"
+
+
+# Classifier configuration
+classifier:
+  replicas: 2
+  dropCache: false
+  image:
+    tag: "latest"
+  mongodb:
+    volume: "classifier"
+  persistence:
+    claim: "classifier"
+  nfs_volume:
+    host: "10.0.0.6"
+    share: "/srv/data/nfs/classifier"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+# MySQL configuration
+mysql:
+  customCaCert: false
+  host: 10.0.0.18
+  sso:
+    username: "sso_user"
+    password: "K8sDbss0"
+  feedback:
+    username: "feedback_user"
+    password: "TK8sDbfed"
+  xircl:
+    username: "xircl_user"
+    password: "K8sDbss0"
+
+
+# MongoDB configuration
+mongodb:
+  authentication: true
+  auth_source: "admin"
+  host: "10.0.0.4:27017"
+  username: "root"
+  password: "Myc0mpl3xpassw0rd"
+
+
+nm:
+  # Ingress configuration
+  ingress:
+    host: "notify-staging.tretennetworks.ca"
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/rewrite-target: "/"
+
+  # JWT secret for authentication
+  jwt_secret: "58epkehUC1b8uaTisC8ZNHGxsRS8iKQ5tDKKdu8l"
+
+  # Image configuration
+  image:
+    tag: 11.13.1
+
+# General authentication configuration
+auth:
+  username: "guest"
+  password: "guest"
+  tls:
+    enabled: false
+# Persistence configuration
+persistence:
+  size: "8Gi"
+
+
+
+# Configuration for cluster formation
+default_user: "guest"
+default_pass: "guest"
+cluster_formation.k8s.host: "cluster.local"
+
+# Metrics configuration for RabbitMQ
+metrics:
+  enabled: true
+  prometheusRule:
+    enabled: true  # Enable or disable Prometheus rules
+    namespace: "monitoring"  # Namespace where the PrometheusRule
+  rabbitmq:
+    monitoring: false
+
+
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true  # Controls whether to aut
+
+
+
+# User configuration for RabbitMQ
+users:
+  rabbitmq:
+    users: "guest"
+    permissions:
+      vhost: "/"
+      configure: ".*"
+      write: ".*"
+      read: ".*"
+
+# RabbitMQ host iconfiguration
+amqp:
+  user: "guest"
+  password: "guest"
+
+
+rabbitmq:
+  Host: "http://guest:guest@rabbitmq.default:15672"
+  storageClass: vochub
+  priorityClassName: "protected-default"
+  persistenceSize: "8Gi"
+  resources:
+    limits:
+      cpu: 3
+      memory: 2000Mi
+    requests:
+      cpu: 1
+      memory: 640Mi
+
+  users:
+      - username: guest
+        password: guest
+        tags: administrator
+  permissions:
+      - username: guest
+        vhost: /
+        configure: .*
+        write: .*
+        read: .*
+
+# SSO configuration
+sso:
+  db:
+    host: "10.0.0.18"
+    username: "sso_user"
+    password: "K8sDbss0"
+    name: "sso_db"
+  ingress:
+    hosts:
+      - "sso-staging.tretennetworks.ca"
+  resources: {}
+  django:
+    debug: false
+    secret_salt: "BJTLvmp6Y9TPITioKH2trvO2m60sgjQT8Y2KsIvd"
+    secret_key: "tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q"
+    rest:
+      secret_key: "tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q"
+  smsgw:
+    url: "http://dummy-sms-gateway-url.com"
+  zendesk:
+    url: "http://dummy-zendesk-url.com"
+
+# ivr configuration
+ivr:
+  enabled: false
+  nfs_volumes:
+    host: "10.0.0.6"
+    share: /srv/data/nfs/ivr
+  persistence:
+    volume: "ivr-pv"  # Name of the Persistent Volume
+    storage: "10Gi"
+  amqp:
+    host: rabbitmq
+    port: "5672"
+    user: guest
+    password: guest
+    queue: live-outbox-voice
+  resources:
+    limits:
+      cpu: 100m
+      memory: 96Mi
+    requests:
+      cpu: 50m
+      memory: 48Mi
+  external_asterisk: false
+  speechtotext: speech-to-text
+  asterisk_resources:
+    limits:
+      cpu: 200m
+      memory: 192Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+
+# Initial apps configuration
+initial_apps:
+  - name: "xircl"
+    secret: "LnBix89GiQvv1PghpQwBhtfjd8PhbUahBxHYYq92"
+  - name: "feedback"
+    secret: "TIifdTSnUmMM6lzl099zcYMwRvKLLpkmrmueqkDK"
+
+
+# redis configuration
+redis:
+  master:
+    persistence:
+      enabled: true
+      storageClass: vochub
+    priorityClassName: protected-default
+
+  replica:
+    priorityClassName: "protected-default"  # Set your PriorityClass name here
+    persistence:
+      enabled: true
+      storageClass: "vochub"
+      accessModes:
+        - ReadWriteOnce
+      size: 8Gi
+
+  sentinel:
+    enabled: false
+
+
+# URL shortener configuration
+yourls:
+  hosts:
+    - yourls-staging.tretennetworks.ca
+  username: "Vm8gV6sU"
+  password: "B7AmdZWNF8WJAuczd28wx6jHnITQEC5vyT45SMiu"
+
+# Logging and metric server configuration
+logging:
+  metricServer:
+    keda:
+      logging:
+        metricServer: true
+
+metricServer:
+  useHostNetwork: false
+
+# Watch namespace configuration
+watchNamespace:
+  release:
+    Namespace: "default"
+
+# RBAC configuration
+rbac:
+  create: true
+
+# Image configuration
+image:
+  repository: "europe-docker.pkg.dev/sandsiv-infrastructure/vochub"
+  keda:
+    repository: "europe-docker.pkg.dev/sandsiv-infrastructure/vochub"
+    tag: "v2.10-ss"
+  metricApiServer:
+    repository: "europe-docker.pkg.dev/sandsiv-infrastructure/vochub"
+  webhooks:
+    repository: "europe-docker.pkg.dev/sandsiv-infrastructure/vochub"
+
+  pullSecrets: "gcr-json-key"
+
+# Resources configuration
+resources:
+  operator:
+    name: "keda-operator"
+  webhooks:
+    enabled: true
+    name: "keda-webhooks"
+    replicaCount: 2
+
+kedaHpa:
+  enabled: true
+
+keda:
+  enabled: true
+
+
+# Additional features configuration
+onetouch:
+  enabled: false
+
+
+skopeoSync:
+  enabled: false
+
+gcpPullSecret: false
+ociPullSecret: false
+
+ssoac:
+  mtnrwanda: "uXmGytsfUiPRIG9zQuKIg8mf84Um81STzpeu1o2K"
+  fbexport:
+    mtnrwanda: "4wm65UHJZQXvAhS3ISfexdM9UNdLD4rySIokBmtL"
+
+jwtSecret: "58epkehUC1b8uaTisC8ZNHGxsRS8iKQ5tDKKdu8l"
+
+django:
+  salt: "BJTLvmp6Y9TPITioKH2trvO2m60sgjQT8Y2KsIvd"
+  key: "tXC11AImeXrqAzMgwKeV9PzcnKkU0QUXrIbupI4q"
+  sso: "LnBix89GiQvv1PghpQwBhtfjd8PhbUahBxHYYq92"
+  fb: "TIifdTSnUmMM6lzl099zcYMwRvKLLpkmrmueqkDK"
+
+tls:
+  loadBalancerIP: 10.0.0.100
+  nfs: 10.0.0.6
+  nmHost: notify-staging.tretennetworks.ca
+  staticHost: static-tretennetworks.ca

@@ -1,0 +1,1000 @@
+   15  k get po ingress-nginx
+   16  k get ingress ingress-nginx
+   17  clear
+   18  k get po
+   19  clear
+   20  k logs ingress-vochub-controller-5b7dfbb69c-2d9q9
+   21  cd
+   22  clear
+   23  helmfile sync
+   24  cd helm-onprem
+   25  helmfile sync
+   26  clear
+   27  k get po
+   28  k logskeda-operator-metrics-apiserver-577b8bd6c6-p94sn
+   29  k logs keda-operator-metrics-apiserver-577b8bd6c6-p94sn
+   30  clear
+   31  kubectl edit deployment keda-operator -n keda
+   32  kubectl edit deployment keda-operator -n default 
+   33  cd
+   34  cd star_mtn_co_rw_389190235/
+   35  cat DigiCertCA.crt TrustedRoot.crt > combined-ca-certificates.pem
+   36  kubectl create configmap custom-ca-certificates --from-file=combined-ca-certificates.pem -n default
+   37  kubectl get deployment keda-operator -n default -o yaml > keda-operator-deployment.yaml
+   38  cat keda-operator-deployment.yaml 
+   39  clear
+   40  kubectl get deployment keda-operator-metrics-apiserver -o yaml > keda-operator-metrics-apiserver-deployment.yaml
+   41  cat keda-operator-metrics-apiserver-deployment.yaml 
+   42  clear
+   43  sudo vi keda-operator-metrics-apiserver-deployment.yaml 
+   44  kubectl apply -f keda-operator-metrics-apiserver-deployment.yaml
+   45  k get po
+   46  clear
+   47  kubectl apply -f keda-operator-metrics-apiserver-deployment.yaml
+   48  kubectl rollout status deployment/keda-operator-metrics-apiserver -n default
+   49  kubectl logs deployment/keda-operator-metrics-apiserver -n default
+   50  clear
+   51  kubectl get configmap custom-ca-certificates -n default -o yaml
+   52  clear
+   53  kubectl exec -it <keda-metrics-api-server-pod-name> -n default -- ls /etc/ssl/certs/custom
+   54  kubectl exec -it keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default -- ls /etc/ssl/certs/custom
+   55  k get po
+   56  kubectl exec -it keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default -- ls /etc/ssl/certs/custom
+   57  clear
+   58  kubectl exec -it keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default -- sh
+   59  kubectl describe pod keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default
+   60  clear
+   61  kubectl debug -it keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default --image=busybox --target=keda-operator-metrics-apiserver-6fd95488b8-lpzdl
+   62  kubectl logs keda-operator-metrics-apiserver-6fd95488b8-lpzdl -n default
+   63  clear
+   64  sudo vi keda-operator-metrics-apiserver-deployment.yaml 
+   65  kubectl apply -f keda-operator-metrics-apiserver-deployment.yaml
+   66  kubectl get deployment keda-operator-metrics-apiserver -n default -o yaml > keda-operator-metrics-apiserver-deployment-latest.yaml
+   67  sudo vi keda-operator-metrics-apiserver-deployment-latest.yaml 
+   68  kubectl replace --force -f keda-operator-metrics-apiserver-deployment.yaml
+   69  kubectl rollout status deployment/keda-operator-metrics-apiserver -n default
+   70  clear
+   71  k get po
+   72  k get deployments.apps 
+   73  clear
+   74  k get po
+   75  clear
+   76  cd
+   77  cd helmfile 
+   78  cd helm-onprem
+   79  helmfile sync
+   80  helmfile -n default apply
+   81  clear
+   82  k get secrets kedaorg-certs -o yaml
+   83  echo "<base64-encoded-data>" | base64 --decode
+   84  echo "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFRENDQWZpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJBd0RnWURWUVFLRXdkTFJVUkIKVDFKSE1RMHdDd1lEVlFRREV3UkxSVVJCTUI0WERUSTBNREl3TkRFMk16VTBNMW9YRFRNME1ESXdNVEUzTXpVMApNMW93SVRFUU1BNEdBMVVFQ2hNSFMwVkVRVTlTUnpFTk1Bc0dBMVVFQXhNRVMwVkVRVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTzVqYVV6UVIvZThCRFhOSWxCVS9xTEVGVEJLajlqTVZmdWwKb0l2V3JieVo0NXlPbHVRdEM4ZnB4TXFPd1BYSGNDQ0Nla0Ivb3JEaEVlaUJQSnVZZWlBYUw1OE1ZeXNnQWlRYwp2RkFmU2crM0h0eWFnM3MvcUM2Rkx4VmU2bTIwV3FPR2w1UjVwL1g2aUNkbjEzTlRveU03SkE2L295QnYzeEFBCmRRMVI4SUFrMlZ0dG5lUTUwbFpIeHY2c0ZaL0N1RHdFazZhTWl2RDNWRjd6VGdsNDl3ZVJTdVU2ejBuREk1MDEKdEE4WmxwUGRqaWdsTDNYT2VmM3pQMnhJSFhnK0ZMR1dyR1A0OVpoV2Q4NTM0MmRGeXBqdUtWWE1tLytaWG0zegppNGFvOXRjUzRONksybDZhWUU3a2lxdkZkelgvWG02Rjh2K09LVGFVdmIyaEJESVpVUXNDQXdFQUFhTlRNRkV3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkxyMnkvS08KT2FXd3dkeW5wQWQxK2FtenFvVkFNQThHQTFVZEVRUUlNQWFDQkV0RlJFRXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUpnRkRiUzE2ZEhKbFN6S3FoeG9RNW9BNDZXK2JIVDBTMi8yNUxHelpmeUVldnlYcno0MWZGWG94YUVnCjRaODRrZkZQdlE0S1grMU14Ly9ZQ2Y1bFNTNnlETkdqaGhkOHEwRmJESUpiVGVkQW9pTUhJcXF1VjJTNDZvT1MKbFpGUGxORERzR0ZPWDhFaEh3bTVmekZCdFZwalI1L0ZvR21La2VKQVRnU1hOelBJb2liQ202TlBxa1cweC95aApLSHBGN092QWU2eHlXMkc2MjdCZU9sdVA4cEtZbTI0U2hIaS9PQTl2M2JKMGhhVzVENlBSRnNZL1c2SnRuQ20xCm5XTHlpWVIvZVU4UUoxbTFEc05hRWNZQVpMeTR1a3ByZ2ZFdDhGdVkrOWc2T0MwMkJINUJZK2RlNEx6SGh1MVMKbE45NXZmVXczVGxIYUEzc0UvVDJMUVNYU2g4PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==" | base64 --decode
+   85  echo "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFRENDQWZpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJBd0RnWURWUVFLRXdkTFJVUkIKVDFKSE1RMHdDd1lEVlFRREV3UkxSVVJCTUI0WERUSTBNREl3TkRFMk16VTBNMW9YRFRNME1ESXdNVEUzTXpVMApNMW93SVRFUU1BNEdBMVVFQ2hNSFMwVkVRVTlTUnpFTk1Bc0dBMVVFQXhNRVMwVkVRVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTzVqYVV6UVIvZThCRFhOSWxCVS9xTEVGVEJLajlqTVZmdWwKb0l2V3JieVo0NXlPbHVRdEM4ZnB4TXFPd1BYSGNDQ0Nla0Ivb3JEaEVlaUJQSnVZZWlBYUw1OE1ZeXNnQWlRYwp2RkFmU2crM0h0eWFnM3MvcUM2Rkx4VmU2bTIwV3FPR2w1UjVwL1g2aUNkbjEzTlRveU03SkE2L295QnYzeEFBCmRRMVI4SUFrMlZ0dG5lUTUwbFpIeHY2c0ZaL0N1RHdFazZhTWl2RDNWRjd6VGdsNDl3ZVJTdVU2ejBuREk1MDEKdEE4WmxwUGRqaWdsTDNYT2VmM3pQMnhJSFhnK0ZMR1dyR1A0OVpoV2Q4NTM0MmRGeXBqdUtWWE1tLytaWG0zegppNGFvOXRjUzRONksybDZhWUU3a2lxdkZkelgvWG02Rjh2K09LVGFVdmIyaEJESVpVUXNDQXdFQUFhTlRNRkV3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkxyMnkvS08KT2FXd3dkeW5wQWQxK2FtenFvVkFNQThHQTFVZEVRUUlNQWFDQkV0RlJFRXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUpnRkRiUzE2ZEhKbFN6S3FoeG9RNW9BNDZXK2JIVDBTMi8yNUxHelpmeUVldnlYcno0MWZGWG94YUVnCjRaODRrZkZQdlE0S1grMU14Ly9ZQ2Y1bFNTNnlETkdqaGhkOHEwRmJESUpiVGVkQW9pTUhJcXF1VjJTNDZvT1MKbFpGUGxORERzR0ZPWDhFaEh3bTVmekZCdFZwalI1L0ZvR21La2VKQVRnU1hOelBJb2liQ202TlBxa1cweC95aApLSHBGN092QWU2eHlXMkc2MjdCZU9sdVA4cEtZbTI0U2hIaS9PQTl2M2JKMGhhVzVENlBSRnNZL1c2SnRuQ20xCm5XTHlpWVIvZVU4UUoxbTFEc05hRWNZQVpMeTR1a3ByZ2ZFdDhGdVkrOWc2T0MwMkJINUJZK2RlNEx6SGh1MVMKbE45NXZmVXczVGxIYUEzc0UvVDJMUVNYU2g4PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==" | base64 --decode > kedaorgca.crt
+   86  echo "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZaVENDQkUyZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJBd0RnWURWUVFLRXdkTFJVUkIKVDFKSE1RMHdDd1lEVlFRREV3UkxSVVJCTUI0WERUSTBNREl3TkRFMk16VTBNMW9YRFRNME1ESXdNVEUzTXpVMApNMW93R0RFV01CUUdBMVVFQXhNTmEyVmtZUzF2Y0dWeVlYUnZjakNDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFECmdnRVBBRENDQVFvQ2dnRUJBT2FnOXQxcUFNU3JNemV5UGgxUUpncGdrN2piMk4xTzVlK2x1bXJDc1NOTk5MdkgKNHl2S1gzRWFEV1VYYjkyajJPaWZHQmpSVWVaQ3lXSGVLTTRxWUdoNTVjREJ5UUlaN3JFNkRqamVSSk9yMXZHZwpBUGlIYUE0bi9wUjhtR2RSRkQ2OHlkWnc5REJQMXhpUXJ4SklOeXpvdDR6NWZXK0MzOEMwWExaS0hMNGFuVkdiCjREUU41azNTTk5ZWS9TVGZXSERIMVBXSmdFZEQyMHE1SE5ZdmxOVjlJU3hvaGRyTGROR1ZoMHdyVmNQdy9zZmQKbmhhVzlCSUs5SVNVUmVlSTQ4QUM3akhlc083MjNGdjJjRVNrUmpQMUdJSUxjK0Fna3lKbDBLSUtqT211bHBWYQo2R2p2aTc3bFlYR3VUd0grWUNGRnhmSjViUEFDN2pmSUFZSnF3TTBDQXdFQUFhT0NBcTh3Z2dLck1BNEdBMVVkCkR3RUIvd1FFQXdJRm9EQWRCZ05WSFNVRUZqQVVCZ2dyQmdFRkJRY0RBUVlJS3dZQkJRVUhBd0l3REFZRFZSMFQKQVFIL0JBSXdBREFmQmdOVkhTTUVHREFXZ0JTNjlzdnlqam1sc01IY3A2UUhkZm1wczZxRlFEQ0NBa2tHQTFVZApFUVNDQWtBd2dnSThnZzFyWldSaExXOXdaWEpoZEc5eWdnMXJaV1JoTFc5d1pYSmhkRzl5Z2hWclpXUmhMVzl3ClpYSmhkRzl5TG1SbFptRjFiSFNDR1d0bFpHRXRiM0JsY21GMGIzSXVaR1ZtWVhWc2RDNXpkbU9DSDJ0bFpHRXQKYjNCbGNtRjBiM0l1WkdWbVlYVnNkQzV6ZG1NdWJHOWpZV3lDSjJ0bFpHRXRiM0JsY21GMGIzSXVaR1ZtWVhWcwpkQzV6ZG1NdVkyeDFjM1JsY2k1c2IyTmhiSUlYYTJWa1lTMWhaRzFwYzNOcGIyNHRkMlZpYUc5dmEzT0NIMnRsClpHRXRZV1J0YVhOemFXOXVMWGRsWW1odmIydHpMbVJsWm1GMWJIU0NJMnRsWkdFdFlXUnRhWE56YVc5dUxYZGwKWW1odmIydHpMbVJsWm1GMWJIUXVjM1pqZ2lsclpXUmhMV0ZrYldsemMybHZiaTEzWldKb2IyOXJjeTVrWldaaApkV3gwTG5OMll5NXNiMk5oYklJeGEyVmtZUzFoWkcxcGMzTnBiMjR0ZDJWaWFHOXZhM011WkdWbVlYVnNkQzV6CmRtTXVZMngxYzNSbGNpNXNiMk5oYklJZmEyVmtZUzF2Y0dWeVlYUnZjaTF0WlhSeWFXTnpMV0Z3YVhObGNuWmwKY29JbmEyVmtZUzF2Y0dWeVlYUnZjaTF0WlhSeWFXTnpMV0Z3YVhObGNuWmxjaTVrWldaaGRXeDBnaXRyWldSaApMVzl3WlhKaGRHOXlMVzFsZEhKcFkzTXRZWEJwYzJWeWRtVnlMbVJsWm1GMWJIUXVjM1pqZ2pGclpXUmhMVzl3ClpYSmhkRzl5TFcxbGRISnBZM010WVhCcGMyVnlkbVZ5TG1SbFptRjFiSFF1YzNaakxteHZZMkZzZ2psclpXUmgKTFc5d1pYSmhkRzl5TFcxbGRISnBZM010WVhCcGMyVnlkbVZ5TG1SbFptRjFiSFF1YzNaakxtTnNkWE4wWlhJdQpiRzlqWVd3d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFJejJJT0MweFNXMUJRd0d6dUJ6YVNSYkVacW5xaFpxCkJOVjhuSmNZZEZLdGd3TkJjeEc0TXg2aEtIT3VxeXh3VEtSdHFYZEsrVXBsUXkvUGREbTlvcGJIQUJ3SlhPMFYKZTVFZkhaZytMYTNGMEdYM054N3hLczR4TXowK1VBQmx0eXY2WnVHTmJOalk4ejRYYTBzYUhIbzRBeG82ZktwRQo4YU9YMlBRdFVpcEh5Y2Z3SHFnb3ljRGtxbG14ODFPV1ZHcnNQR0tpejRPTjJBZWl0VnN5WHNmSExHQUdjQTdMCjlmZEVxVVZ4TGFaUDR1RjJ6VHN3VDdHMExjZWNJUHdjOE9wa3A0bDMzUjFEaDhtL0dyVEZ1WHZzc2lRdVc1N3kKaDJyNHpIYnpYaHpaSE5CN2JXaG1DQUlDaFhnVWFGdGZNWTF3MmlXdVEvRG9UV3ppVlNZWkpRST0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=" | base64 --decode > kedatls.crt
+   87  echo "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBNXFEMjNXb0F4S3N6TjdJK0hWQW1DbUNUdU52WTNVN2w3Nlc2YXNLeEkwMDB1OGZqCks4cGZjUm9OWlJkdjNhUFk2SjhZR05GUjVrTEpZZDRvemlwZ2FIbmx3TUhKQWhudXNUb09PTjVFazZ2VzhhQUEKK0lkb0RpZitsSHlZWjFFVVByekoxbkQwTUUvWEdKQ3ZFa2czTE9pM2pQbDliNExmd0xSY3Rrb2N2aHFkVVp2ZwpOQTNtVGRJMDFoajlKTjlZY01mVTlZbUFSMFBiU3JrYzFpK1UxWDBoTEdpRjJzdDAwWldIVEN0VncvRCt4OTJlCkZwYjBFZ3IwaEpSRjU0amp3QUx1TWQ2dzd2YmNXL1p3UktSR00vVVlnZ3R6NENDVEltWFFvZ3FNNmE2V2xWcm8KYU8rTHZ1VmhjYTVQQWY1Z0lVWEY4bmxzOEFMdU44Z0JnbXJBelFJREFRQUJBb0lCQUZ3SXRoc0xsenprZU83cwpBVitmUVY3NHhWcUsyUk1QempDQk9WQXJXNWNUMDB4d2F4WnBqd2JLZDdmMHoxNXFhVUFEWlJGYVRzMk5yMkdQCnowYmVvRlJ3K0orZ2RYK1NLNityMUVzYlg5QnlUYmRrdTU1eUlyTXJnS3R1d1Q3Um16dWlDUVc3VTZjSDVYVlgKSDVZekhWbWRrTW9BTWU5VEVjbUw4RWVLY2NmbWd4SkV2M3NxQ2FKQWFvNmhTREFkWm5XVTM2WUVRY2ZqazVoLwpNMEhhWlp4L3pQTjR6Z3I5SUxrR2VnUU9NclFpaDBXR2Y2cXNVMEsrNFJvWHczelNoaU5FZnVrb0FxM0RzVHRNCnFEY1hCSkt1NnlBQTdlV2ttMEppKzhCdXRNeDFnRmNDdnVlVXAreFUyRFhUYk5pdWd6ZGtnREY0VWtmaktmSzIKd1ZKb2ViMENnWUVBN2dzYTdSS3NtalZZWTdjUjhsdUtDQTYwUTAyamphbUw3REhra2Fwdlo3L2c2eDZ0ZWQ1QwpoQWZ2UU9jSmVBMG5KWEZJSXNVU2R6T04zdkZNMzNCTkFjVFJVVEJKdy9vRTh0T21OeU9yUVRjMUxrb2dOeHNFCk1ZS08xY1dkeVZnc0pwMEl2bnlDcWVMaDRwUFd2RnlpN2pSckxaRE1xOElZZk9KTnRGazBLQThDZ1lFQStBYXMKb1BKU1NKa24yWE5vQ2ViUGhMa0JYQ21ZOC9Tb0syN1RIZTRkbFc1djhXSmY2UTJhdjYvVFNzanZMR3VtTnZTVgpTem5BUWQ5dnpYNGdqYmpPckJqbjJGUUZqZWNESVYzUUJIZ0hveGhNdEozNVMzSjdFNllhSU1jZTJFVUNVU2FQCnJRUzNDNUdON2dUUVdpSzB0VFB1YTg0RTdxeXNWZ0Zsb0t6aGpXTUNnWUVBb1dPMEdNSE5kaXZ1eG9SclRZYlUKbWN2bVdhODgwU0gvZE44SzJkdlU5bUY0UzlDYnl3RnUxWGRQdGhBdU1rK3dsOGtySUMrKzZrUnd6cE9KREFCbQpwV2xjaFJBWkl4N1MxaE83SUswMVFkejlXR24zVjRVZ25iU254TFhiMlpQSE0xTEtoK09BNzArYzJISmxaNFhqCkRWOUt2elRxSHhWVVp1OUR3Wit0SmU4Q2dZQWZUVUJXSTU3czJKOWwyeUhETmlUMGZDREd6OTBrMUxpd21wRDgKVXdQYXl4QkhwNEd4T08xUnljL2h2VkFxQy8vektaVDU1SFQyRzB2UjVGd1pacngyamNJYzFDWExUZDlnUTZXdwpHckhrREhvSnhYSWo2blBML0FlS0lYY3NGakYvcWwweG1jbThKUWVEaFlvQ0JpVkdSU0tPNm5aRzVQWHUrTWdwCnFnZmhQd0tCZ1FDcWRNZzVMd3JBeXVzK2poVG10VnYzR0wrR0xZeHhKSkFqbEk5RlYwM1hTMjhyME5OVlZkb0cKTEc2RGZlS2dVeStxWFVkMUF6bE9KYm9mb3VWK2F2OHBYb2x5K0VyMEk4OUViVDkyeXVZa3FVRmg1VWtSd0s3RQp4ZHN3bnVDUmt3RnNHaFBvdEdWRWdkOGphTnphL1A3cjAzUGtsdkcxSGlrVElmMHFyVHMxdEE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=" | base64 --decode > kedatls.key
+   88  clear
+   89  openssl x509 -noout -modulus -in kedatls.crt | openssl md5
+   90  openssl rsa -noout -modulus -in kedatls.key | openssl md5
+   91  openssl x509 -in tls.crt.decoded -text -noout
+   92  openssl x509 -in kedatls.crt -text -noout
+   93  clear
+   94  openssl verify -CAfile ca.crt.decoded tls.crt.decoded
+   95  openssl verify -CAfile kedals kedatls.crt 
+   96  ls
+   97  openssl verify -CAfile kedaorgca.crt kedatls.crt 
+   98  k get secrets mtn-tls-secret -o yaml
+   99  echo "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlHdlRDQ0JhV2dBd0lCQWdJUUFwUmJsRHZuNFRXUGM5enBldzVvQ1RBTkJna3Foa2lHOXcwQkFRc0ZBREJaDQpNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNVE13TVFZRFZRUURFeXBFDQphV2RwUTJWeWRDQkhiRzlpWVd3Z1J6SWdWRXhUSUZKVFFTQlRTRUV5TlRZZ01qQXlNQ0JEUVRFd0hoY05Nak14DQpNVEV6TURBd01EQXdXaGNOTWpRd016STVNak0xT1RVNVdqQlJNUXN3Q1FZRFZRUUdFd0pTVnpFUE1BMEdBMVVFDQpCeE1HUzJsbllXeHBNUnN3R1FZRFZRUUtFeEpOVkU0Z1VuZGhibVJoUTJWc2JDQlFURU14RkRBU0JnTlZCQU1NDQpDeW91YlhSdUxtTnZMbkozTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4Z09UDQpVQnRmekNyL3A2UC9sMU1HcXpPNERxcC9qWjdzVnBnRGR4WmJvb2JQV2ExZnJLRVM3amgrMlN1aW1LTFZhL3lODQp4L01Bb1NwbG95VkNHM2lsUHU1bXpnQWQyd2dXM0k1cmZGVjRQWDZEZWh3ZkFQYng0YzVhOFZNbmlSRmtUOTJ1DQp4NElNZU5Fc0M2NjVhM1VoVFF6R0F4dFlZSWpyaTBCeXJlVHd4dkNZTUR6R0FPZFhDVE5ISEY5MFk3M0lwUHRODQo2S3IwUnhFc1gzZ0JXeGJiQXBia3JaVm04azlXQmhjeHhXSldnNjhMSFZITDdsMFIvak02STdGVmxVQXk3QUF6DQpaS3VBZUQyNXdpV3ZnQXV2dE5RRENkWWdZVmEyR1Z2MGlmSGpDSUJFUGNIcFdNU2dueER2bHlNQ2I0VCt3bEdFDQp2bURCUWpJN3p1R0F0bFJoRFFJREFRQUJvNElEaHpDQ0E0TXdId1lEVlIwakJCZ3dGb0FVZElXQXdHYkgzemZlDQp6NzBwTjZvREhiN3R6UmN3SFFZRFZSME9CQllFRlBDbkV6VG5QcXdqbTBuK2R1Z2JtN3VISFRtdU1CWUdBMVVkDQpFUVFQTUEyQ0N5b3ViWFJ1TG1OdkxuSjNNRDRHQTFVZElBUTNNRFV3TXdZR1o0RU1BUUlDTUNrd0p3WUlLd1lCDQpCUVVIQWdFV0cyaDBkSEE2THk5M2QzY3VaR2xuYVdObGNuUXVZMjl0TDBOUVV6QU9CZ05WSFE4QkFmOEVCQU1DDQpCYUF3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01JR2ZCZ05WSFI4RWdaY3dnWlF3DQpTS0JHb0VTR1FtaDBkSEE2THk5amNtd3pMbVJwWjJsalpYSjBMbU52YlM5RWFXZHBRMlZ5ZEVkc2IySmhiRWN5DQpWRXhUVWxOQlUwaEJNalUyTWpBeU1FTkJNUzB4TG1OeWJEQklvRWFnUklaQ2FIUjBjRG92TDJOeWJEUXVaR2xuDQphV05sY25RdVkyOXRMMFJwWjJsRFpYSjBSMnh2WW1Gc1J6SlVURk5TVTBGVFNFRXlOVFl5TURJd1EwRXhMVEV1DQpZM0pzTUlHSEJnZ3JCZ0VGQlFjQkFRUjdNSGt3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwDQpaMmxqWlhKMExtTnZiVEJSQmdnckJnRUZCUWN3QW9aRmFIUjBjRG92TDJOaFkyVnlkSE11WkdsbmFXTmxjblF1DQpZMjl0TDBScFoybERaWEowUjJ4dlltRnNSekpVVEZOU1UwRlRTRUV5TlRZeU1ESXdRMEV4TFRFdVkzSjBNQXdHDQpBMVVkRXdFQi93UUNNQUF3Z2dGK0Jnb3JCZ0VFQWRaNUFnUUNCSUlCYmdTQ0FXb0JhQUIxQUhiL2lEOEt0dnVWDQpVY0poelBXSHVqUzBwTTI3S2R4b1FncWY1bWRNV2pwMEFBQUJpOGVwMVpvQUFBUURBRVl3UkFJZ2Rldy9nbzFvDQpHd0dMaEFsVGNYdlpocUFUSFYrSy9TLzVWbUMzUFk2K2VETUNJRnc1NG1EWWxRSGVCbUZKYVIvc3kxclpyTzFrDQpMaEtHM29lRnNIVDZSVU10QUhZQVNMRGphOXFtUnpRUDVXb0MrcDB3Nnh4U0FjdFczU3lCMmJ1L3F6blloSE1BDQpBQUdMeDZuVlV3QUFCQU1BUnpCRkFpQVZvaDZqUVJNeDZzWTlMNVJsNVlDTm5GQTVTUTdwYms2b2I0Nm1MeFZ1DQoyZ0loQUxtbjFGdmpXQzVtSytCV0NDak5DeUFabmZYMWdEQWNkMzNUdi8zYjFaVU9BSGNBTzFOM2RUNHR1WUJPDQppekJiQnY1QU8yZllUOFAweDcwQURTMXliK0g2MUJjQUFBR0x4Nm5WakFBQUJBTUFTREJHQWlFQXB3RmdDSllJDQpBQmJvbS8yallVb09NMWp5SHQ0U2cyRnhKSURZQlJFQ1djVUNJUURwYSs2SzVwK0l6VkQ1UDJNdHM2K0F3NnNDDQp6d05EcHBvU2hZV0d1a1NBVURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUF4Sll3cnV3SlMvQTRJSnFVZlZiDQpjSmpHS3EwTmhmdTdYNGhBVmFkTWpZekhWZUNJWGFuU0lnVSs5KzlsM2Zmc2RBMUdENThzNXJrR25McTAxcFlRDQpHNWtSRDNnM2xDV0tCQ3JEVVpqZTlrelNLVDZ3cUVrUVg5T3R4bnNIWDltYzJIaERmUm05S0wyWU8vdkxyekZ5DQpZNlhQQ1ZOL3FYcU1qQzFpakZCWDAra2ljWm8wdVZUelFjcE55bmh3d1J1TkhEYmxib3l2N1EzTUc3Vk1NRTRHDQp4M3NhbStrWTNBSkhHeWlFdnBpYTdPTU9jNGI5WlUxR0FqcEhDbFloZzUySUdJeXVtRnRQbDRmRXl6N2poS0FoDQplbUU1ejJsMlBacWtiSWFablpyYzdxQkRTdHZPKzgvZUY0d1l6cjQrcCtUbklCRngrTzVKNkVSY0VGVWhVVTlpDQpDZz09DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRXlEQ0NBN0NnQXdJQkFnSVFEUFc5Qml0V0F2UjZ1RkFzSTh6d1pqQU5CZ2txaGtpRzl3MEJBUXNGQURCaApNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNUmt3RndZRFZRUUxFeEIzCmQzY3VaR2xuYVdObGNuUXVZMjl0TVNBd0hnWURWUVFERXhkRWFXZHBRMlZ5ZENCSGJHOWlZV3dnVW05dmRDQkgKTWpBZUZ3MHlNVEF6TXpBd01EQXdNREJhRncwek1UQXpNamt5TXpVNU5UbGFNRmt4Q3pBSkJnTlZCQVlUQWxWVApNUlV3RXdZRFZRUUtFd3hFYVdkcFEyVnlkQ0JKYm1NeE16QXhCZ05WQkFNVEtrUnBaMmxEWlhKMElFZHNiMkpoCmJDQkhNaUJVVEZNZ1VsTkJJRk5JUVRJMU5pQXlNREl3SUVOQk1UQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQUQKZ2dFUEFEQ0NBUW9DZ2dFQkFNejNFR0pQcHJ0amIrMlFVbGJGYlNkN2VoSldpdkgwK2RibjRZKzlsYXZ5WUVFVgpjTnNTQVBvbkNyVlhPRnQ5c2xHVGNaVU9ha0dVV3pVYitudjZ1OFcrSkREK1Z1L0U4MzJYNHhUMUZFM0xweER5CkZ1cXJJdkF4SWhGaGFaQW11bmpabHgvamZXYXJkVVNWYzhpcy8rOWRDb3BaUStHc3Nqb1A4MGo4MTJzM3dXUGMKM2tiVzIwWCtmU1A5a09oUkJ4NVJvMS90U1VaVWZ5eUl4ZlFUbkpjVlBBUG9vVG5jYVF3eXdhOFdWMHlVUjBKOApvc2ljZmViVVRWU3ZRcG1vd1FUQ2Q1eldTT1RPRWVBcWdKbndRM0RQUDNacjBVeEpxeVJld2cyQy9VYW9xMnlUCnpHSlNRbldTK0pyNlhsNnlzR0hsSHgrNWZ3bVk2RDM2ZzM5SGFhRUNBd0VBQWFPQ0FZSXdnZ0YrTUJJR0ExVWQKRXdFQi93UUlNQVlCQWY4Q0FRQXdIUVlEVlIwT0JCWUVGSFNGZ01CbXg5ODMzcys5S1RlcUF4Mis3YzBYTUI4RwpBMVVkSXdRWU1CYUFGRTRpVkNBWWxlYmpidVlQK3ZxNUV1MEdGNDg1TUE0R0ExVWREd0VCL3dRRUF3SUJoakFkCkJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdkZ1lJS3dZQkJRVUhBUUVFYWpCb01DUUcKQ0NzR0FRVUZCekFCaGhob2RIUndPaTh2YjJOemNDNWthV2RwWTJWeWRDNWpiMjB3UUFZSUt3WUJCUVVITUFLRwpOR2gwZEhBNkx5OWpZV05sY25SekxtUnBaMmxqWlhKMExtTnZiUzlFYVdkcFEyVnlkRWRzYjJKaGJGSnZiM1JICk1pNWpjblF3UWdZRFZSMGZCRHN3T1RBM29EV2dNNFl4YUhSMGNEb3ZMMk55YkRNdVpHbG5hV05sY25RdVkyOXQKTDBScFoybERaWEowUjJ4dlltRnNVbTl2ZEVjeUxtTnliREE5QmdOVkhTQUVOakEwTUFzR0NXQ0dTQUdHL1d3QwpBVEFIQmdWbmdRd0JBVEFJQmdabmdRd0JBZ0V3Q0FZR1o0RU1BUUlDTUFnR0JtZUJEQUVDQXpBTkJna3Foa2lHCjl3MEJBUXNGQUFPQ0FRRUFrUEZ3eXlpWGFaZDhkUDNBK2laN1U2dXR6V1g5dXB3R25JclhXa09IN1UxTVZsK3QKd2NXMUJTQXVXZEgvU3ZXZ0t0aXdsYTNKTGtvNzE2ZjJiNGdwL0RBL0pJUzd3N2Q3a3djc3I0ZHJkalB0QUZWUwpzbG1lNUxuUTg5L25ELzdkK01TNUVIS0JDUVJmejVlZUxqSjFqcythV05KWE1YNDNBWUd5Wm0wcEdyRm1DVzNSCmJwRDB1Zm92QVJURlhGWmtBZGw5aDZnNFU1K0xYVVp0WE1ZbmhJSFVmb3lNbzV0UzU4YUk3RGQ4S3Z2d1ZWbzQKY2hEWUFCUFBUSFBicWpjMXFDbUJhWngydk40WWU1RFV5cy92WndQOUJGb2hGckgvNmovZjNJTDE2L1Jaa2lNTgpKQ3FWSlV6S29aSG0xTGVzaDNTejhXMmptZHY1MWIyRVFKOEhtQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURqakNDQW5hZ0F3SUJBZ0lRQXpyeDVxY1JxYUM3S0dTeEhRbjY1VEFOQmdrcWhraUc5dzBCQVFzRkFEQmgKTVFzd0NRWURWUVFHRXdKVlV6RVZNQk1HQTFVRUNoTU1SR2xuYVVObGNuUWdTVzVqTVJrd0Z3WURWUVFMRXhCMwpkM2N1WkdsbmFXTmxjblF1WTI5dE1TQXdIZ1lEVlFRREV4ZEVhV2RwUTJWeWRDQkhiRzlpWVd3Z1VtOXZkQ0JICk1qQWVGdzB4TXpBNE1ERXhNakF3TURCYUZ3MHpPREF4TVRVeE1qQXdNREJhTUdFeEN6QUpCZ05WQkFZVEFsVlQKTVJVd0V3WURWUVFLRXd4RWFXZHBRMlZ5ZENCSmJtTXhHVEFYQmdOVkJBc1RFSGQzZHk1a2FXZHBZMlZ5ZEM1agpiMjB4SURBZUJnTlZCQU1URjBScFoybERaWEowSUVkc2IySmhiQ0JTYjI5MElFY3lNSUlCSWpBTkJna3Foa2lHCjl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1emZOTk54N2E4bXlhSkN0U25YL1Jyb2hDZ2lOOVJsVXlmdUkKMi9PdThqcUprVHg2NXFzR0dtdlByQzNvWGdra1JMcGltbjdXbzZoKzRGUjFJQVdzVUxlY1l4cHNNTnphSHhteAoxeDdlL2RmZ3k1U0RONjdzSDBOTzNYc3MwcjB1cFMva3FiaXRPdFNacExZbDZadHJBR0NTWVA5UElVa1k5MmVRCnEyRUduSS95dXVtMDZaSXlhN1h6VitoZEc4Mk1IYXVWQkpWSjh6VXRsdU5KYmQxMzQvdEpTN1NzVlFlcGo1V3oKdENPN1RHMUY4UGFwc3BVd3RQMU1WWXduU2xjVWZJS2R6WE9TMHhaS0JneU1VTkdQSGdtK0Y2SG1JY3I5ZytVUQp2SU9sQ3NSbktQWnpGQlE5Um5iRGh4U0pJVFJOcnc5RkRLWkpvYnE3bk1XeE00TXBoUUlEQVFBQm8wSXdRREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUE0R0ExVWREd0VCL3dRRUF3SUJoakFkQmdOVkhRNEVGZ1FVVGlKVUlCaVYKNXVOdTVnLzYrcmtTN1FZWGp6a3dEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBR0JuS0pSdkRraGo2ekhkNm1jWQoxWWw5UE1XTFNuL3B2dHNyRjkrd1gzTjNLaklUT1lGblFvUWo4a1ZuTmV5SXYvaVBzR0VNTktTdUlFeUV4dHY0Ck5lRjIyZCttUXJ2SFJBaUdmelowSkZyYWJBMFVXVFc5OGtuZHRoL0pzdzFIS2oyWkw3dGN1N1hVSU9HWlgxTkcKRmR0b20vRHpNTlUrTWVLTmhKN2ppdHJhbGo0MUU2VmY4UGx3VUhCSFFSRlhHVTdBajY0R3hKVVRGeThiSlo5MQo4ckdPbWFGdkU3RkJjZjZJS3NoUEVDQlYxL01VUmVYZ1JQVHFoNVV5a3c3K1UwYjZMSjMvaXlLNVM5a0pSYVRlCnBMaWFXTjBiZlZLZmpsbERpSUdrbmliVmI2M2REY1kzZmUwRGtodmxkMTkyN2p5TnhGMVdXNkxaWm02ek5UZmwKTXJZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==" | base64 --decode > mtntls.crt
+  100  echo "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRREdBNU5RRzEvTUt2K24Kby8rWFV3YXJNN2dPcW4rTm51eFdtQU4zRmx1aWhzOVpyVitzb1JMdU9IN1pLNktZb3RWci9JM0g4d0NoS21XagpKVUliZUtVKzdtYk9BQjNiQ0JiY2ptdDhWWGc5Zm9ONkhCOEE5dkhoemxyeFV5ZUpFV1JQM2E3SGdneDQwU3dMCnJybHJkU0ZORE1ZREcxaGdpT3VMUUhLdDVQREc4Smd3UE1ZQTUxY0pNMGNjWDNSanZjaWsrMDNvcXZSSEVTeGYKZUFGYkZ0c0NsdVN0bFdieVQxWUdGekhGWWxhRHJ3c2RVY3Z1WFJIK016b2pzVldWUURMc0FETmtxNEI0UGJuQwpKYStBQzYrMDFBTUoxaUJoVnJZWlcvU0o4ZU1JZ0VROXdlbFl4S0NmRU8rWEl3SnZoUDdDVVlTK1lNRkNNanZPCjRZQzJWR0VOQWdNQkFBRUNnZ0VBRXNpNkM4cGMveGhCSWwwTFhRYVNSbUZrbjNlTEhCc3NYbGFUVlpPNFk2V1kKTy9DWGQ5L2IxTjlsSVNMampNazlwNzNRa1Z3Ni9nN3dqMVowZS9pbzdGeGZRa0YrazQyajVZNVpJZlZWcjdlMQpyenJGc2lpNjcybk05TUducVhnTjVRbXBqK0dGWDF5d2FmZE1QYVpoMzFaTDNuV1VuNnU5ZEh0THBiVm5KZWY0Ck12UFY5UytnWGc2di9vRFBFY0VXaUhvWWdxRmw0Tm9rYXJidG8zQ3RwZHRRSHdzc2ZqaGpUeUhDRnFiWjhPeWkKRHZpUEVYYzRFMnY3Y2JDMi9yNEI1MVJmVUIzV3h4Rlc3VXQySDZpWlNQVmQxc2s3R0RaZ2cxdlVVamJHa29jawpuQkVpNGU3bVZlcWRIdzJFaHNvdTJTeFpJczhTUmRLdE02Z0IycG5ZQVFLQmdRRHNuVGM2Y1J4bUtjYWpaTWVMCnU1UlB0cjBpdmdTSUZXZWlMZzJDZjZoNGFKUEdlSFV0T05LZjgyN0hDTmdwdjMrbVAzeGdVZmVRdS9PbHR6NFoKNkpRZ1ZjRkJzUitmZnR4cTlYWTVJekFiSEtXU0lXK3U3UENqRXF0TUhRc2xJSndLMTI2SVR1R3puZGhoQzRiNAphbUQxdUg4K2J2UGpxcU1qdE1LcnlqaUNBUUtCZ1FEV1BNRG45b0dmVURVQnQ2U0cxbHRKQko0U1EvcGN5SWtVCnVFSUE2K09kRjdwN1lKamFiSDJEVWlhVFVnNnpWK2Z6cjZYN2U5ckJncVcvR00vdnVYcHRYb1YrNjNXR0dYUFcKZm9QQmdhNkk0SXRqQmxWUmU1WFo5eEhaakZ0ZGRMQlZ3eVpxVjRQTGZuR0xlSVNnWXlrbi9UYUhaOENvaE1pOQowOUp0Tm1mSERRS0JnRmswbkpISCt6RDVKdzZLL0VCT0pBZzVtT3owUHJrZmVNYklIZ2ZKSVRia0ZuS0pENFJSCkcvZDV5NVgyVzZqQnJkcDdyT1NUZ29acWxkMHdUSlZ2L2dpQ3pDMThIYlFBSEJHbklUOUJhTzJQeTB4Z2xyNlkKVGREdFJPK1pNNDUzME55MWc5S1lDcmV4RnRiZmhhODZTL3ZYNXdFZXk0eFYxTk90WG9kdDRnZ0JBb0dCQU5JRAppb09hTmVWcjVocUI0T3BCZGdrMVdwUERTY25zMTl5VTZEY3BCdDgzcEpwUHptZklsSjNJU1lKL25XT1lHQXpkCnNsTytUV3NIWE4zaFArM2JvRFZZeEhydjdTeUJCUHBPMlhBM1pWWk84TFVwUHpmNmM2TFJQaEZLTTBLQklsOWcKUitkVlZTQ0dHbDdEelJmQlBWWXpObUkwaGp0c3Q3REcxbkF6TmpaOUFvR0FkdlVScDFRL1VxVXcweG1MUk03bgppVWYwbXBWV0NucWhVWHozTU85am5qYW5mL2I3ZlZ0OVllYlVXTGthdlZiTWtST1ZlR3VIOFhnVnNNejVrQVVLClQraFdWTEs5R0dGQkNvay9qbmcwQlludFRjM1BTN0dZdzZYaWY1V0lsUWYwS0E4TFJLay9iTzJUcitrYlloMVUKNUFFL3NycThGNUVEN0JmWXAzbFNINDQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K" | base64 --decode > mtntls.key
+  101  clear
+  102  openssl x509 -in mtntls.crt -text -noout
+  103  clear
+  104  openssl rsa -noout -modulus -in mtntls.key | openssl md5
+  105  openssl x509 -noout -modulus -in mtntls.crt | openssl md5
+  106  openssl verify -CAfile kedaorgca.crt mtntls.crt 
+  107  ls
+  108  cd
+  109  cd star_mtn_co_rw_389190235/
+  110  ls
+  111  cd 
+  112  cd helm-onprem
+  113  pwd
+  114  cd
+  115  cd star_mtn_co_rw_389190235/
+  116  cp DigiCertCA.crt TrustedRoot.crt star_mtn_co_rw.crt /home/ikay/helm-onprem
+  117  cd
+  118  cd helm-onprem
+  119  clear
+  120  openssl verify -CAfile TrustedRoot.crt mtntls.crt 
+  121  openssl verify -CAfile DigiCertCA.crt mtntls.crt 
+  122  ls
+  123  cat mtntls.crt DigiCertCA.crt TrustedRoot.crt > combined.crt
+  124  openssl verify -CAfile combined.crt mtntls.crt
+  125  k get secrets mtn-tls-secret -o yaml
+  126  clear
+  127  openssl rsa -in tls.key -check
+  128  openssl rsa -in mtntls.key -check
+  129  clear
+  130  export CLUSTER_NAME=mtnrwanda-stage
+  131  export GPG_TTY=$(tty)
+  132  kubectl config use-context VOC_CLUSTER
+  133  export KUBECONFIG=~/.kube/config
+  134  chmod 600 /home/ikay/.kube/config
+  135   source <(kubectl completion bash) 
+  136   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  137   alias k=kubectl
+  138  complete -o default -F __start_kubectl k
+  139  clea
+  140  clear
+  141  cd star_mtn_co_rw_389190235/
+  142  ls
+  143  cd
+  144  cd helm-onprem
+  145  ls
+  146  history |cat > commands
+  147  cat commands 
+  148  clear
+  149  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile TrustedRoot.crt
+  150  ls
+  151  cat star_mtn_co_rw.crt DigiCertCA.crt TrustedRoot.crt > server_chain.crt
+  152  clear
+  153  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -showcerts
+  154  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile path_to_root_ca.crt
+  155  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile TrustedRoot.crt 
+  156  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile server_chain.crt 
+  157  ls
+  158  k delete secrets mtn-tls-secret  -n default 
+  159  kubectl create secret tls mtn-tls-secret --cert=mtn_combined.crt --key=star_mtn_co_rw.key -n <your-namespace>
+  160  kubectl create secret 
+  161  CLEAR
+  162  clear
+  163  cat commands 
+  164  clear
+  165  cd
+  166  cp private.key /home/ikay/helm-onprem
+  167  cd helm-onprem
+  168  ls
+  169  kubectl create secret tls mtn-tls-secret --cert=mtn_combined.crt --key=star_mtn_co_rw.key -n <your-namespace>
+  170  kubectl create secret tls mtn-tls-secret --cert=server_chain.crt --key=private.key -n default 
+  171  clear
+  172  cd env/mtnrwanda-stage/
+  173  sudo vi kannel.yaml.gotmpl 
+  174  sudo vi vochub.yaml 
+  175  cd ../..
+  176  clear
+  177  helmfile sync
+  178  helm get values kannel
+  179  clear
+  180  k get po
+  181  cat commands 
+  182  clear
+  183  k get po
+  184  kubectl exec -it xircl-9684c7c9d-9qsff --namespace=default -- /bin/sh -c xircl
+  185  kubectl exec -it xircl-9684c7c9d-9qsff --namespace=default -- /bin/sh 
+  186  clear
+  187  k get po
+  188  k logs xircl-9684c7c9d-9qsff
+  189  k logs xircl-9684c7c9d-9qsff -c nginx
+  190  k logs xircl-9684c7c9d-9qsff -c xircl
+  191  clear
+  192  k get sts
+  193  helmfile -n default apply
+  194  k get sts
+  195  helm delete redis
+  196  helmfile -n default apply
+  197  k get sts
+  198  k describe sts redis-server-node 
+  199  k get po
+  200  export CLUSTER_NAME=mtnrwanda-stage
+  201  export GPG_TTY=$(tty)
+  202  kubectl config use-context VOC_CLUSTER
+  203  export KUBECONFIG=~/.kube/config
+  204  chmod 600 /home/ikay/.kube/config
+  205   source <(kubectl completion bash) 
+  206   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  207   alias k=kubectl
+  208  complete -o default -F __start_kubectl k
+  209  clear
+  210  k get svc -n default 
+  211  k get svc ingress-vochub-controller -o yaml
+  212  clear
+  213  curl -k https://10.157.11.85
+  214  openssl s_client -connect 10.157.11.85:443 -servername <your-domain>
+  215  openssl s_client -connect 10.157.11.85:443 -servername mtn.co.rw
+  216  cd helm-onprem
+  217  cat commands 
+  218  clear
+  219  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile TrustedRoot.crt
+  220  openssl s_client -connect mtnrwanda-vochub.mtn.co.rw:443 -servername mtnrwanda-vochub.mtn.co.rw -CAfile server_chain.crt 
+  221  openssl s_client -connect 10.157.11.85:443 -servername mtn.co.rw -CAfile server_chain.crt
+  222  cleae
+  223  clear
+  224  k get secrets mtn-tls-secret -o yaml
+  225  curl -v https://mtnrwanda-vochub.mtn.co.rw
+  226  curl -v https://mtnrwanda-vochub.mtn.co.rw -CAfile server_chain.crt
+  227  curl -v --cacert path/to/your/server_chain.crt https://mtnrwanda-vochub.mtn.co.rw
+  228  curl -v --cacert server_chain.crt https://mtnrwanda-vochub.mtn.co.rw
+  229  clear
+  230  k get node -o wide
+  231  cd
+  232  clear
+  233  cd kannel/
+  234  ls
+  235  cd templates/
+  236  ls
+  237  sudo vi configmap.yaml 
+  238  sudo vi deployment.yaml 
+  239  sudo vi pvc.yaml 
+  240  cd ..
+  241  sudo vi values.yaml 
+  242  cd
+  243  cd sso
+  244  ls
+  245  clear
+  246  sudo vi values.yaml 
+  247  cd
+  248  helm get values sso
+  249  clear
+  250  sudo vi kannel
+  251  cd kannel/
+  252  sudo vi values.yaml 
+  253  cd
+  254  clear
+  255  helm get values sso
+  256  clear
+  257  cd sso
+  258  ls
+  259  sudo vi values.yaml 
+  260  cd
+  261  clear
+  262  cd sso/
+  263  cd
+  264  k logs keda-operator-metrics-apiserver-54d47fdcd5-lgjn8 
+  265  clear
+  266  export CLUSTER_NAME=mtnrwanda-stage
+  267  tkg get cluster [CLUSTER_NAME] --export-file backup.yaml
+  268  k get secrets -n default 
+  269  export CLUSTER_NAME=mtnrwanda-stage
+  270  export GPG_TTY=$(tty)
+  271  kubectl config use-context VOC_CLUSTER
+  272  export KUBECONFIG=~/.kube/config
+  273  chmod 600 /home/ikay/.kube/config
+  274   source <(kubectl completion bash) 
+  275   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  276   alias k=kubectl
+  277  complete -o default -F __start_kubectl k
+  278  clear
+  279  cd helm-onprem/env/mtnrwanda-stage/
+  280  sudo vi kannel.yaml.gotmpl 
+  281  cd ../..
+  282  helmfile -n default apply
+  283  k get po
+  284  k logs kannel-mtnrwanda-57f6bb57f-2lxq5
+  285  clear
+  286  helm get value kannel
+  287  helm get values kannel
+  288  clear
+  289  cd env/mtnrwanda-stage/
+  290  sudo vi vochub.yaml 
+  291  cd
+  292  clear
+  293  helm get values sso
+  294  clear
+  295  cd helm-onprem/env/mtnrwanda-stage/
+  296  sudo vi vochub.yaml 
+  297  sudo vi secrets.new.yaml 
+  298  sudo vi vochub.yaml 
+  299  sudo vi enterprises.yaml.gotmpl 
+  300  sudo vi vochub.yaml 
+  301  cd ../..
+  302  helmfile lint
+  303  helmfile -n default apply
+  304  helm get values sso
+  305  export CLUSTER_NAME=mtnrwanda-stage
+  306  export GPG_TTY=$(tty)
+  307  kubectl config use-context VOC_CLUSTER
+  308  export KUBECONFIG=~/.kube/config
+  309  chmod 600 /home/ikay/.kube/config
+  310   source <(kubectl completion bash) 
+  311   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  312   alias k=kubectl
+  313  complete -o default -F __start_kubectl k
+  314  clear
+  315  export CLUSTER_NAME=mtnrwanda-stage
+  316  export GPG_TTY=$(tty)
+  317  kubectl config use-context VOC_CLUSTER
+  318  export KUBECONFIG=~/.kube/config
+  319  chmod 600 /home/ikay/.kube/config
+  320   source <(kubectl completion bash) 
+  321   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  322   alias k=kubectl
+  323  complete -o default -F __start_kubectl k
+  324  clear
+  325  k get secrets -n default 
+  326  k delete secrets star-mtn-certificate 
+  327  clear
+  328  k get secrets -n default 
+  329  clear
+  330  k get po
+  331  cd helm-onprem/env/mtnrwanda-stage/
+  332  sudo vi vochub.yaml 
+  333  clear
+  334  k get po
+  335  k logs keda-operator-metrics-apiserver-54d47fdcd5-lgjn8
+  336  clear
+  337  k logs kannel-mtnrwanda-57f6bb57f-2lxq5 
+  338  clear
+  339  k delete secrets mtn-tls-secret -n default 
+  340  k logs keda-operator-metrics-apiserver-54d47fdcd5-lgjn8 
+  341  clear
+  342  k get pod
+  343  cd ../..
+  344  clear
+  345  helmfile -n default apply
+  346  k get po
+  347  clear
+  348  k get secrets -n default 
+  349  k get secrets common-tlssecret -o yaml > backup-commontlssecret.yaml
+  350  clear
+  351  k get secrets -n default 
+  352  k delete secrets common-tlssecret
+  353  k get secrets -n default 
+  354  k delete secrets common-tlssecret -n default 
+  355  clear
+  356  helmfile sync
+  357  clear
+  358  k get secrets -n default
+  359  clear
+  360  k logs keda-operator-metrics-apiserver-577b8bd6c6-26kbp 
+  361  clear
+  362  k get secrets -n default
+  363  k get secrets common-tlssecret -o yaml
+  364  k logs keda-operator-metrics-apiserver-577b8bd6c6-26kbp 
+  365  clear
+  366  k get po
+  367  k logs kannel-mtnrwanda-57f6bb57f-2lxq5 
+  368  k get po
+  369  clear
+  370  k get po
+  371  helmfile -n default apply
+  372  k get sts
+  373  k describe sts redis-server-node 
+  374  k get sts
+  375  history cat | new-commands
+  376  history ?
+  377  history | > filename
+  378  cat filename 
+  379  history | cat > filename
+  380  cat filename 
+  381  clear
+  382  k get sts
+  383  export CLUSTER_NAME=mtnrwanda-stage
+  384  export GPG_TTY=$(tty)
+  385  kubectl config use-context VOC_CLUSTER
+  386  export KUBECONFIG=~/.kube/config
+  387  chmod 600 /home/ikay/.kube/config
+  388   source <(kubectl completion bash) 
+  389   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  390   alias k=kubectl
+  391  complete -o default -F __start_kubectl k
+  392  clear
+  393  k get secrets common-tlssecret 
+  394  k get secrets common-tlssecret -o yaml
+  395  cd helm-onprem/env/mtn
+  396  cd helm-onprem/env/mtnrwanda-stage/
+  397  clear
+  398  ls
+  399  cat cd ..
+  400  cd ../..
+  401  ls
+  402  cat filename 
+  403  clear
+  404  k get secrets common-tlssecret -o yaml
+  405  echo 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlHdlRDQ0JhV2dBd0lCQWdJUUFwUmJsRHZuNFRXUGM5enBldzVvQ1RBTkJna3Foa2lHOXcwQkFRc0ZBREJaDQpNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNVE13TVFZRFZRUURFeXBFDQphV2RwUTJWeWRDQkhiRzlpWVd3Z1J6SWdWRXhUSUZKVFFTQlRTRUV5TlRZZ01qQXlNQ0JEUVRFd0hoY05Nak14DQpNVEV6TURBd01EQXdXaGNOTWpRd016STVNak0xT1RVNVdqQlJNUXN3Q1FZRFZRUUdFd0pTVnpFUE1BMEdBMVVFDQpCeE1HUzJsbllXeHBNUnN3R1FZRFZRUUtFeEpOVkU0Z1VuZGhibVJoUTJWc2JDQlFURU14RkRBU0JnTlZCQU1NDQpDeW91YlhSdUxtTnZMbkozTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4Z09UDQpVQnRmekNyL3A2UC9sMU1HcXpPNERxcC9qWjdzVnBnRGR4WmJvb2JQV2ExZnJLRVM3amgrMlN1aW1LTFZhL3lODQp4L01Bb1NwbG95VkNHM2lsUHU1bXpnQWQyd2dXM0k1cmZGVjRQWDZEZWh3ZkFQYng0YzVhOFZNbmlSRmtUOTJ1DQp4NElNZU5Fc0M2NjVhM1VoVFF6R0F4dFlZSWpyaTBCeXJlVHd4dkNZTUR6R0FPZFhDVE5ISEY5MFk3M0lwUHRODQo2S3IwUnhFc1gzZ0JXeGJiQXBia3JaVm04azlXQmhjeHhXSldnNjhMSFZITDdsMFIvak02STdGVmxVQXk3QUF6DQpaS3VBZUQyNXdpV3ZnQXV2dE5RRENkWWdZVmEyR1Z2MGlmSGpDSUJFUGNIcFdNU2dueER2bHlNQ2I0VCt3bEdFDQp2bURCUWpJN3p1R0F0bFJoRFFJREFRQUJvNElEaHpDQ0E0TXdId1lEVlIwakJCZ3dGb0FVZElXQXdHYkgzemZlDQp6NzBwTjZvREhiN3R6UmN3SFFZRFZSME9CQllFRlBDbkV6VG5QcXdqbTBuK2R1Z2JtN3VISFRtdU1CWUdBMVVkDQpFUVFQTUEyQ0N5b3ViWFJ1TG1OdkxuSjNNRDRHQTFVZElBUTNNRFV3TXdZR1o0RU1BUUlDTUNrd0p3WUlLd1lCDQpCUVVIQWdFV0cyaDBkSEE2THk5M2QzY3VaR2xuYVdObGNuUXVZMjl0TDBOUVV6QU9CZ05WSFE4QkFmOEVCQU1DDQpCYUF3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01JR2ZCZ05WSFI4RWdaY3dnWlF3DQpTS0JHb0VTR1FtaDBkSEE2THk5amNtd3pMbVJwWjJsalpYSjBMbU52YlM5RWFXZHBRMlZ5ZEVkc2IySmhiRWN5DQpWRXhUVWxOQlUwaEJNalUyTWpBeU1FTkJNUzB4TG1OeWJEQklvRWFnUklaQ2FIUjBjRG92TDJOeWJEUXVaR2xuDQphV05sY25RdVkyOXRMMFJwWjJsRFpYSjBSMnh2WW1Gc1J6SlVURk5TVTBGVFNFRXlOVFl5TURJd1EwRXhMVEV1DQpZM0pzTUlHSEJnZ3JCZ0VGQlFjQkFRUjdNSGt3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwDQpaMmxqWlhKMExtTnZiVEJSQmdnckJnRUZCUWN3QW9aRmFIUjBjRG92TDJOaFkyVnlkSE11WkdsbmFXTmxjblF1DQpZMjl0TDBScFoybERaWEowUjJ4dlltRnNSekpVVEZOU1UwRlRTRUV5TlRZeU1ESXdRMEV4TFRFdVkzSjBNQXdHDQpBMVVkRXdFQi93UUNNQUF3Z2dGK0Jnb3JCZ0VFQWRaNUFnUUNCSUlCYmdTQ0FXb0JhQUIxQUhiL2lEOEt0dnVWDQpVY0poelBXSHVqUzBwTTI3S2R4b1FncWY1bWRNV2pwMEFBQUJpOGVwMVpvQUFBUURBRVl3UkFJZ2Rldy9nbzFvDQpHd0dMaEFsVGNYdlpocUFUSFYrSy9TLzVWbUMzUFk2K2VETUNJRnc1NG1EWWxRSGVCbUZKYVIvc3kxclpyTzFrDQpMaEtHM29lRnNIVDZSVU10QUhZQVNMRGphOXFtUnpRUDVXb0MrcDB3Nnh4U0FjdFczU3lCMmJ1L3F6blloSE1BDQpBQUdMeDZuVlV3QUFCQU1BUnpCRkFpQVZvaDZqUVJNeDZzWTlMNVJsNVlDTm5GQTVTUTdwYms2b2I0Nm1MeFZ1DQoyZ0loQUxtbjFGdmpXQzVtSytCV0NDak5DeUFabmZYMWdEQWNkMzNUdi8zYjFaVU9BSGNBTzFOM2RUNHR1WUJPDQppekJiQnY1QU8yZllUOFAweDcwQURTMXliK0g2MUJjQUFBR0x4Nm5WakFBQUJBTUFTREJHQWlFQXB3RmdDSllJDQpBQmJvbS8yallVb09NMWp5SHQ0U2cyRnhKSURZQlJFQ1djVUNJUURwYSs2SzVwK0l6VkQ1UDJNdHM2K0F3NnNDDQp6d05EcHBvU2hZV0d1a1NBVURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUF4Sll3cnV3SlMvQTRJSnFVZlZiDQpjSmpHS3EwTmhmdTdYNGhBVmFkTWpZekhWZUNJWGFuU0lnVSs5KzlsM2Zmc2RBMUdENThzNXJrR25McTAxcFlRDQpHNWtSRDNnM2xDV0tCQ3JEVVpqZTlrelNLVDZ3cUVrUVg5T3R4bnNIWDltYzJIaERmUm05S0wyWU8vdkxyekZ5DQpZNlhQQ1ZOL3FYcU1qQzFpakZCWDAra2ljWm8wdVZUelFjcE55bmh3d1J1TkhEYmxib3l2N1EzTUc3Vk1NRTRHDQp4M3NhbStrWTNBSkhHeWlFdnBpYTdPTU9jNGI5WlUxR0FqcEhDbFloZzUySUdJeXVtRnRQbDRmRXl6N2poS0FoDQplbUU1ejJsMlBacWtiSWFablpyYzdxQkRTdHZPKzgvZUY0d1l6cjQrcCtUbklCRngrTzVKNkVSY0VGVWhVVTlpDQpDZz09DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQo=' | base64 --decode >common-tls.crt
+  406  cat common-tls.crt 
+  407   openssl verify -CAfile common-tls.crt 
+  408   openssl verify -CAfile server_chain.crt common-tls.crt 
+  409   openssl verify -CAfile star_mtn_co_rw.crt common-tls.crt 
+  410  clear
+  411  ls
+  412   openssl verify -CAfile server_chain.crt kedaorgca.crt 
+  413   openssl verify -CAfile server_chain.crt kedatls.crt 
+  414  k get secrets kedaorg-certs -o yaml
+  415  echo '"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlHdlRDQ0JhV2dBd0lCQWdJUUFwUmJsRHZuNFRXUGM5enBldzVvQ1RBTkJna3Foa2lHOXcwQkFRc0ZBREJaDQpNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNVE13TVFZRFZRUURFeXBFDQphV2RwUTJWeWRDQkhiRzlpWVd3Z1J6SWdWRXhUSUZKVFFTQlRTRUV5TlRZZ01qQXlNQ0JEUVRFd0hoY05Nak14DQpNVEV6TURBd01EQXdXaGNOTWpRd016STVNak0xT1RVNVdqQlJNUXN3Q1FZRFZRUUdFd0pTVnpFUE1BMEdBMVVFDQpCeE1HUzJsbllXeHBNUnN3R1FZRFZRUUtFeEpOVkU0Z1VuZGhibVJoUTJWc2JDQlFURU14RkRBU0JnTlZCQU1NDQpDeW91YlhSdUxtTnZMbkozTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4Z09UDQpVQnRmekNyL3A2UC9sMU1HcXpPNERxcC9qWjdzVnBnRGR4WmJvb2JQV2ExZnJLRVM3amgrMlN1aW1LTFZhL3lODQp4L01Bb1NwbG95VkNHM2lsUHU1bXpnQWQyd2dXM0k1cmZGVjRQWDZEZWh3ZkFQYng0YzVhOFZNbmlSRmtUOTJ1DQp4NElNZU5Fc0M2NjVhM1VoVFF6R0F4dFlZSWpyaTBCeXJlVHd4dkNZTUR6R0FPZFhDVE5ISEY5MFk3M0lwUHRODQo2S3IwUnhFc1gzZ0JXeGJiQXBia3JaVm04azlXQmhjeHhXSldnNjhMSFZITDdsMFIvak02STdGVmxVQXk3QUF6DQpaS3VBZUQyNXdpV3ZnQXV2dE5RRENkWWdZVmEyR1Z2MGlmSGpDSUJFUGNIcFdNU2dueER2bHlNQ2I0VCt3bEdFDQp2bURCUWpJN3p1R0F0bFJoRFFJREFRQUJvNElEaHpDQ0E0TXdId1lEVlIwakJCZ3dGb0FVZElXQXdHYkgzemZlDQp6NzBwTjZvREhiN3R6UmN3SFFZRFZSME9CQllFRlBDbkV6VG5QcXdqbTBuK2R1Z2JtN3VISFRtdU1CWUdBMVVkDQpFUVFQTUEyQ0N5b3ViWFJ1TG1OdkxuSjNNRDRHQTFVZElBUTNNRFV3TXdZR1o0RU1BUUlDTUNrd0p3WUlLd1lCDQpCUVVIQWdFV0cyaDBkSEE2THk5M2QzY3VaR2xuYVdObGNuUXVZMjl0TDBOUVV6QU9CZ05WSFE4QkFmOEVCQU1DDQpCYUF3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01JR2ZCZ05WSFI4RWdaY3dnWlF3DQpTS0JHb0VTR1FtaDBkSEE2THk5amNtd3pMbVJwWjJsalpYSjBMbU52YlM5RWFXZHBRMlZ5ZEVkc2IySmhiRWN5DQpWRXhUVWxOQlUwaEJNalUyTWpBeU1FTkJNUzB4TG1OeWJEQklvRWFnUklaQ2FIUjBjRG92TDJOeWJEUXVaR2xuDQphV05sY25RdVkyOXRMMFJwWjJsRFpYSjBSMnh2WW1Gc1J6SlVURk5TVTBGVFNFRXlOVFl5TURJd1EwRXhMVEV1DQpZM0pzTUlHSEJnZ3JCZ0VGQlFjQkFRUjdNSGt3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwDQpaMmxqWlhKMExtTnZiVEJSQmdnckJnRUZCUWN3QW9aRmFIUjBjRG92TDJOaFkyVnlkSE11WkdsbmFXTmxjblF1DQpZMjl0TDBScFoybERaWEowUjJ4dlltRnNSekpVVEZOU1UwRlRTRUV5TlRZeU1ESXdRMEV4TFRFdVkzSjBNQXdHDQpBMVVkRXdFQi93UUNNQUF3Z2dGK0Jnb3JCZ0VFQWRaNUFnUUNCSUlCYmdTQ0FXb0JhQUIxQUhiL2lEOEt0dnVWDQpVY0poelBXSHVqUzBwTTI3S2R4b1FncWY1bWRNV2pwMEFBQUJpOGVwMVpvQUFBUURBRVl3UkFJZ2Rldy9nbzFvDQpHd0dMaEFsVGNYdlpocUFUSFYrSy9TLzVWbUMzUFk2K2VETUNJRnc1NG1EWWxRSGVCbUZKYVIvc3kxclpyTzFrDQpMaEtHM29lRnNIVDZSVU10QUhZQVNMRGphOXFtUnpRUDVXb0MrcDB3Nnh4U0FjdFczU3lCMmJ1L3F6blloSE1BDQpBQUdMeDZuVlV3QUFCQU1BUnpCRkFpQVZvaDZqUVJNeDZzWTlMNVJsNVlDTm5GQTVTUTdwYms2b2I0Nm1MeFZ1DQoyZ0loQUxtbjFGdmpXQzVtSytCV0NDak5DeUFabmZYMWdEQWNkMzNUdi8zYjFaVU9BSGNBTzFOM2RUNHR1WUJPDQppekJiQnY1QU8yZllUOFAweDcwQURTMXliK0g2MUJjQUFBR0x4Nm5WakFBQUJBTUFTREJHQWlFQXB3RmdDSllJDQpBQmJvbS8yallVb09NMWp5SHQ0U2cyRnhKSURZQlJFQ1djVUNJUURwYSs2SzVwK0l6VkQ1UDJNdHM2K0F3NnNDDQp6d05EcHBvU2hZV0d1a1NBVURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUF4Sll3cnV3SlMvQTRJSnFVZlZiDQpjSmpHS3EwTmhmdTdYNGhBVmFkTWpZekhWZUNJWGFuU0lnVSs5KzlsM2Zmc2RBMUdENThzNXJrR25McTAxcFlRDQpHNWtSRDNnM2xDV0tCQ3JEVVpqZTlrelNLVDZ3cUVrUVg5T3R4bnNIWDltYzJIaERmUm05S0wyWU8vdkxyekZ5DQpZNlhQQ1ZOL3FYcU1qQzFpakZCWDAra2ljWm8wdVZUelFjcE55bmh3d1J1TkhEYmxib3l2N1EzTUc3Vk1NRTRHDQp4M3NhbStrWTNBSkhHeWlFdnBpYTdPTU9jNGI5WlUxR0FqcEhDbFloZzUySUdJeXVtRnRQbDRmRXl6N2poS0FoDQplbUU1ejJsMlBacWtiSWFablpyYzdxQkRTdHZPKzgvZUY0d1l6cjQrcCtUbklCRngrTzVKNkVSY0VGVWhVVTlpDQpDZz09DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRXlEQ0NBN0NnQXdJQkFnSVFEUFc5Qml0V0F2UjZ1RkFzSTh6d1pqQU5CZ2txaGtpRzl3MEJBUXNGQURCaApNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNUmt3RndZRFZRUUxFeEIzCmQzY3VaR2xuYVdObGNuUXVZMjl0TVNBd0hnWURWUVFERXhkRWFXZHBRMlZ5ZENCSGJHOWlZV3dnVW05dmRDQkgKTWpBZUZ3MHlNVEF6TXpBd01EQXdNREJhRncwek1UQXpNamt5TXpVNU5UbGFNRmt4Q3pBSkJnTlZCQVlUQWxWVApNUlV3RXdZRFZRUUtFd3hFYVdkcFEyVnlkQ0JKYm1NeE16QXhCZ05WQkFNVEtrUnBaMmxEWlhKMElFZHNiMkpoCmJDQkhNaUJVVEZNZ1VsTkJJRk5JUVRJMU5pQXlNREl3SUVOQk1UQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQUQKZ2dFUEFEQ0NBUW9DZ2dFQkFNejNFR0pQcHJ0amIrMlFVbGJGYlNkN2VoSldpdkgwK2RibjRZKzlsYXZ5WUVFVgpjTnNTQVBvbkNyVlhPRnQ5c2xHVGNaVU9ha0dVV3pVYitudjZ1OFcrSkREK1Z1L0U4MzJYNHhUMUZFM0xweER5CkZ1cXJJdkF4SWhGaGFaQW11bmpabHgvamZXYXJkVVNWYzhpcy8rOWRDb3BaUStHc3Nqb1A4MGo4MTJzM3dXUGMKM2tiVzIwWCtmU1A5a09oUkJ4NVJvMS90U1VaVWZ5eUl4ZlFUbkpjVlBBUG9vVG5jYVF3eXdhOFdWMHlVUjBKOApvc2ljZmViVVRWU3ZRcG1vd1FUQ2Q1eldTT1RPRWVBcWdKbndRM0RQUDNacjBVeEpxeVJld2cyQy9VYW9xMnlUCnpHSlNRbldTK0pyNlhsNnlzR0hsSHgrNWZ3bVk2RDM2ZzM5SGFhRUNBd0VBQWFPQ0FZSXdnZ0YrTUJJR0ExVWQKRXdFQi93UUlNQVlCQWY4Q0FRQXdIUVlEVlIwT0JCWUVGSFNGZ01CbXg5ODMzcys5S1RlcUF4Mis3YzBYTUI4RwpBMVVkSXdRWU1CYUFGRTRpVkNBWWxlYmpidVlQK3ZxNUV1MEdGNDg1TUE0R0ExVWREd0VCL3dRRUF3SUJoakFkCkJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdkZ1lJS3dZQkJRVUhBUUVFYWpCb01DUUcKQ0NzR0FRVUZCekFCaGhob2RIUndPaTh2YjJOemNDNWthV2RwWTJWeWRDNWpiMjB3UUFZSUt3WUJCUVVITUFLRwpOR2gwZEhBNkx5OWpZV05sY25SekxtUnBaMmxqWlhKMExtTnZiUzlFYVdkcFEyVnlkRWRzYjJKaGJGSnZiM1JICk1pNWpjblF3UWdZRFZSMGZCRHN3T1RBM29EV2dNNFl4YUhSMGNEb3ZMMk55YkRNdVpHbG5hV05sY25RdVkyOXQKTDBScFoybERaWEowUjJ4dlltRnNVbTl2ZEVjeUxtTnliREE5QmdOVkhTQUVOakEwTUFzR0NXQ0dTQUdHL1d3QwpBVEFIQmdWbmdRd0JBVEFJQmdabmdRd0JBZ0V3Q0FZR1o0RU1BUUlDTUFnR0JtZUJEQUVDQXpBTkJna3Foa2lHCjl3MEJBUXNGQUFPQ0FRRUFrUEZ3eXlpWGFaZDhkUDNBK2laN1U2dXR6V1g5dXB3R25JclhXa09IN1UxTVZsK3QKd2NXMUJTQXVXZEgvU3ZXZ0t0aXdsYTNKTGtvNzE2ZjJiNGdwL0RBL0pJUzd3N2Q3a3djc3I0ZHJkalB0QUZWUwpzbG1lNUxuUTg5L25ELzdkK01TNUVIS0JDUVJmejVlZUxqSjFqcythV05KWE1YNDNBWUd5Wm0wcEdyRm1DVzNSCmJwRDB1Zm92QVJURlhGWmtBZGw5aDZnNFU1K0xYVVp0WE1ZbmhJSFVmb3lNbzV0UzU4YUk3RGQ4S3Z2d1ZWbzQKY2hEWUFCUFBUSFBicWpjMXFDbUJhWngydk40WWU1RFV5cy92WndQOUJGb2hGckgvNmovZjNJTDE2L1Jaa2lNTgpKQ3FWSlV6S29aSG0xTGVzaDNTejhXMmptZHY1MWIyRVFKOEhtQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURqakNDQW5hZ0F3SUJBZ0lRQXpyeDVxY1JxYUM3S0dTeEhRbjY1VEFOQmdrcWhraUc5dzBCQVFzRkFEQmgKTVFzd0NRWURWUVFHRXdKVlV6RVZNQk1HQTFVRUNoTU1SR2xuYVVObGNuUWdTVzVqTVJrd0Z3WURWUVFMRXhCMwpkM2N1WkdsbmFXTmxjblF1WTI5dE1TQXdIZ1lEVlFRREV4ZEVhV2RwUTJWeWRDQkhiRzlpWVd3Z1VtOXZkQ0JICk1qQWVGdzB4TXpBNE1ERXhNakF3TURCYUZ3MHpPREF4TVRVeE1qQXdNREJhTUdFeEN6QUpCZ05WQkFZVEFsVlQKTVJVd0V3WURWUVFLRXd4RWFXZHBRMlZ5ZENCSmJtTXhHVEFYQmdOVkJBc1RFSGQzZHk1a2FXZHBZMlZ5ZEM1agpiMjB4SURBZUJnTlZCQU1URjBScFoybERaWEowSUVkc2IySmhiQ0JTYjI5MElFY3lNSUlCSWpBTkJna3Foa2lHCjl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1emZOTk54N2E4bXlhSkN0U25YL1Jyb2hDZ2lOOVJsVXlmdUkKMi9PdThqcUprVHg2NXFzR0dtdlByQzNvWGdra1JMcGltbjdXbzZoKzRGUjFJQVdzVUxlY1l4cHNNTnphSHhteAoxeDdlL2RmZ3k1U0RONjdzSDBOTzNYc3MwcjB1cFMva3FiaXRPdFNacExZbDZadHJBR0NTWVA5UElVa1k5MmVRCnEyRUduSS95dXVtMDZaSXlhN1h6VitoZEc4Mk1IYXVWQkpWSjh6VXRsdU5KYmQxMzQvdEpTN1NzVlFlcGo1V3oKdENPN1RHMUY4UGFwc3BVd3RQMU1WWXduU2xjVWZJS2R6WE9TMHhaS0JneU1VTkdQSGdtK0Y2SG1JY3I5ZytVUQp2SU9sQ3NSbktQWnpGQlE5Um5iRGh4U0pJVFJOcnc5RkRLWkpvYnE3bk1XeE00TXBoUUlEQVFBQm8wSXdRREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUE0R0ExVWREd0VCL3dRRUF3SUJoakFkQmdOVkhRNEVGZ1FVVGlKVUlCaVYKNXVOdTVnLzYrcmtTN1FZWGp6a3dEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBR0JuS0pSdkRraGo2ekhkNm1jWQoxWWw5UE1XTFNuL3B2dHNyRjkrd1gzTjNLaklUT1lGblFvUWo4a1ZuTmV5SXYvaVBzR0VNTktTdUlFeUV4dHY0Ck5lRjIyZCttUXJ2SFJBaUdmelowSkZyYWJBMFVXVFc5OGtuZHRoL0pzdzFIS2oyWkw3dGN1N1hVSU9HWlgxTkcKRmR0b20vRHpNTlUrTWVLTmhKN2ppdHJhbGo0MUU2VmY4UGx3VUhCSFFSRlhHVTdBajY0R3hKVVRGeThiSlo5MQo4ckdPbWFGdkU3RkJjZjZJS3NoUEVDQlYxL01VUmVYZ1JQVHFoNVV5a3c3K1UwYjZMSjMvaXlLNVM5a0pSYVRlCnBMaWFXTjBiZlZLZmpsbERpSUdrbmliVmI2M2REY1kzZmUwRGtodmxkMTkyN2p5TnhGMVdXNkxaWm02ek5UZmwKTXJZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==' | base64 --decode > tls.crt
+  416  echo 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlHdlRDQ0JhV2dBd0lCQWdJUUFwUmJsRHZuNFRXUGM5enBldzVvQ1RBTkJna3Foa2lHOXcwQkFRc0ZBREJaDQpNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNVE13TVFZRFZRUURFeXBFDQphV2RwUTJWeWRDQkhiRzlpWVd3Z1J6SWdWRXhUSUZKVFFTQlRTRUV5TlRZZ01qQXlNQ0JEUVRFd0hoY05Nak14DQpNVEV6TURBd01EQXdXaGNOTWpRd016STVNak0xT1RVNVdqQlJNUXN3Q1FZRFZRUUdFd0pTVnpFUE1BMEdBMVVFDQpCeE1HUzJsbllXeHBNUnN3R1FZRFZRUUtFeEpOVkU0Z1VuZGhibVJoUTJWc2JDQlFURU14RkRBU0JnTlZCQU1NDQpDeW91YlhSdUxtTnZMbkozTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4Z09UDQpVQnRmekNyL3A2UC9sMU1HcXpPNERxcC9qWjdzVnBnRGR4WmJvb2JQV2ExZnJLRVM3amgrMlN1aW1LTFZhL3lODQp4L01Bb1NwbG95VkNHM2lsUHU1bXpnQWQyd2dXM0k1cmZGVjRQWDZEZWh3ZkFQYng0YzVhOFZNbmlSRmtUOTJ1DQp4NElNZU5Fc0M2NjVhM1VoVFF6R0F4dFlZSWpyaTBCeXJlVHd4dkNZTUR6R0FPZFhDVE5ISEY5MFk3M0lwUHRODQo2S3IwUnhFc1gzZ0JXeGJiQXBia3JaVm04azlXQmhjeHhXSldnNjhMSFZITDdsMFIvak02STdGVmxVQXk3QUF6DQpaS3VBZUQyNXdpV3ZnQXV2dE5RRENkWWdZVmEyR1Z2MGlmSGpDSUJFUGNIcFdNU2dueER2bHlNQ2I0VCt3bEdFDQp2bURCUWpJN3p1R0F0bFJoRFFJREFRQUJvNElEaHpDQ0E0TXdId1lEVlIwakJCZ3dGb0FVZElXQXdHYkgzemZlDQp6NzBwTjZvREhiN3R6UmN3SFFZRFZSME9CQllFRlBDbkV6VG5QcXdqbTBuK2R1Z2JtN3VISFRtdU1CWUdBMVVkDQpFUVFQTUEyQ0N5b3ViWFJ1TG1OdkxuSjNNRDRHQTFVZElBUTNNRFV3TXdZR1o0RU1BUUlDTUNrd0p3WUlLd1lCDQpCUVVIQWdFV0cyaDBkSEE2THk5M2QzY3VaR2xuYVdObGNuUXVZMjl0TDBOUVV6QU9CZ05WSFE4QkFmOEVCQU1DDQpCYUF3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01JR2ZCZ05WSFI4RWdaY3dnWlF3DQpTS0JHb0VTR1FtaDBkSEE2THk5amNtd3pMbVJwWjJsalpYSjBMbU52YlM5RWFXZHBRMlZ5ZEVkc2IySmhiRWN5DQpWRXhUVWxOQlUwaEJNalUyTWpBeU1FTkJNUzB4TG1OeWJEQklvRWFnUklaQ2FIUjBjRG92TDJOeWJEUXVaR2xuDQphV05sY25RdVkyOXRMMFJwWjJsRFpYSjBSMnh2WW1Gc1J6SlVURk5TVTBGVFNFRXlOVFl5TURJd1EwRXhMVEV1DQpZM0pzTUlHSEJnZ3JCZ0VGQlFjQkFRUjdNSGt3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwDQpaMmxqWlhKMExtTnZiVEJSQmdnckJnRUZCUWN3QW9aRmFIUjBjRG92TDJOaFkyVnlkSE11WkdsbmFXTmxjblF1DQpZMjl0TDBScFoybERaWEowUjJ4dlltRnNSekpVVEZOU1UwRlRTRUV5TlRZeU1ESXdRMEV4TFRFdVkzSjBNQXdHDQpBMVVkRXdFQi93UUNNQUF3Z2dGK0Jnb3JCZ0VFQWRaNUFnUUNCSUlCYmdTQ0FXb0JhQUIxQUhiL2lEOEt0dnVWDQpVY0poelBXSHVqUzBwTTI3S2R4b1FncWY1bWRNV2pwMEFBQUJpOGVwMVpvQUFBUURBRVl3UkFJZ2Rldy9nbzFvDQpHd0dMaEFsVGNYdlpocUFUSFYrSy9TLzVWbUMzUFk2K2VETUNJRnc1NG1EWWxRSGVCbUZKYVIvc3kxclpyTzFrDQpMaEtHM29lRnNIVDZSVU10QUhZQVNMRGphOXFtUnpRUDVXb0MrcDB3Nnh4U0FjdFczU3lCMmJ1L3F6blloSE1BDQpBQUdMeDZuVlV3QUFCQU1BUnpCRkFpQVZvaDZqUVJNeDZzWTlMNVJsNVlDTm5GQTVTUTdwYms2b2I0Nm1MeFZ1DQoyZ0loQUxtbjFGdmpXQzVtSytCV0NDak5DeUFabmZYMWdEQWNkMzNUdi8zYjFaVU9BSGNBTzFOM2RUNHR1WUJPDQppekJiQnY1QU8yZllUOFAweDcwQURTMXliK0g2MUJjQUFBR0x4Nm5WakFBQUJBTUFTREJHQWlFQXB3RmdDSllJDQpBQmJvbS8yallVb09NMWp5SHQ0U2cyRnhKSURZQlJFQ1djVUNJUURwYSs2SzVwK0l6VkQ1UDJNdHM2K0F3NnNDDQp6d05EcHBvU2hZV0d1a1NBVURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUF4Sll3cnV3SlMvQTRJSnFVZlZiDQpjSmpHS3EwTmhmdTdYNGhBVmFkTWpZekhWZUNJWGFuU0lnVSs5KzlsM2Zmc2RBMUdENThzNXJrR25McTAxcFlRDQpHNWtSRDNnM2xDV0tCQ3JEVVpqZTlrelNLVDZ3cUVrUVg5T3R4bnNIWDltYzJIaERmUm05S0wyWU8vdkxyekZ5DQpZNlhQQ1ZOL3FYcU1qQzFpakZCWDAra2ljWm8wdVZUelFjcE55bmh3d1J1TkhEYmxib3l2N1EzTUc3Vk1NRTRHDQp4M3NhbStrWTNBSkhHeWlFdnBpYTdPTU9jNGI5WlUxR0FqcEhDbFloZzUySUdJeXVtRnRQbDRmRXl6N2poS0FoDQplbUU1ejJsMlBacWtiSWFablpyYzdxQkRTdHZPKzgvZUY0d1l6cjQrcCtUbklCRngrTzVKNkVSY0VGVWhVVTlpDQpDZz09DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRXlEQ0NBN0NnQXdJQkFnSVFEUFc5Qml0V0F2UjZ1RkFzSTh6d1pqQU5CZ2txaGtpRzl3MEJBUXNGQURCaApNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNUmt3RndZRFZRUUxFeEIzCmQzY3VaR2xuYVdObGNuUXVZMjl0TVNBd0hnWURWUVFERXhkRWFXZHBRMlZ5ZENCSGJHOWlZV3dnVW05dmRDQkgKTWpBZUZ3MHlNVEF6TXpBd01EQXdNREJhRncwek1UQXpNamt5TXpVNU5UbGFNRmt4Q3pBSkJnTlZCQVlUQWxWVApNUlV3RXdZRFZRUUtFd3hFYVdkcFEyVnlkQ0JKYm1NeE16QXhCZ05WQkFNVEtrUnBaMmxEWlhKMElFZHNiMkpoCmJDQkhNaUJVVEZNZ1VsTkJJRk5JUVRJMU5pQXlNREl3SUVOQk1UQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQUQKZ2dFUEFEQ0NBUW9DZ2dFQkFNejNFR0pQcHJ0amIrMlFVbGJGYlNkN2VoSldpdkgwK2RibjRZKzlsYXZ5WUVFVgpjTnNTQVBvbkNyVlhPRnQ5c2xHVGNaVU9ha0dVV3pVYitudjZ1OFcrSkREK1Z1L0U4MzJYNHhUMUZFM0xweER5CkZ1cXJJdkF4SWhGaGFaQW11bmpabHgvamZXYXJkVVNWYzhpcy8rOWRDb3BaUStHc3Nqb1A4MGo4MTJzM3dXUGMKM2tiVzIwWCtmU1A5a09oUkJ4NVJvMS90U1VaVWZ5eUl4ZlFUbkpjVlBBUG9vVG5jYVF3eXdhOFdWMHlVUjBKOApvc2ljZmViVVRWU3ZRcG1vd1FUQ2Q1eldTT1RPRWVBcWdKbndRM0RQUDNacjBVeEpxeVJld2cyQy9VYW9xMnlUCnpHSlNRbldTK0pyNlhsNnlzR0hsSHgrNWZ3bVk2RDM2ZzM5SGFhRUNBd0VBQWFPQ0FZSXdnZ0YrTUJJR0ExVWQKRXdFQi93UUlNQVlCQWY4Q0FRQXdIUVlEVlIwT0JCWUVGSFNGZ01CbXg5ODMzcys5S1RlcUF4Mis3YzBYTUI4RwpBMVVkSXdRWU1CYUFGRTRpVkNBWWxlYmpidVlQK3ZxNUV1MEdGNDg1TUE0R0ExVWREd0VCL3dRRUF3SUJoakFkCkJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdkZ1lJS3dZQkJRVUhBUUVFYWpCb01DUUcKQ0NzR0FRVUZCekFCaGhob2RIUndPaTh2YjJOemNDNWthV2RwWTJWeWRDNWpiMjB3UUFZSUt3WUJCUVVITUFLRwpOR2gwZEhBNkx5OWpZV05sY25SekxtUnBaMmxqWlhKMExtTnZiUzlFYVdkcFEyVnlkRWRzYjJKaGJGSnZiM1JICk1pNWpjblF3UWdZRFZSMGZCRHN3T1RBM29EV2dNNFl4YUhSMGNEb3ZMMk55YkRNdVpHbG5hV05sY25RdVkyOXQKTDBScFoybERaWEowUjJ4dlltRnNVbTl2ZEVjeUxtTnliREE5QmdOVkhTQUVOakEwTUFzR0NXQ0dTQUdHL1d3QwpBVEFIQmdWbmdRd0JBVEFJQmdabmdRd0JBZ0V3Q0FZR1o0RU1BUUlDTUFnR0JtZUJEQUVDQXpBTkJna3Foa2lHCjl3MEJBUXNGQUFPQ0FRRUFrUEZ3eXlpWGFaZDhkUDNBK2laN1U2dXR6V1g5dXB3R25JclhXa09IN1UxTVZsK3QKd2NXMUJTQXVXZEgvU3ZXZ0t0aXdsYTNKTGtvNzE2ZjJiNGdwL0RBL0pJUzd3N2Q3a3djc3I0ZHJkalB0QUZWUwpzbG1lNUxuUTg5L25ELzdkK01TNUVIS0JDUVJmejVlZUxqSjFqcythV05KWE1YNDNBWUd5Wm0wcEdyRm1DVzNSCmJwRDB1Zm92QVJURlhGWmtBZGw5aDZnNFU1K0xYVVp0WE1ZbmhJSFVmb3lNbzV0UzU4YUk3RGQ4S3Z2d1ZWbzQKY2hEWUFCUFBUSFBicWpjMXFDbUJhWngydk40WWU1RFV5cy92WndQOUJGb2hGckgvNmovZjNJTDE2L1Jaa2lNTgpKQ3FWSlV6S29aSG0xTGVzaDNTejhXMmptZHY1MWIyRVFKOEhtQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURqakNDQW5hZ0F3SUJBZ0lRQXpyeDVxY1JxYUM3S0dTeEhRbjY1VEFOQmdrcWhraUc5dzBCQVFzRkFEQmgKTVFzd0NRWURWUVFHRXdKVlV6RVZNQk1HQTFVRUNoTU1SR2xuYVVObGNuUWdTVzVqTVJrd0Z3WURWUVFMRXhCMwpkM2N1WkdsbmFXTmxjblF1WTI5dE1TQXdIZ1lEVlFRREV4ZEVhV2RwUTJWeWRDQkhiRzlpWVd3Z1VtOXZkQ0JICk1qQWVGdzB4TXpBNE1ERXhNakF3TURCYUZ3MHpPREF4TVRVeE1qQXdNREJhTUdFeEN6QUpCZ05WQkFZVEFsVlQKTVJVd0V3WURWUVFLRXd4RWFXZHBRMlZ5ZENCSmJtTXhHVEFYQmdOVkJBc1RFSGQzZHk1a2FXZHBZMlZ5ZEM1agpiMjB4SURBZUJnTlZCQU1URjBScFoybERaWEowSUVkc2IySmhiQ0JTYjI5MElFY3lNSUlCSWpBTkJna3Foa2lHCjl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1emZOTk54N2E4bXlhSkN0U25YL1Jyb2hDZ2lOOVJsVXlmdUkKMi9PdThqcUprVHg2NXFzR0dtdlByQzNvWGdra1JMcGltbjdXbzZoKzRGUjFJQVdzVUxlY1l4cHNNTnphSHhteAoxeDdlL2RmZ3k1U0RONjdzSDBOTzNYc3MwcjB1cFMva3FiaXRPdFNacExZbDZadHJBR0NTWVA5UElVa1k5MmVRCnEyRUduSS95dXVtMDZaSXlhN1h6VitoZEc4Mk1IYXVWQkpWSjh6VXRsdU5KYmQxMzQvdEpTN1NzVlFlcGo1V3oKdENPN1RHMUY4UGFwc3BVd3RQMU1WWXduU2xjVWZJS2R6WE9TMHhaS0JneU1VTkdQSGdtK0Y2SG1JY3I5ZytVUQp2SU9sQ3NSbktQWnpGQlE5Um5iRGh4U0pJVFJOcnc5RkRLWkpvYnE3bk1XeE00TXBoUUlEQVFBQm8wSXdRREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUE0R0ExVWREd0VCL3dRRUF3SUJoakFkQmdOVkhRNEVGZ1FVVGlKVUlCaVYKNXVOdTVnLzYrcmtTN1FZWGp6a3dEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBR0JuS0pSdkRraGo2ekhkNm1jWQoxWWw5UE1XTFNuL3B2dHNyRjkrd1gzTjNLaklUT1lGblFvUWo4a1ZuTmV5SXYvaVBzR0VNTktTdUlFeUV4dHY0Ck5lRjIyZCttUXJ2SFJBaUdmelowSkZyYWJBMFVXVFc5OGtuZHRoL0pzdzFIS2oyWkw3dGN1N1hVSU9HWlgxTkcKRmR0b20vRHpNTlUrTWVLTmhKN2ppdHJhbGo0MUU2VmY4UGx3VUhCSFFSRlhHVTdBajY0R3hKVVRGeThiSlo5MQo4ckdPbWFGdkU3RkJjZjZJS3NoUEVDQlYxL01VUmVYZ1JQVHFoNVV5a3c3K1UwYjZMSjMvaXlLNVM5a0pSYVRlCnBMaWFXTjBiZlZLZmpsbERpSUdrbmliVmI2M2REY1kzZmUwRGtodmxkMTkyN2p5TnhGMVdXNkxaWm02ek5UZmwKTXJZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==' | base64 --decode > tls.crt
+  417  echo 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlHdlRDQ0JhV2dBd0lCQWdJUUFwUmJsRHZuNFRXUGM5enBldzVvQ1RBTkJna3Foa2lHOXcwQkFRc0ZBREJaDQpNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNVE13TVFZRFZRUURFeXBFDQphV2RwUTJWeWRDQkhiRzlpWVd3Z1J6SWdWRXhUSUZKVFFTQlRTRUV5TlRZZ01qQXlNQ0JEUVRFd0hoY05Nak14DQpNVEV6TURBd01EQXdXaGNOTWpRd016STVNak0xT1RVNVdqQlJNUXN3Q1FZRFZRUUdFd0pTVnpFUE1BMEdBMVVFDQpCeE1HUzJsbllXeHBNUnN3R1FZRFZRUUtFeEpOVkU0Z1VuZGhibVJoUTJWc2JDQlFURU14RkRBU0JnTlZCQU1NDQpDeW91YlhSdUxtTnZMbkozTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4Z09UDQpVQnRmekNyL3A2UC9sMU1HcXpPNERxcC9qWjdzVnBnRGR4WmJvb2JQV2ExZnJLRVM3amgrMlN1aW1LTFZhL3lODQp4L01Bb1NwbG95VkNHM2lsUHU1bXpnQWQyd2dXM0k1cmZGVjRQWDZEZWh3ZkFQYng0YzVhOFZNbmlSRmtUOTJ1DQp4NElNZU5Fc0M2NjVhM1VoVFF6R0F4dFlZSWpyaTBCeXJlVHd4dkNZTUR6R0FPZFhDVE5ISEY5MFk3M0lwUHRODQo2S3IwUnhFc1gzZ0JXeGJiQXBia3JaVm04azlXQmhjeHhXSldnNjhMSFZITDdsMFIvak02STdGVmxVQXk3QUF6DQpaS3VBZUQyNXdpV3ZnQXV2dE5RRENkWWdZVmEyR1Z2MGlmSGpDSUJFUGNIcFdNU2dueER2bHlNQ2I0VCt3bEdFDQp2bURCUWpJN3p1R0F0bFJoRFFJREFRQUJvNElEaHpDQ0E0TXdId1lEVlIwakJCZ3dGb0FVZElXQXdHYkgzemZlDQp6NzBwTjZvREhiN3R6UmN3SFFZRFZSME9CQllFRlBDbkV6VG5QcXdqbTBuK2R1Z2JtN3VISFRtdU1CWUdBMVVkDQpFUVFQTUEyQ0N5b3ViWFJ1TG1OdkxuSjNNRDRHQTFVZElBUTNNRFV3TXdZR1o0RU1BUUlDTUNrd0p3WUlLd1lCDQpCUVVIQWdFV0cyaDBkSEE2THk5M2QzY3VaR2xuYVdObGNuUXVZMjl0TDBOUVV6QU9CZ05WSFE4QkFmOEVCQU1DDQpCYUF3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01JR2ZCZ05WSFI4RWdaY3dnWlF3DQpTS0JHb0VTR1FtaDBkSEE2THk5amNtd3pMbVJwWjJsalpYSjBMbU52YlM5RWFXZHBRMlZ5ZEVkc2IySmhiRWN5DQpWRXhUVWxOQlUwaEJNalUyTWpBeU1FTkJNUzB4TG1OeWJEQklvRWFnUklaQ2FIUjBjRG92TDJOeWJEUXVaR2xuDQphV05sY25RdVkyOXRMMFJwWjJsRFpYSjBSMnh2WW1Gc1J6SlVURk5TVTBGVFNFRXlOVFl5TURJd1EwRXhMVEV1DQpZM0pzTUlHSEJnZ3JCZ0VGQlFjQkFRUjdNSGt3SkFZSUt3WUJCUVVITUFHR0dHaDBkSEE2THk5dlkzTndMbVJwDQpaMmxqWlhKMExtTnZiVEJSQmdnckJnRUZCUWN3QW9aRmFIUjBjRG92TDJOaFkyVnlkSE11WkdsbmFXTmxjblF1DQpZMjl0TDBScFoybERaWEowUjJ4dlltRnNSekpVVEZOU1UwRlRTRUV5TlRZeU1ESXdRMEV4TFRFdVkzSjBNQXdHDQpBMVVkRXdFQi93UUNNQUF3Z2dGK0Jnb3JCZ0VFQWRaNUFnUUNCSUlCYmdTQ0FXb0JhQUIxQUhiL2lEOEt0dnVWDQpVY0poelBXSHVqUzBwTTI3S2R4b1FncWY1bWRNV2pwMEFBQUJpOGVwMVpvQUFBUURBRVl3UkFJZ2Rldy9nbzFvDQpHd0dMaEFsVGNYdlpocUFUSFYrSy9TLzVWbUMzUFk2K2VETUNJRnc1NG1EWWxRSGVCbUZKYVIvc3kxclpyTzFrDQpMaEtHM29lRnNIVDZSVU10QUhZQVNMRGphOXFtUnpRUDVXb0MrcDB3Nnh4U0FjdFczU3lCMmJ1L3F6blloSE1BDQpBQUdMeDZuVlV3QUFCQU1BUnpCRkFpQVZvaDZqUVJNeDZzWTlMNVJsNVlDTm5GQTVTUTdwYms2b2I0Nm1MeFZ1DQoyZ0loQUxtbjFGdmpXQzVtSytCV0NDak5DeUFabmZYMWdEQWNkMzNUdi8zYjFaVU9BSGNBTzFOM2RUNHR1WUJPDQppekJiQnY1QU8yZllUOFAweDcwQURTMXliK0g2MUJjQUFBR0x4Nm5WakFBQUJBTUFTREJHQWlFQXB3RmdDSllJDQpBQmJvbS8yallVb09NMWp5SHQ0U2cyRnhKSURZQlJFQ1djVUNJUURwYSs2SzVwK0l6VkQ1UDJNdHM2K0F3NnNDDQp6d05EcHBvU2hZV0d1a1NBVURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUF4Sll3cnV3SlMvQTRJSnFVZlZiDQpjSmpHS3EwTmhmdTdYNGhBVmFkTWpZekhWZUNJWGFuU0lnVSs5KzlsM2Zmc2RBMUdENThzNXJrR25McTAxcFlRDQpHNWtSRDNnM2xDV0tCQ3JEVVpqZTlrelNLVDZ3cUVrUVg5T3R4bnNIWDltYzJIaERmUm05S0wyWU8vdkxyekZ5DQpZNlhQQ1ZOL3FYcU1qQzFpakZCWDAra2ljWm8wdVZUelFjcE55bmh3d1J1TkhEYmxib3l2N1EzTUc3Vk1NRTRHDQp4M3NhbStrWTNBSkhHeWlFdnBpYTdPTU9jNGI5WlUxR0FqcEhDbFloZzUySUdJeXVtRnRQbDRmRXl6N2poS0FoDQplbUU1ejJsMlBacWtiSWFablpyYzdxQkRTdHZPKzgvZUY0d1l6cjQrcCtUbklCRngrTzVKNkVSY0VGVWhVVTlpDQpDZz09DQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tDQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRXlEQ0NBN0NnQXdJQkFnSVFEUFc5Qml0V0F2UjZ1RkFzSTh6d1pqQU5CZ2txaGtpRzl3MEJBUXNGQURCaApNUXN3Q1FZRFZRUUdFd0pWVXpFVk1CTUdBMVVFQ2hNTVJHbG5hVU5sY25RZ1NXNWpNUmt3RndZRFZRUUxFeEIzCmQzY3VaR2xuYVdObGNuUXVZMjl0TVNBd0hnWURWUVFERXhkRWFXZHBRMlZ5ZENCSGJHOWlZV3dnVW05dmRDQkgKTWpBZUZ3MHlNVEF6TXpBd01EQXdNREJhRncwek1UQXpNamt5TXpVNU5UbGFNRmt4Q3pBSkJnTlZCQVlUQWxWVApNUlV3RXdZRFZRUUtFd3hFYVdkcFEyVnlkQ0JKYm1NeE16QXhCZ05WQkFNVEtrUnBaMmxEWlhKMElFZHNiMkpoCmJDQkhNaUJVVEZNZ1VsTkJJRk5JUVRJMU5pQXlNREl3SUVOQk1UQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQUQKZ2dFUEFEQ0NBUW9DZ2dFQkFNejNFR0pQcHJ0amIrMlFVbGJGYlNkN2VoSldpdkgwK2RibjRZKzlsYXZ5WUVFVgpjTnNTQVBvbkNyVlhPRnQ5c2xHVGNaVU9ha0dVV3pVYitudjZ1OFcrSkREK1Z1L0U4MzJYNHhUMUZFM0xweER5CkZ1cXJJdkF4SWhGaGFaQW11bmpabHgvamZXYXJkVVNWYzhpcy8rOWRDb3BaUStHc3Nqb1A4MGo4MTJzM3dXUGMKM2tiVzIwWCtmU1A5a09oUkJ4NVJvMS90U1VaVWZ5eUl4ZlFUbkpjVlBBUG9vVG5jYVF3eXdhOFdWMHlVUjBKOApvc2ljZmViVVRWU3ZRcG1vd1FUQ2Q1eldTT1RPRWVBcWdKbndRM0RQUDNacjBVeEpxeVJld2cyQy9VYW9xMnlUCnpHSlNRbldTK0pyNlhsNnlzR0hsSHgrNWZ3bVk2RDM2ZzM5SGFhRUNBd0VBQWFPQ0FZSXdnZ0YrTUJJR0ExVWQKRXdFQi93UUlNQVlCQWY4Q0FRQXdIUVlEVlIwT0JCWUVGSFNGZ01CbXg5ODMzcys5S1RlcUF4Mis3YzBYTUI4RwpBMVVkSXdRWU1CYUFGRTRpVkNBWWxlYmpidVlQK3ZxNUV1MEdGNDg1TUE0R0ExVWREd0VCL3dRRUF3SUJoakFkCkJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdkZ1lJS3dZQkJRVUhBUUVFYWpCb01DUUcKQ0NzR0FRVUZCekFCaGhob2RIUndPaTh2YjJOemNDNWthV2RwWTJWeWRDNWpiMjB3UUFZSUt3WUJCUVVITUFLRwpOR2gwZEhBNkx5OWpZV05sY25SekxtUnBaMmxqWlhKMExtTnZiUzlFYVdkcFEyVnlkRWRzYjJKaGJGSnZiM1JICk1pNWpjblF3UWdZRFZSMGZCRHN3T1RBM29EV2dNNFl4YUhSMGNEb3ZMMk55YkRNdVpHbG5hV05sY25RdVkyOXQKTDBScFoybERaWEowUjJ4dlltRnNVbTl2ZEVjeUxtTnliREE5QmdOVkhTQUVOakEwTUFzR0NXQ0dTQUdHL1d3QwpBVEFIQmdWbmdRd0JBVEFJQmdabmdRd0JBZ0V3Q0FZR1o0RU1BUUlDTUFnR0JtZUJEQUVDQXpBTkJna3Foa2lHCjl3MEJBUXNGQUFPQ0FRRUFrUEZ3eXlpWGFaZDhkUDNBK2laN1U2dXR6V1g5dXB3R25JclhXa09IN1UxTVZsK3QKd2NXMUJTQXVXZEgvU3ZXZ0t0aXdsYTNKTGtvNzE2ZjJiNGdwL0RBL0pJUzd3N2Q3a3djc3I0ZHJkalB0QUZWUwpzbG1lNUxuUTg5L25ELzdkK01TNUVIS0JDUVJmejVlZUxqSjFqcythV05KWE1YNDNBWUd5Wm0wcEdyRm1DVzNSCmJwRDB1Zm92QVJURlhGWmtBZGw5aDZnNFU1K0xYVVp0WE1ZbmhJSFVmb3lNbzV0UzU4YUk3RGQ4S3Z2d1ZWbzQKY2hEWUFCUFBUSFBicWpjMXFDbUJhWngydk40WWU1RFV5cy92WndQOUJGb2hGckgvNmovZjNJTDE2L1Jaa2lNTgpKQ3FWSlV6S29aSG0xTGVzaDNTejhXMmptZHY1MWIyRVFKOEhtQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURqakNDQW5hZ0F3SUJBZ0lRQXpyeDVxY1JxYUM3S0dTeEhRbjY1VEFOQmdrcWhraUc5dzBCQVFzRkFEQmgKTVFzd0NRWURWUVFHRXdKVlV6RVZNQk1HQTFVRUNoTU1SR2xuYVVObGNuUWdTVzVqTVJrd0Z3WURWUVFMRXhCMwpkM2N1WkdsbmFXTmxjblF1WTI5dE1TQXdIZ1lEVlFRREV4ZEVhV2RwUTJWeWRDQkhiRzlpWVd3Z1VtOXZkQ0JICk1qQWVGdzB4TXpBNE1ERXhNakF3TURCYUZ3MHpPREF4TVRVeE1qQXdNREJhTUdFeEN6QUpCZ05WQkFZVEFsVlQKTVJVd0V3WURWUVFLRXd4RWFXZHBRMlZ5ZENCSmJtTXhHVEFYQmdOVkJBc1RFSGQzZHk1a2FXZHBZMlZ5ZEM1agpiMjB4SURBZUJnTlZCQU1URjBScFoybERaWEowSUVkc2IySmhiQ0JTYjI5MElFY3lNSUlCSWpBTkJna3Foa2lHCjl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1emZOTk54N2E4bXlhSkN0U25YL1Jyb2hDZ2lOOVJsVXlmdUkKMi9PdThqcUprVHg2NXFzR0dtdlByQzNvWGdra1JMcGltbjdXbzZoKzRGUjFJQVdzVUxlY1l4cHNNTnphSHhteAoxeDdlL2RmZ3k1U0RONjdzSDBOTzNYc3MwcjB1cFMva3FiaXRPdFNacExZbDZadHJBR0NTWVA5UElVa1k5MmVRCnEyRUduSS95dXVtMDZaSXlhN1h6VitoZEc4Mk1IYXVWQkpWSjh6VXRsdU5KYmQxMzQvdEpTN1NzVlFlcGo1V3oKdENPN1RHMUY4UGFwc3BVd3RQMU1WWXduU2xjVWZJS2R6WE9TMHhaS0JneU1VTkdQSGdtK0Y2SG1JY3I5ZytVUQp2SU9sQ3NSbktQWnpGQlE5Um5iRGh4U0pJVFJOcnc5RkRLWkpvYnE3bk1XeE00TXBoUUlEQVFBQm8wSXdRREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUE0R0ExVWREd0VCL3dRRUF3SUJoakFkQmdOVkhRNEVGZ1FVVGlKVUlCaVYKNXVOdTVnLzYrcmtTN1FZWGp6a3dEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBR0JuS0pSdkRraGo2ekhkNm1jWQoxWWw5UE1XTFNuL3B2dHNyRjkrd1gzTjNLaklUT1lGblFvUWo4a1ZuTmV5SXYvaVBzR0VNTktTdUlFeUV4dHY0Ck5lRjIyZCttUXJ2SFJBaUdmelowSkZyYWJBMFVXVFc5OGtuZHRoL0pzdzFIS2oyWkw3dGN1N1hVSU9HWlgxTkcKRmR0b20vRHpNTlUrTWVLTmhKN2ppdHJhbGo0MUU2VmY4UGx3VUhCSFFSRlhHVTdBajY0R3hKVVRGeThiSlo5MQo4ckdPbWFGdkU3RkJjZjZJS3NoUEVDQlYxL01VUmVYZ1JQVHFoNVV5a3c3K1UwYjZMSjMvaXlLNVM5a0pSYVRlCnBMaWFXTjBiZlZLZmpsbERpSUdrbmliVmI2M2REY1kzZmUwRGtodmxkMTkyN2p5TnhGMVdXNkxaWm02ek5UZmwKTXJZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==' | base64 --decode >kedaorg-tls.crt
+  418   openssl verify -CAfile server_chain.crt kedaorg-tls.crt 
+  419  clear
+  420  k logs kannel-mtnrwanda-57f6bb57f-2lxq5 
+  421  k logs keda-operator-metrics-apiserver-54d47fdcd5-m46d5 
+  422  xport CLUSTER_NAME=mtnrwanda-stage
+  423  export GPG_TTY=$(tty)
+  424  kubectl config use-context VOC_CLUSTER
+  425  export KUBECONFIG=~/.kube/config
+  426  chmod 600 /home/ikay/.kube/config
+  427   source <(kubectl completion bash) 
+  428   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  429   alias k=kubectl
+  430  complete -o default -F __start_kubectl k
+  431  clear
+  432  ls
+  433  sudo vi ca.crt 
+  434  sudo vi bundle.yaml 
+  435  export CLUSTER_NAME=mtnrwanda-stage
+  436  export GPG_TTY=$(tty)
+  437  kubectl config use-context VOC_CLUSTER
+  438  export KUBECONFIG=~/.kube/config
+  439  chmod 600 /home/ikay/.kube/config
+  440   source <(kubectl completion bash) 
+  441   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  442   alias k=kubectl
+  443  complete -o default -F __start_kubectl k
+  444  clear
+  445  ls
+  446  sudo vi metrics-server-certs.yaml 
+  447  export CLUSTER_NAME=mtnrwanda-stage
+  448  export GPG_TTY=$(tty)
+  449  kubectl config use-context VOC_CLUSTER
+  450  export KUBECONFIG=~/.kube/config
+  451  chmod 600 /home/ikay/.kube/config
+  452   source <(kubectl completion bash) 
+  453   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  454   alias k=kubectl
+  455  complete -o default -F __start_kubectl k
+  456  clear
+  457  ls
+  458  cat metrics-server-certs.yaml 
+  459  echo "<base64-encoded-client.crt>" | base64 --decode > client.crt
+  460  echo "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURMekNDQWhlZ0F3SUJBZ0lVSlhXQnczMmlkWHJSblNzT0NYOTJTRG1mSDlFd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0RURUxNQWtHQTFVRUF4TUNZMkV3SGhjTk1qTXdOak13TURZeU9USXpXaGNOTWpjd05qTXdNRFl5T1RJegpXakFaTVJjd0ZRWURWUVFERXc1dFpYUnlhV056TFhObGNuWmxjakNDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFECmdnRVBBRENDQVFvQ2dnRUJBTVFOZ3NHSFM5bzRsL1ZYcUtpVGtNRjM1Z1ZrUE9UU3Foa0QraHVpZSt2cXhRS28KSzFVOHhyRnRWbjhBdFZob0JQdGJFZVhuY2x4R0l5Z3lwOTJGMFlqb1Y4NEo1VVN3cjdvOTBRcy9hQnAvMmNiWQpGWHArcDFEeWxiVXZZVW4zdEhVczByQXJxOWwwcTg5K0F5V20yM3lPUU15THduM2dXekhYaEM1bTFHTzhHd1lmCjBFWWRMY1M0eWs0aUt1NXZ1cUpGYjVEemN1KzN0L2RkNXoram41Nk41NmJxdC96cWtobS8wSEpKYTdyN0VYL3MKVUVJODRXaktCVzdYNHM2K1NYSmE2cXNPcnoxaFpld2xkZWdHSHQzMG5EOSt3Q01EOGhCQTdzUHJyNHN5MlJMWgp4Z0NVbUFLVnNyc2I5bEdrbXpMVFYvL0RDcWx6dU5vYTVseHVWNjBDQXdFQUFhTjdNSGt3SFFZRFZSME9CQllFCkZITU55ZW02bFU1cGw1U2trWXFsRjdPK1FQYlZNQ2tHQTFVZEVRUWlNQ0NDSG0xbGRISnBZM010YzJWeWRtVnkKTG10MVltVXRjM2x6ZEdWdExuTjJZekFmQmdOVkhTTUVHREFXZ0JUcVZZaThoRCtzekZhaWo4RVJzUnlZUHVPQgo4VEFNQmdOVkhSTUJBZjhFQWpBQU1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQUdFUUlaTFl4OU1lK3l4Z1BQCnd5SFpWUGRsWFd1dUU1QTk3Qk9LdHdxcTE4ZFZiU0NPS08vYm55NVNhVElWMFNJKzM1UlNVOFJnTEJ0b1lEQzQKWUszNTNUdGd5Z3JhcE0yTVdub05VYVVZM1VTcVZUaVpheUtJRjVSQ1lnd0VxV1JkeDgrUEh2KzdtMGRLZzVmMgpjd3M2QVhNcTNVY3NNdy9YSjJ2L0gyNkN4MXMvZkp4ZXhnbVlMRmNpNnU1eG83b1FGVEhIbGFnUlJmZjFLQUJsCjlLdEdGbGl6Ymc1NlBYWHIyZWwxVXhRMmltNzdJcnZtbHJhNUZvNGUrV3BMNWh2akp5WjBOMUhJOUN2RjZrT0QKUzMvUnEvVlhOakZscjNqN2E4L3FxTmxacTh2T0pZeGxqNlZ2RXFZSTZqaFV0Q0k0dlNpTkNaZjZSWjF2aHNRUQpyU3ptCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K" | base64 --decode > client.crt
+  461  openssl x509 -in client.crt -text -noout
+  462  echo "<base64-encoded-client.crt>" | base64 --decode > client.crt
+  463  echo "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBeEEyQ3dZZEwyamlYOVZlb3FKT1F3WGZtQldRODVOS3FHUVA2RzZKNzYrckZBcWdyClZUekdzVzFXZndDMVdHZ0UrMXNSNWVkeVhFWWpLREtuM1lYUmlPaFh6Z25sUkxDdnVqM1JDejlvR24vWnh0Z1YKZW42blVQS1Z0UzloU2ZlMGRTelNzQ3VyMlhTcnozNERKYWJiZkk1QXpJdkNmZUJiTWRlRUxtYlVZN3diQmgvUQpSaDB0eExqS1RpSXE3bSs2b2tWdmtQTnk3N2UzOTEzblA2T2ZubzNucHVxMy9PcVNHYi9RY2tscnV2c1JmK3hRClFqemhhTW9GYnRmaXpyNUpjbHJxcXc2dlBXRmw3Q1YxNkFZZTNmU2NQMzdBSXdQeUVFRHV3K3V2aXpMWkV0bkcKQUpTWUFwV3l1eHYyVWFTYk10TlgvOE1LcVhPNDJocm1YRzVYclFJREFRQUJBb0lCQUJsWEVMZEFiRXl5bzJ0OQo3c29KTnJ6VzZUZDVyd2c1ZFd4aHovWTU4Ry84Q29aUEk3aXk4QkNYVEFhQzJpMm8xam9CMmFTZ1gyN3ZUdFIvCmhhUnppek41cW4yeVdEeWlaTGc3RExXNk5wTzBRanI2QzM2bmQ2dFdDNFVkY0dMOTNnaUdLRjVHYXNJaTJ5RW8KemJIVWFRcW1uVmdDMlhycElJaG03WW9NMXZkajZ4cS8zUW9IQTRTNXVDNzZ0VjlaWmoyd3RnazJUZXEvVGl3VAorSVQxUjlwcHlzOVVOMGtiMDdQVk53cjJxbzdoZUFuVENmOCtNQVN3amdxL09NaTYzcmtVZmt2UXUwL1pSSHRTClJrVjJmRUY4SlUxUHdEYnpsYnZxRjIvMitWNWwvZWJmUUVFNHJDSGJiN0JYRVJwYVJLcVdJVzBNTnlCNFFXS2YKZElOZ1Qza0NnWUVBNkxZR1dYcHdrblNoUnpPcEpmcm54RTJ5NGpJZlBoakM4Wi9ESFFTcmVkT1V4QnJGcit3MAo0MjRwMEwwd3FWeVltTmJRWUpKb0JWd3dENHhxdTR5L2U3OEx4SkQ1TUw4SDFhUzF0YWVlaXFuTGxZMnhwYnJHCms5UXVodVJud0dNcTAzYjJhdUtqNi9IbUxtVHdNQjJVdzJ3bG1xYnIvZU14NE9wNVdzN2M0T1VDZ1lFQTE2eFEKY1pBZzRoSFNET2g1YXF6MGtZdklBOWxoN1VuU2FGczk5aE9ZdUk3MHg3cjh4OFltUlcwVkgxWW1LMkZETDlNNgphNUpybFFaR2V6YVgzdWF0REQ3aG5UM01MQ3pIZkI1WHEwa2pjZmFwaFJrTlJUMkJPNVhuU0xDeWVSZUJHbms2CkVNZTBjZDljb0Fpd3FSaEUrTkgreVVHcnZwdXRyNjg3eU9TVzF5a0NnWUFEWkJ1bGxDWXR6Q3RKZVZRK3JIQlMKS1B1eFZoK2tiUUh5T1d6RGNIejdNbjBaZW5abEFPRW9hME9LdWljS1lNSU1nQnpiTzJidXBSQkNPYjZZYXcyagpSUDVyNTl6cHUrN21TeGNteFlHRzdjQjh0bXJmU21CNGFRQWdrUlY5OVRQN2p1RTZYNEVhQUJWbG1henlWb3dECmFRRUhSdVZyZHJNVVh2WlR2MjN5alFLQmdDMFUzTC9RTTc5dG9DMklqcENvMUhwejhIdzFmVTIvWjViZXM2WHoKVkxJSFY4MUVIY0NZZjdsMVlydnBJeE5nUWs0RjVpbEVNdTYwb0JqelFXMmJaRUt5QmpEN0VPbU85cWZRSTkwdQo3WlROellOL3lCRllHT0plcERqQ2pwdlhPT3BTdXJ0MU14ZTJhOE1iN2VsNnBEZ3FsUXAyaXJMT0VkRXVYTjNTClFtRjVBb0dBRXlwOG4vb1hKRXRERWs5aXArYTk5dkFEUjB0a1RIOE94R3BxeDlHT0lMQi9UNUJuLzN4VU1pRloKM2t4cmIvMlBSdmlMKzVSYnZINFlweWJCSVY3OWtJQzFXKzhOejdnRlE1aFhNZUx4NDlGZGFGcE5ydk44VjVNaApOQ2gzQ1lBS1p6dE40eGUwZXhucGJmbVhiZ0JXMmhNblA5YnNKZ3VRd2NxdWpkVkNLcE09Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==" | base64 --decode > client.key
+  464  openssl rsa -in client.key -check
+  465  cd cd
+  466  export CLUSTER_NAME=mtnrwanda-stage
+  467  export GPG_TTY=$(tty)
+  468  kubectl config use-context VOC_CLUSTER
+  469  export KUBECONFIG=~/.kube/config
+  470  chmod 600 /home/ikay/.kube/config
+  471   source <(kubectl completion bash) 
+  472   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  473   alias k=kubectl
+  474  complete -o default -F __start_kubectl k
+  475  clear
+  476  openssl verify -CAfile path/to/ca-certificate.crt client.crt
+  477  cd helm-onprem
+  478  pwd
+  479  openssl verify -CAfile /home/ikay/helm-onprem/server_chain.crt client.crt
+  480  cd
+  481  cat  mtn.co.rw.csr
+  482  ls
+  483  clear
+  484  export CLUSTER_NAME=mtnrwanda-stage
+  485  export GPG_TTY=$(tty)
+  486  kubectl config use-context VOC_CLUSTER
+  487  export KUBECONFIG=~/.kube/config
+  488  chmod 600 /home/ikay/.kube/config
+  489   source <(kubectl completion bash) 
+  490   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  491   alias k=kubectl
+  492  complete -o default -F __start_kubectl k
+  493  clear
+  494  helm list
+  495  clear
+  496  ls
+  497  cd helm-onprem-old/
+  498  ls
+  499  cd
+  500  cd helm-onprem-previous/
+  501  ls
+  502  cat tls-apiserver.crt 
+  503  clear 
+  504  ls
+  505  export CLUSTER_NAME=mtnrwanda-stage
+  506  export GPG_TTY=$(tty)
+  507  kubectl config use-context VOC_CLUSTER
+  508  export KUBECONFIG=~/.kube/config
+  509  chmod 600 /home/ikay/.kube/config
+  510   source <(kubectl completion bash) 
+  511   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  512   alias k=kubectl
+  513  complete -o default -F __start_kubectl k
+  514  clear
+  515  cd helm-onprem-previous/
+  516  ls
+  517  sudo vi keda-operator.yaml 
+  518  cd
+  519  clear
+  520  k describe secrets common-tlssecret 
+  521  helm get values keys
+  522  ;wq
+  523  clear
+  524  ls
+  525  export CLUSTER_NAME=mtnrwanda-stage
+  526  export GPG_TTY=$(tty)
+  527  kubectl config use-context VOC_CLUSTER
+  528  export KUBECONFIG=~/.kube/config
+  529  chmod 600 /home/ikay/.kube/config
+  530   source <(kubectl completion bash) 
+  531   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  532   alias k=kubectl
+  533  complete -o default -F __start_kubectl k
+  534  clear
+  535  cd helm-onprem/env/mtnrwanda-stage/
+  536  sudo vi vochub.yaml 
+  537  sudo vi secrets.new.yaml 
+  538  ls
+  539  rm -rf secrets.yaml 
+  540  cd ../..
+  541  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  542  helmfile lint
+  543  helmfile -n default apply
+  544  helm get values sso
+  545  helm get values feedback
+  546  k get po
+  547  clear
+  548  k logs sso-56c7fcfdd9-bwwmx
+  549  cd
+  550  clear
+  551  cd feedback
+  552  ls
+  553  sudo vi values.yaml 
+  554  cd
+  555  cd sso/
+  556  ls
+  557  sudo vi values.yaml 
+  558  cd templates/
+  559  ls
+  560  sudo vi configmap.yaml 
+  561  clear
+  562  cd
+  563  k get po
+  564  clear
+  565  kubectl logs notification-manager-69db7d5f96-bvsn2
+  566  clear
+  567  kubectl get jobs
+  568  k logs clerk-run-migrations
+  569  clear
+  570  cd helm-onprem/env/mtnrwanda-stage/
+  571  sudo vi vochub.yaml 
+  572  rm -rf secrets.yaml 
+  573  sudo vi secrets.new.yaml 
+  574  cd helm-onprem
+  575  sops -e env/mtnrwanda-stage/secrets.new.yaml > env/mtnrwanda-stage/secrets.yaml
+  576  helmfile lint
+  577  clear
+  578  helmfile sync
+  579  helmfile -n default apply
+  580  helm get values sso
+  581  clear
+  582  k get po
+  583  clear
+  584  k get pod
+  585  k logs kannel-mtnrwanda-57f6bb57f-2lxq5
+  586  cd env/mtnrwanda-stage/
+  587  clear
+  588  ls
+  589  sudo vi kannel.yaml.gotmpl 
+  590  k logs kannel-mtnrwanda-57f6bb57f-2lxq5 
+  591  export CLUSTER_NAME=mtnrwanda-stage
+  592  export GPG_TTY=$(tty)
+  593  kubectl config use-context VOC_CLUSTER
+  594  export KUBECONFIG=~/.kube/config
+  595  chmod 600 /home/ikay/.kube/config
+  596   source <(kubectl completion bash) 
+  597   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  598   alias k=kubectl
+  599  complete -o default -F __start_kubectl k
+  600  python send_test_email.py
+  601  sudo dnf install python3
+  602  python3 send_test_email.py
+  603  clear
+  604  sudo vi send_test_email.py
+  605  python3 send_test_email.py
+  606  export CLUSTER_NAME=mtnrwanda-stage
+  607  export GPG_TTY=$(tty)
+  608  kubectl config use-context VOC_CLUSTER
+  609  export KUBECONFIG=~/.kube/config
+  610  chmod 600 /home/ikay/.kube/config
+  611   source <(kubectl completion bash) 
+  612   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  613   alias k=kubectl
+  614  complete -o default -F __start_kubectl k
+  615  clear
+  616  python send_test_email.py
+  617  sudo dnf install python3
+  618  python send_test_email.py
+  619  python3 send_test_email.py
+  620  sudo vi send_test_email.py 
+  621  python3 send_test_email.py
+  622  sudo vi send_test_email.py 
+  623  clear
+  624  python3 send_test_email.py
+  625  sudo vi send_test_email.py 
+  626  python3 send_test_email.py
+  627  clear
+  628  sudo vi send_test_email.py 
+  629  python3 send_test_email.py
+  630  sudo vi send_test_email.py 
+  631  ping 52.101.68.5
+  632  ping mtn-co-rw.mail.protection.outlook.com
+  633  clear
+  634  openssl s_client -connect mtn-co-rw.mail.protection.outlook.com:587 -starttls smtp
+  635  [ikay@bastionsrv ~]$ telnet 52.101.68.5 25
+  636  nc -zv 52.101.68.5 25
+  637  [ikay@bastionsrv ~]$ nc -zv mtn-co-rw.mail.protection.outlook.com 25
+  638  nc -zv mtn-co-rw.mail.protection.outlook.com 25
+  639  sudo yum install telnet
+  640  clear
+  641  sudo dnf repolist
+  642  sudo dnf install telnet
+  643  sudo dnf search telnet
+  644  sudo dnf install package_name
+  645  sudo dnf install putty
+  646  sudo dnf install perl-Net-Telnet
+  647  putty telnet://hostname_or_IP
+  648  putty telnet://52.101.68.5 25
+  649  putty telnet://mtn-co-rw.mail.protection.outlook.com
+  650  clear
+  651  plink -telnet -P 25 52.101.68.5
+  652  sudo dnf install swaks
+  653  sudo dnf config-manager --set-enabled epel
+  654  sudo dnf makecache
+  655  sudo dnf install perl-Authen-SASL perl-Time-HiRes perl-Digest-SHA perl-Net-DNS perl-IO-Socket-INET6 perl-Authen-NTLM
+  656  sudo dnf install swaks
+  657  swaks --to ikay.chigozie@tretennetworks.com --from CustomerFeedback.Rw@mtn.com --server 52.101.68.5 --port 587 --auth LOGIN --auth-user 'CustomerFeedback.Rw@mtn.com' --auth-password 'vK/23lkz&3m)7}3' --tls
+  658  export CLUSTER_NAME=mtnrwanda-stage
+  659  export GPG_TTY=$(tty)
+  660  kubectl config use-context VOC_CLUSTER
+  661  export KUBECONFIG=~/.kube/config
+  662  chmod 600 /home/ikay/.kube/config
+  663   source <(kubectl completion bash) 
+  664   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  665   alias k=kubectl
+  666  complete -o default -F __start_kubectl k
+  667  clear
+  668  helm get values kannels
+  669  helm get values kannel
+  670  export CLUSTER_NAME=mtnrwanda-stage
+  671  export GPG_TTY=$(tty)
+  672  kubectl config use-context VOC_CLUSTER
+  673  export KUBECONFIG=~/.kube/config
+  674  chmod 600 /home/ikay/.kube/config
+  675   source <(kubectl completion bash) 
+  676   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  677   alias k=kubectl
+  678  complete -o default -F __start_kubectl k
+  679  clear
+  680  cd helm-onprem/env/mtnrwanda-stage/
+  681  sudo vi kannel.yaml.gotmpl 
+  682  cd ../..
+  683  helmfile sync
+  684  clear
+  685  export CLUSTER_NAME=mtnrwanda-stage
+  686  export GPG_TTY=$(tty)
+  687  kubectl config use-context VOC_CLUSTER
+  688  export KUBECONFIG=~/.kube/config
+  689  chmod 600 /home/ikay/.kube/config
+  690   source <(kubectl completion bash) 
+  691   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  692   alias k=kubectl
+  693  complete -o default -F __start_kubectl k
+  694  cd helm-onprem/env/
+  695  helmfile sync
+  696  cd ..
+  697  helmfile sync
+  698  helmfile -n default apply
+  699  k logs kannel-mtnrwanda-9dc855dc4-7wx6w 
+  700  clear
+  701  cd env/mtnrwanda-stage/
+  702  sudo vi vochub.yaml 
+  703  sudo vi kannel.yaml.gotmpl 
+  704  cd
+  705  ls
+  706  tar -xvzf kannel-snapshot.tar.gz
+  707  cd kannel-snapshot/
+  708  ls
+  709  ./bootstrap.sh
+  710  sudo dnf install autoconf automake libtool
+  711  clear
+  712  sudo dnf install oracle-epel-release-el8
+  713  sudo dnf install autoconf automake libtool
+  714  sudo dnf search autoconf
+  715  sudo dnf search automake
+  716  sudo dnf search libtool
+  717  git clone git://git.sv.gnu.org/autoconf
+  718  cd
+  719  clear
+  720  cd helm-onprem/env/mtnrwanda-stage/
+  721  cat kannel.yaml.gotmpl 
+  722  clear
+  723  k describe po kannel-mtnrwanda-9dc855dc4-7wx6w 
+  724  cd ../..
+  725  clear
+  726  cat filename 
+  727  clear
+  728  kubectl exec -it kannel-mtnrwanda-9dc855dc4-7wx6w --namespace=default -- /bin/sh
+  729  k logs kannel-mtnrwanda-9dc855dc4-7wx6w 
+  730  kubectl exec -it kannel-mtnrwanda-9dc855dc4-7wx6w --namespace=default -- /bin/sh -c bearerbox
+  731  kubectl exec -it kannel-mtnrwanda-9dc855dc4-7wx6w --namespace=default -- /bin/sh -c smsbox
+  732  clear
+  733  kubectl exec -it kannel-mtnrwanda-9dc855dc4-7wx6w --namespace=default -- /bin/sh
+  734  clear
+  735  k logs kannel-mtnrwanda-9dc855dc4-7wx6w 
+  736  export CLUSTER_NAME=mtnrwanda-stage
+  737  export GPG_TTY=$(tty)
+  738  kubectl config use-context VOC_CLUSTER
+  739  export KUBECONFIG=~/.kube/config
+  740  chmod 600 /home/ikay/.kube/config
+  741   source <(kubectl completion bash) 
+  742   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  743   alias k=kubectl
+  744  complete -o default -F __start_kubectl k
+  745  clear
+  746  k logs kannel-mtnrwanda-9dc855dc4-7wx6w 
+  747  cd kannel/
+  748  ls
+  749  cat Chart.yaml 
+  750  cat values.yaml 
+  751  clear
+  752  cd templates/
+  753  ls
+  754  cat configmap.yaml 
+  755  sudo vi deployment.yaml 
+  756  sudo vi service.yaml 
+  757  c
+  758  cd
+  759  clear
+  760  k get svc
+  761  k describe svc kannel-mtnrwanda
+  762  cd
+  763  cd kannel/
+  764  ls
+  765  clear
+  766  cd
+  767  sudo dnf update
+  768  clear
+  769  sudo dnf groupinstall "Development Tools"
+  770  export GPG_TTY=$(tty)
+  771  kubectl config use-context VOC_CLUSTER
+  772  export KUBECONFIG=~/.kube/config
+  773  chmod 600 /home/ikay/.kube/config
+  774   source <(kubectl completion bash) 
+  775   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  776   alias k=kubectl
+  777  complete -o default -F __start_kubectl k
+  778  clear
+  779  sudo dnf install -y oracle-epel-release-el8
+  780  sudo dnf install -y nodejs
+  781  node --version
+  782  npm --version
+  783  clear
+  784  sudo dnf module reset nodejs
+  785  sudo dnf module list nodejs
+  786  sudo dnf module enable nodejs:16-epel
+  787  sudo dnf install -y nodejs
+  788  node --version
+  789  npm --version
+  790  clear
+  791  npm install -g smpp-cli
+  792  sudo npm install -g smpp-cli
+  793  smpp-cli --version
+  794  smpp-cli bind --system-id mtn-rwanda --password God#20Pa --host SMSC_HOST —3339
+  795  smpp-cli send --from 100 --to +14036304951 --message "This is a test message" --system-id mtn-rwanda --password God#20Pa --host SMSC_HOST —3339
+  796  clear
+  797  smpp-cli send --system-id mtn-rwanda --password 'God#20Pa' --host SMSC_HOST --port 3339 --from 100 --to +14036304951 --message "This is a test message"
+  798  java -version
+  799  sudo dnf install java-11-openjdk
+  800  smpp-cli --help
+  801  smpp-cli send -h 172.17.84.41 -p 3339 -L MPP984 -P 'God#20Pa' 100 +14036304951 "This is a test message"
+  802  smpp-cli --version
+  803  telnet 172.17.84.41 3339
+  804  putty telnet 172.17.84.41 3339
+  805  nc -v 172.17.84.41 3339
+  806  npm update -g smpp-cli
+  807  sudo npm update -g smpp-cli
+  808  smpp-cli --version
+  809  smpp-cli send -h 172.17.84.41 -p 3339 -L MPP984 -P 'God#20Pa' 100 +14036304951 "This is a test message"
+  810  export CLUSTER_NAME=mtnrwanda-stage
+  811  export GPG_TTY=$(tty)
+  812  kubectl config use-context VOC_CLUSTER
+  813  export KUBECONFIG=~/.kube/config
+  814  chmod 600 /home/ikay/.kube/config
+  815   source <(kubectl completion bash) 
+  816   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  817   alias k=kubectl
+  818  complete -o default -F __start_kubectl k
+  819  clear
+  820  sudo dnf groupinstall "Development Tools"
+  821  sudo dnf install libtool
+  822  sudo dnf search smpptest
+  823  sudo dnf install smpptest
+  824  sudo dnf config-manager --enable ol8_appstream
+  825  sudo dnf install libtool
+  826  sudo dnf groupinstall "Development Tools"
+  827  ls
+  828  ls -la
+  829  clear
+  830  smpptest --version
+  831  cd libsmpp34
+  832  libtool --version
+  833  clear
+  834  cd sso/
+  835  ls
+  836  cd templates/
+  837  clear
+  838  ls
+  839  sudo vi configmap.yaml 
+  840  k get svc
+  841  export CLUSTER_NAME=mtnrwanda-stage
+  842  export GPG_TTY=$(tty)
+  843  kubectl config use-context VOC_CLUSTER
+  844  export KUBECONFIG=~/.kube/config
+  845  chmod 600 /home/ikay/.kube/config
+  846   source <(kubectl completion bash) 
+  847   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  848   alias k=kubectl
+  849  complete -o default -F __start_kubectl k
+  850  k get svc
+  851  k describe svc kannel-mtnrwanda
+  852  curl -u 'SMPP984:God#20Pa' -k “10.156.42.15:13013”
+  853  clear
+  854  curl -u 'CustomerFeedback.Rw@mtn.com:vK/23lkz&3m)7}3' -k "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  855  curl -u 'SMPP984:God#20Pa' -k "http://10.156.42.15:13013"
+  856  curl -v -u 'SMPP984:God#20Pa' -k "http://10.156.42.15:13013"
+  857  cd
+  858  curl -u -v 'CustomerFeedback.Rw@mtn.com:vK/23lkz&3m)7}3' -k "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  859  curl -v -u 'CustomerFeedback.Rw@mtn.com:vK/23lkz&3m)7}3' -k "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  860  clear
+  861  curl -v -X GET "http://kannel-mtnrwanda/cgi-bin/sendsms?username=SMPP984&password=God#20Pa&to=2348032006316&text=Hello+World&from=100”
+  862  curl -v -X GET "http://kannel-mtnrwanda/cgi-bin/sendsms?username=SMPP984&password=God#20Pa&to=2348032006316&text=Hello+World&from=100"
+  863  curl -v -X GET "http://kannel-mtnrwanda/cgi-bin/sendsms?username=SMPP984&password=God%2320Pa&to=2348032006316&text=Hello+World&from=100"
+  864  k get service
+  865  kubectl port-forward svc/kannel-mtnrwanda 13013:80
+  866  export CLUSTER_NAME=mtnrwanda-stage
+  867  export GPG_TTY=$(tty)
+  868  kubectl config use-context VOC_CLUSTER
+  869  export KUBECONFIG=~/.kube/config
+  870  chmod 600 /home/ikay/.kube/config
+  871   source <(kubectl completion bash) 
+  872   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  873   alias k=kubectl
+  874  complete -o default -F __start_kubectl k
+  875  clear
+  876  nc -zv 172.17.84.41 3339
+  877  nc -zv 52.101.68.39 25
+  878  nc -zv 172.17.84.20 3339
+  879  cd helm-onprem/env/mtnrwanda-stage/
+  880  ls
+  881  sudo vi kannel.yaml.gotmpl 
+  882  nc -zv       group = sms-service 3339
+  883        keyword = default
+  884        name = "smsmo-handler"
+  885        #ping pong URL
+  886        get-url = "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=%p&to=%P&text=%a&charset=%C"
+  887        catch-all = true
+  888  clear
+  889  nc -zv 172.17.83.20 3339
+  890  sudo vi kannel.yaml.gotmpl 
+  891  nc -zv 172.17.84.41 3339
+  892  curl "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  893  curl -I -K "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  894  curl -k "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  895  curl -vk "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  896  clear
+  897  curl -ki "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8"
+  898  curl -ki "https://mtnrwanda-rest.mtn.co.rw/api/rest/gateway-answer-view/sms/MTNRwanda/inbox/mtnrwanda/?from=100&to=14036304951&text=Hello+World&charset=UTF-8" > response.txt
+  899  cat response.txt
+  900  clear
+  901  sudo vi enterprises.yaml.gotmpl 
+  902  sudo vi kannel.yaml.gotmpl 
+  903  cat enterprises.yaml.gotmpl 
+  904  wq
+  905  clear
+  906  curl -v "http://localhost:13013/cgi-bin/sendsms?username=SMPP984&password=God%2320Pa&to=2348032006316&text=Hello+World&from=100"
+  907  clear
+  908  sudo vi kannel.yaml.gotmpl 
+  909  cat secrets.new.yaml 
+  910  clear
+  911  curl -v "http://kannel-mtnrwanda/cgi-bin/sendsms?username=g5385hhk&password=a47hhk56&to=2348032006316&text=Hello+World&from=100"
+  912  curl -v "http://localhost:13013/cgi-bin/sendsms?username=g5385hhk&password=a47hhk56&to=2348032006316&text=Hello+World&from=100"
+  913  curl -v "http://10.157.11.231/cgi-bin/sendsms?username=g5385hhk&password=a47hhk56&to=2348032006316&text=Hello+World&from=100"
+  914  cat kannel.yaml.gotmpl 
+  915  k logs kannel-mtnrwanda-9dc855dc4-7wx6w 
+  916  clear
+  917  cd ../..
+  918  helmfile sync
+  919  helmfile -n default apply
+  920  k logs kannel-mtnrwanda-98b8dccf8-vf9hw 
+  921  cat kann
+  922  cd env/mtnrwanda-stage/
+  923  cat
+  924  clear
+  925  cat kannel.yaml.gotmpl 
+  926  export CLUSTER_NAME=mtnrwanda-stage
+  927  export GPG_TTY=$(tty)
+  928  kubectl config use-context VOC_CLUSTER
+  929  export KUBECONFIG=~/.kube/config
+  930  chmod 600 /home/ikay/.kube/config
+  931   source <(kubectl completion bash) 
+  932   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  933   alias k=kubectl
+  934  complete -o default -F __start_kubectl k
+  935  clear
+  936  export CLUSTER_NAME=mtnrwanda-stage
+  937  export GPG_TTY=$(tty)
+  938  kubectl config use-context VOC_CLUSTER
+  939  export KUBECONFIG=~/.kube/config
+  940  chmod 600 /home/ikay/.kube/config
+  941   source <(kubectl completion bash) 
+  942   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  943   alias k=kubectl
+  944  complete -o default -F __start_kubectl k
+  945  clear
+  946  cd feedback
+  947  ls
+  948  cd templates/
+  949  ls
+  950  sudo vi configmap-api.yaml 
+  951  sudo vi configmap.yaml 
+  952  export CLUSTER_NAME=mtnrwanda-stage
+  953  export GPG_TTY=$(tty)
+  954  kubectl config use-context VOC_CLUSTER
+  955  export KUBECONFIG=~/.kube/config
+  956  chmod 600 /home/ikay/.kube/config
+  957   source <(kubectl completion bash) 
+  958   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  959   alias k=kubectl
+  960  complete -o default -F __start_kubectl k
+  961  clear
+  962  cd helm-onprem/env/mtnrwanda-stage/
+  963  ls
+  964  sudo vi vochub.yam
+  965  sudo vi vochub.yaml 
+  966  nc -zv 172.17.83.20 3339
+  967  nc -zv 52.101.68.5 25
+  968  nc -zv 52.101.68.5 587
+  969  nc -zv mtn-co-rw.mail.protection.outlook.com 587
+  970  nc -zv mtn-co-rw.mail.protection.outlook.com 25
+  971  export CLUSTER_NAME=mtnrwanda-stage
+  972  export GPG_TTY=$(tty)
+  973  kubectl config use-context VOC_CLUSTER
+  974  export KUBECONFIG=~/.kube/config
+  975  chmod 600 /home/ikay/.kube/config
+  976   source <(kubectl completion bash) 
+  977   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  978   alias k=kubectl
+  979  complete -o default -F __start_kubectl k
+  980  clear
+  981  k get po -A
+  982  k describe po nginx-ingress-ingress-nginx-controller-7f8b4687f-65452 -n ingress-nginx 
+  983  clear
+  984  k logs kannel-mtnrwanda-98b8dccf8-vf9hw 
+  985  clear
+  986  k logs keda-operator-metrics-apiserver-54d47fdcd5-kvxlb 
+  987  export CLUSTER_NAME=mtnrwanda-stage
+  988  export GPG_TTY=$(tty)
+  989  kubectl config use-context VOC_CLUSTER
+  990  export KUBECONFIG=~/.kube/config
+  991  chmod 600 /home/ikay/.kube/config
+  992   source <(kubectl completion bash) 
+  993   echo "source <(kubectl completion bash)" >> ~/.bashrc
+  994   alias k=kubectl
+  995  complete -o default -F __start_kubectl k
+  996  clear
+  997  k get po --all -namespaces
+  998  clear
+  999  kubectl get pods --all-namespaces
+ 1000  sudo dnf update
+ 1001  clear
+ 1002  sudo dnf update --allowerasing
+ 1003  sudo dnf update --skip-broken
+ 1004  sudo dnf update --nobest
+ 1005  dnf repolist
+ 1006  sudo dnf update
+ 1007  sudo dnf install telnet
+ 1008  sudo dnf repolist
+ 1009  sudo dnf search telnet
+ 1010  clear
+ 1011  sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+ 1012  sudo dnf install telnet
+ 1013  ifconfig
+ 1014  history | cat > commandlines

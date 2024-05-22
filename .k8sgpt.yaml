@@ -1,0 +1,7 @@
+ai:
+    providers:
+        - name: openai
+          model: gpt-3.5-turbo
+          password: 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
+kubeconfig: /home/ikay/.kube/config
+kubecontext: ""

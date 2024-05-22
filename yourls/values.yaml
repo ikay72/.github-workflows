@@ -1,0 +1,21 @@
+yourls:
+  ingressAnnotations: {}
+
+  db:
+    host: "172.23.0.3"
+    port: "3306"
+    username: someuser
+    password: somepassword
+    name: "vochub"
+
+  app:
+    hosts: [sh.surv.biz]
+    username: un
+    password: pwd
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+  version: 1.9.2

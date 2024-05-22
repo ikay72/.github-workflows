@@ -1,0 +1,4 @@
+apiVersion: v2
+description: YOURLS deployment for vochub
+name: yourls
+version: 11.14.9

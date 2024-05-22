@@ -1,0 +1,13 @@
+
+fbconfig:
+  claim: feedback
+  import_export_volume: feedback
+
+  persistence:
+    storage: 100G
+
+  nfs_volumes:
+    host: false
+    share: "/srv/data/nfs/feedback"
+
+argocd: false

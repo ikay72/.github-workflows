@@ -1,0 +1,195 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso
+  labels:
+    app: sso
+  annotations:
+    configmap.reloader.stakater.com/reload: "sso-nginx,sso-config,sso-adfs"
+spec:
+  replicas: {{ .Values.sso.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: sso
+  template:
+    metadata:
+      labels:
+        app: sso
+        grp: sso
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      initContainers:
+        {{- include "sso.customCaInitContainer" . | nindent 8 }}
+        - name: copy-static
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["cp -rp /var/lib/sso/* /static/"]
+          volumeMounts:
+            - mountPath: /static
+              name: sso-static
+        - name: check
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          command: ["sso-mgm", "check"]
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SSO_DB_HOST
+              value: {{ .Values.sso.db.host | quote }}
+            - name: SSO_DB_PORT
+              value: {{ .Values.sso.db.port | quote }}
+            - name: SSO_DB_NAME
+              value: {{ .Values.sso.db.name | quote }}
+            - name: SSO_DB_USER
+              value: {{ .Values.sso.db.username | quote }}
+            - name: SSO_DB_PASSWORD
+              value: {{ .Values.sso.db.password | quote }}
+          {{- if .Values.mysql.tls }}
+            - name: DB_SSL_MODE
+              value: VERIFY_IDENTITY
+            - name: DB_SSL_CA
+              value: /etc/ssl/certs/ca-certificates.crt
+          {{- end }}
+          volumeMounts:
+            - name: sso-static
+              mountPath: /static
+            - name: sso-config
+              mountPath: /etc/sso/
+            - name: sso-adfs
+              mountPath: /etc/sso/adfs/
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+      containers:
+        # sso-uwsgi process
+        - name: sso
+          image: {{ .Values.image.repository }}/sso:{{ .Values.sso.image.tag }}
+          resources:
+            {{- toYaml .Values.sso.resources | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5 && sso-uwsgi stop"]
+          command: ["sso-uwsgi"]
+          args: ["nodaemon"]
+          volumeMounts:
+            - name: uwsgi-socket
+              mountPath: /var/run/sso
+              readOnly: false
+            - name: sso-config
+              mountPath: /etc/sso/
+            - name: sso-adfs
+              mountPath: /etc/sso/adfs/
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+          startupProbe:
+            exec:
+              command:
+                - /usr/bin/test
+                - -S
+                - /var/run/sso/uwsgi.sock
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 10
+          livenessProbe:
+            exec:
+              command:
+                - /usr/bin/test
+                - -S
+                - /var/run/sso/uwsgi.sock
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SSO_DB_HOST
+              value: {{ .Values.sso.db.host | quote }}
+            - name: SSO_DB_PORT
+              value: {{ .Values.sso.db.port | quote }}
+            - name: SSO_DB_NAME
+              value: {{ .Values.sso.db.name | quote }}
+            - name: SSO_DB_USER
+              value: {{ .Values.sso.db.username | quote }}
+            - name: SSO_DB_PASSWORD
+              value: {{ .Values.sso.db.password | quote }}
+          {{- if .Values.mysql.tls }}
+            - name: DB_SSL_MODE
+              value: VERIFY_IDENTITY
+            - name: DB_SSL_CA
+              value: /etc/ssl/certs/ca-certificates.crt
+          {{- end }}
+        # nginx provides processing for HTTP requests
+        - name: nginx
+          image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5 && /usr/sbin/nginx -s quit"]
+          ports:
+            - name: sso-http
+              containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: sso-http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: sso-http
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: uwsgi-socket
+              mountPath: /var/run/sso
+            - name: sso-nginx
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: sso-static
+              mountPath: /static
+            - name: common-tlssecret
+              mountPath: /etc/ssl/
+
+      volumes:
+        - name: uwsgi-socket
+          emptyDir: {}
+        - name: sso-nginx
+          configMap:
+            name: sso-nginx
+        - name: sso-static
+          emptyDir:
+            medium: Memory
+        - name: sso-config
+          configMap:
+            name: sso-config
+        - name: sso-adfs
+          configMap:
+            name: sso-adfs
+        - name: common-tlssecret
+          secret:
+            secretName: common-tlssecret
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}

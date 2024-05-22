@@ -1,0 +1,72 @@
+2023-11-17 01:16:35,300 DEBUG    root            Loaded Command Group: ['gcloud', 'artifacts']
+2023-11-17 01:16:35,301 DEBUG    root            Loaded Command Group: ['gcloud', 'artifacts', 'docker']
+2023-11-17 01:16:35,302 DEBUG    root            Loaded Command Group: ['gcloud', 'artifacts', 'docker', 'images']
+2023-11-17 01:16:35,306 DEBUG    root            Loaded Command Group: ['gcloud', 'artifacts', 'docker', 'images', 'list']
+2023-11-17 01:16:35,308 DEBUG    root            Running [gcloud.artifacts.docker.images.list] with arguments: [IMAGE_PATH: "europe-docker.pkg.dev/sandsiv-infrastructure/vochub"]
+2023-11-17 01:16:35,321 DEBUG    urllib3.connectionpool Starting new HTTPS connection (1): artifactregistry.googleapis.com:443
+2023-11-17 01:16:35,869 DEBUG    urllib3.connectionpool https://artifactregistry.googleapis.com:443 "GET /v1/projects/sandsiv-infrastructure/locations/europe/repositories/vochub?alt=json HTTP/1.1" 403 None
+2023-11-17 01:16:35,871 DEBUG    root            Chosen display Format:default
+2023-11-17 01:16:35,872 DEBUG    root            Chosen display Format:default
+2023-11-17 01:16:35,873 DEBUG    root            Chosen display Format:default
+2023-11-17 01:16:35,874 DEBUG    root            (gcloud.artifacts.docker.images.list) PERMISSION_DENIED: Permission 'artifactregistry.repositories.get' denied on resource '//artifactregistry.googleapis.com/projects/sandsiv-infrastructure/locations/europe/repositories/vochub' (or it may not exist).
+- '@type': type.googleapis.com/google.rpc.ErrorInfo
+  domain: artifactregistry.googleapis.com
+  metadata:
+    permission: artifactregistry.repositories.get
+    resource: projects/sandsiv-infrastructure/locations/europe/repositories/vochub
+  reason: IAM_PERMISSION_DENIED
+Traceback (most recent call last):
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/calliope/cli.py", line 987, in Execute
+    resources = calliope_command.Run(cli=self, args=args)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/calliope/backend.py", line 807, in Run
+    resources = command_instance.Run(args)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/surface/artifacts/docker/images/list.py", line 122, in Run
+    images = docker_util.GetDockerImages(repo_or_image, args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/command_lib/artifacts/docker_util.py", line 568, in GetDockerImages
+    _ValidateDockerRepo(resource.GetRepositoryName())
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/command_lib/artifacts/docker_util.py", line 341, in _ValidateDockerRepo
+    repo = ar_requests.GetRepository(repo_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/command_lib/artifacts/requests.py", line 236, in GetRepository
+    get_repo_res = client.projects_locations_repositories.Get(get_repo_req)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/googlecloudsdk/generated_clients/apis/artifactregistry/v1/artifactregistry_v1_client.py", line 1262, in Get
+    return self._RunMethod(
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/third_party/apitools/base/py/base_api.py", line 737, in _RunMethod
+    return self.ProcessHttpResponse(method_config, http_response, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/third_party/apitools/base/py/base_api.py", line 743, in ProcessHttpResponse
+    self.__ProcessHttpResponse(method_config, http_response, request))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/google-cloud-sdk/lib/third_party/apitools/base/py/base_api.py", line 609, in __ProcessHttpResponse
+    raise exceptions.HttpError.FromResponse(
+apitools.base.py.exceptions.HttpForbiddenError: HttpError accessing <https://artifactregistry.googleapis.com/v1/projects/sandsiv-infrastructure/locations/europe/repositories/vochub?alt=json>: response: <{'vary': 'Origin, X-Origin, Referer', 'content-type': 'application/json; charset=UTF-8', 'content-encoding': 'gzip', 'date': 'Thu, 16 Nov 2023 22:16:42 GMT', 'server': 'ESF', 'cache-control': 'private', 'x-xss-protection': '0', 'x-frame-options': 'SAMEORIGIN', 'x-content-type-options': 'nosniff', 'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000', 'transfer-encoding': 'chunked', 'status': 403}>, content <{
+  "error": {
+    "code": 403,
+    "message": "Permission 'artifactregistry.repositories.get' denied on resource '//artifactregistry.googleapis.com/projects/sandsiv-infrastructure/locations/europe/repositories/vochub' (or it may not exist).",
+    "status": "PERMISSION_DENIED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "IAM_PERMISSION_DENIED",
+        "domain": "artifactregistry.googleapis.com",
+        "metadata": {
+          "permission": "artifactregistry.repositories.get",
+          "resource": "projects/sandsiv-infrastructure/locations/europe/repositories/vochub"
+        }
+      }
+    ]
+  }
+}
+>
+2023-11-17 01:16:35,876 ERROR    root            (gcloud.artifacts.docker.images.list) PERMISSION_DENIED: Permission 'artifactregistry.repositories.get' denied on resource '//artifactregistry.googleapis.com/projects/sandsiv-infrastructure/locations/europe/repositories/vochub' (or it may not exist).
+- '@type': type.googleapis.com/google.rpc.ErrorInfo
+  domain: artifactregistry.googleapis.com
+  metadata:
+    permission: artifactregistry.repositories.get
+    resource: projects/sandsiv-infrastructure/locations/europe/repositories/vochub
+  reason: IAM_PERMISSION_DENIED

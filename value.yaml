@@ -1,0 +1,4 @@
+amqp:
+  user: "guest"  # Replace with your RabbitMQ username
+  password: "guest"  # Replace with your RabbitMQ password
+

@@ -1,0 +1,235 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xircl
+  labels:
+    app: {{ template "xircl.name" . }}
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "xircl-nginx,xircl-enterprises,xircl-php-fpm-conf,xircl-php-fpm-ini,xircl-php-cli-ini,xircl-config"
+
+spec:
+  replicas: {{ .Values.xircl.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "xircl.name" . }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ template "xircl.name" . }}
+        grp: xircl
+
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      containers:
+
+      # php-fpm for xircl
+      - name: {{ template "xircl.name" . }}
+        image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+        resources:
+          {{- toYaml .Values.xircl.resources | nindent 10 }}
+        command: ["/usr/sbin/php-fpm7.4", "-y", "/etc/php-fpm.conf"]
+
+        startupProbe:
+          exec:
+            command:
+              - /usr/bin/pgrep
+              - php-fpm
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 30
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/pgrep
+              - php-fpm
+          periodSeconds: 60
+          successThreshold: 1
+          failureThreshold: 30
+
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+          - name: SF_ENVIRONMENT
+            value: "prod"
+          - name: GO_QUERY_EXECUTOR_URL
+            value: "xircl-qry-exec"
+
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+          - name: xircl-php-fpm-conf
+            mountPath: /etc/php-fpm.conf
+            subPath: php-fpm.conf
+          - name: xircl-php-fpm-ini
+            mountPath: /etc/php/7.4/fpm/php.ini
+            subPath: php.ini
+          - name: xircl-enterprises
+            mountPath: /var/www/xircl/app/config/enterprise
+          - name: xircl-uploads
+            mountPath: /var/www/xircl/web/uploads
+          - name: xircl-cache
+            mountPath: /var/www/xircl/app/vochub_cache
+          - name: sessions-volume
+            mountPath: /sessions
+          - name: xircl-config
+            mountPath: /etc/config/prod/parameters.yml
+            subPath: parameters.yml
+          - name: xircl-bg-images
+            mountPath: /var/www/xircl/web/bundles/xirclcore/images/welcome_bgs
+            subPath: welcome_bgs
+          - name: xircl-logs
+            mountPath: /var/www/xircl/app/logs
+          - name: symfony-tmpfs-cache
+            mountPath: /var/www/xircl/app/cache
+        {{- if .Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+        env:
+          - name: TZ
+            value: {{ .Values.global.timeZone }}
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+
+        ports:
+        - name: xircl-http
+          containerPort: 8080
+          hostPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: xircl-http
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          successThreshold: 1
+          failureThreshold: 3
+
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+          - name: xircl-nginx
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: xircl-static
+            mountPath: /var/www
+          - name: xircl-uploads
+            mountPath: /var/www/xircl/web/uploads
+          - name: xircl-bg-images
+            mountPath: /var/www/xircl/web/bundles/xirclcore/images/welcome_bgs
+            subPath: welcome_bgs
+
+      - name: tail
+        image: {{ $.Values.image.repository }}/tailout:{{ $.Values.tailout.image.tag }}
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            cpu: 200m
+            memory: 50Mi
+
+        volumeMounts:
+          - name: xircl-logs
+            mountPath: /app/logs
+
+        args:
+          - -m1
+          - /app/logs
+
+        env:
+          - name: TAILOUT_SLACK_TOKEN
+            value: {{ $.Values.tailout.slackToken | default "" | quote }}
+          - name: TAILOUT_SLACK_CHANNEL
+            value: {{ $.Values.tailout.slackChannel | default "" | quote }}
+
+      initContainers:
+        {{- include "xircl.customCaInitContainer" . | nindent 8 }}
+        - name: copy-static
+          image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["mkdir -p /static/xircl/web && cp -rp /var/www/xircl/web/* /static/xircl/web"]
+          volumeMounts:
+            - name: xircl-static
+              mountPath: /static
+
+        - name: copy-react-static
+          image: {{ .Values.image.repository }}/web-ui:{{ .Values.webui.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args: ["mkdir -p /static/react && cp -rp /app/build/* /static/react"]
+          volumeMounts:
+            - name: xircl-static
+              mountPath: /static
+
+      volumes:
+        - name: xircl-nginx
+          configMap:
+            name: xircl-nginx
+
+        - name: xircl-enterprises
+          configMap:
+            name: xircl-enterprises
+
+        - name: xircl-static
+          emptyDir: {}
+
+        - name: phpfpm-socket
+          emptyDir: {}
+
+        - name: xircl-php-fpm-conf
+          configMap:
+            name: xircl-php-fpm-conf
+
+        - name: xircl-php-fpm-ini
+          configMap:
+            name: xircl-php-fpm-ini
+
+        - name: xircl-php-cli-ini
+          configMap:
+            name: xircl-php-cli-ini
+
+        - name: xircl-config
+          configMap:
+            name: xircl-config
+
+        - name: xircl-uploads
+          persistentVolumeClaim:
+            claimName: {{ .Values.xircl.persistence.claims.uploads }}
+
+        - name: xircl-cache
+          persistentVolumeClaim:
+            claimName: {{ .Values.xircl.persistence.claims.cache }}
+
+        - name: sessions-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.xircl.persistence.claims.sessions }}
+
+        - name: xircl-bg-images
+          persistentVolumeClaim:
+            claimName: {{ .Values.xircl.persistence.claims.bg }}
+
+        - name: xircl-logs
+          emptyDir: {}
+
+        - name: symfony-tmpfs-cache
+          emptyDir:
+            medium: Memory
+
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}

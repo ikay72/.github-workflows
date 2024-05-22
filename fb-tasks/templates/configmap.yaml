@@ -1,0 +1,109 @@
+{{- if .Values.fbtasks.beatEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fbtasks-schedule-ini
+data:
+  schedule.ini: |
+    [schedule]
+    app = feedback_api
+    uid = feedback
+    gid = root
+    loglevel = DEBUG
+    schedule = /var/run/feedback/api/celerybeat-schedule.db
+    workdir = /var/log/feedback/api/
+    pidfile = /var/run/feedback/api/celerybeat.pid
+{{- end }}
+---
+{{- range $enterprise := .Values.enterprises }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  {{- $configMapName := printf "invoke-celery-%s" $enterprise.name | replace "_" "-" }}
+  name: {{ $configMapName }}
+data:
+  {{- $fbTaskConf := dict }}
+  {{- if hasKey $enterprise "fbtasks" }}
+  {{- $fbTaskConf = merge $enterprise.fbtasks $.Values.fbtasks }}
+  {{- else }}
+  {{- $fbTaskConf = $.Values.fbtasks }}
+  {{- end }}
+  invoke_celery.yaml: |
+    version: 1
+
+    app : feedback_api
+    loglevel : {{ $.Values.fbtasks.loglevel }}
+    workdir : /var/run/feedback/api/
+    uid : feedback
+    gid : root
+    heartbeat : 60
+
+    workers:
+    {{- range $consumerName, $consumerConfig := $fbTaskConf.consumers.config }}
+      {{ $consumerName }}:
+        queues : [{{ $consumerConfig.queue }}]
+        pidfile : {{ $consumerName }}%i.pid
+        logfile : /var/log/feedback/api/{{ $consumerName }}%i.log
+        worker_names : {{ $consumerName }}@%h
+        autoscale : {{ $consumerConfig.celeryAutoscale | default $.Values.fbtasks.consumers.celeryAutoscale | quote }}
+    {{ end }}
+
+    schedule-workers:
+      schedule: celerybeat-schedule.db
+      pidfile: celerybeat.pid
+      logfile: /var/log/feedback/api/celerybeat.log
+---
+{{ end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fbtasks-logging
+data:
+  logging.yaml: |
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+      verbose:
+        format: "%(levelname)s: %(message)s"
+    handlers:
+      generic:
+        class: logging.handlers.RotatingFileHandler
+        maxBytes: 52428800
+        filename: /var/log/feedback/api/task.log
+        level: INFO
+        formatter: verbose
+      lastresort:
+        level: INFO
+        class: logging.handlers.RotatingFileHandler
+        maxBytes: 52428800
+        filename: /var/log/feedback/api/root.log
+        formatter: verbose
+   {{- if .Values.fbconfig.django.devel }}
+      console:
+        level: INFO
+        class: logging.handlers.RotatingFileHandler
+        maxBytes: 52428800
+        filename: /var/log/feedback/api/verbose.log
+        formatter: verbose
+   {{- end }}
+    loggers:
+      '':
+        handlers:
+          - lastresort
+        level: INFO
+      feedback_api:
+        handlers:
+          - generic
+        level: INFO
+        propagate: false
+
+{{- if .Values.fbtasks.customCaCert }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fbtasks-custom-ca
+data:
+  rootCACert.pem: |
+{{ .Values.fbtasks.customCaCert | indent 4 }}
+{{- end }}

@@ -1,0 +1,74 @@
+ivr:
+  persistence:
+    volume: ivr
+    storage: 10G
+
+  nfs_volumes:
+    host: false
+    share: /srv/data/nfs/ivr
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 96Mi
+    requests:
+      cpu: 50m
+      memory: 48Mi
+
+  external_asterisk: false
+  speechtotext: speech-to-text
+
+  asterisk_resources:
+    limits:
+      cpu: 200m
+      memory: 192Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  amqp:
+    host: rabbitmq
+    port: "5672"
+    user: guest
+    password: guest
+    queue: live-outbox-voice
+
+  siphost: "80.91.169.4"
+  username: "800449029802"
+  secret: "********"
+  fromuser: "800449029802"
+
+  routes:
+    - name: TestRouteUA
+      provider: mysipprovider-out
+      max_workers: 10
+
+  rtpconf: |
+    [general]
+    rtpstart=5000
+    rtpend=31000
+
+  # pjsipconf: |
+  #   # custom pjsip.conf to override
+
+  # enterprises:
+  #   - poste
+  #   - iberdrola
+
+  # loadbalancer:
+  #   tcp: 192.168.115.22
+  #   udp: 192.168.115.23
+
+  # spec:
+  #   dnsPolicy: ClusterFirstWithHostNet
+  #   # kubectl label nodes gke-vochub005-default-pool-07ea0c9f-bdc5 ivrIP=staticIvrIP
+  #   affinity:
+  #     nodeAffinity:
+  #       requiredDuringSchedulingIgnoredDuringExecution:
+  #         nodeSelectorTerms:
+  #           - matchExpressions:
+  #             - key: ivrIP
+  #               operator: In
+  #               values:
+  #                 - staticIvrIP
+  #   hostNetwork: true

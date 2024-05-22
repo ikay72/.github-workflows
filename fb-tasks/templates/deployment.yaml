@@ -1,0 +1,413 @@
+{{- range $enterprise := .Values.enterprises }}
+
+{{- $fbTaskConf := dict }}
+{{- if hasKey $enterprise "fbtasks" }}
+{{- $fbTaskConf = merge $enterprise.fbtasks $.Values.fbtasks }}
+{{- else }}
+{{- $fbTaskConf = $.Values.fbtasks }}
+{{- end }}
+
+{{- if $.Values.fbtasks.beatEnabled }}
+{{- $beatName := printf "fb-celerybeat-%s" $enterprise.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $beatName }}
+  labels:
+    app: {{ $beatName }}
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-config,feedback-databases,fbtasks-logging,fbtasks-schedule-ini,feedback-celery-yaml,feedback-gdpr-settings,feedback-sms-gateways,feedback-enterprises"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ $beatName }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $beatName }}
+        grp: fb
+        typ: pod
+        enterprise: {{ $enterprise.name }}
+    spec:
+      serviceAccountName: {{ $.Release.Namespace }}-main
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: fb-tasks-no-schedule
+                    operator: NotIn
+                    values:
+                      - "true"
+      {{- if $.Values.global.sysctls }}
+      securityContext:
+        sysctls:
+          {{- toYaml $.Values.global.sysctls | nindent 10 }}
+      {{- end }}
+
+    {{- if or $.Values.fbtasks.customCaCert $.Values.mysql.customCaCert }}
+      initContainers:
+      {{ include "fb-tasks.customCaInitContainer" $ | nindent 8 }}
+    {{- end }}
+
+      containers:
+      - name: celerybeat
+        image: {{ $.Values.image.repository }}/feedback-rest-api:{{ $.Values.fbtasks.image.tag }}
+        resources:
+        {{- toYaml $.Values.fbtasks.resources | nindent 10 }}
+
+        command:
+          - dumb-init
+          - fbapi-mgm.py
+        args:
+          - celerybeat_start
+          - -E
+          - {{ $enterprise.name | quote }}
+          - --skip-checks
+        env:
+          - name: SPECIFIC_ENTERPRISE
+            value: {{ $enterprise.name | quote }}
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+
+      {{- include "fb-tasks.consumers_probes" (merge (dict "arg" "python3" "root" $ ) ) | nindent 8 }}
+
+        volumeMounts:
+        {{- include "fb-tasks.feedbackVolumeMounts" . | nindent 10 }}
+          - name: invoke-celery
+            mountPath: /etc/feedback/invoke_celery.yaml
+            subPath: invoke_celery.yaml
+
+          - name: feedbackapi-log
+            mountPath: /var/log/feedback/api
+            readOnly: false
+        {{- if or $.Values.fbtasks.customCaCert $.Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+
+      volumes:
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+
+        - name: fbtasks-logging
+          configMap:
+            name: fbtasks-logging
+
+        - name: schedule-ini
+          configMap:
+            name: fbtasks-schedule-ini
+
+        - name: feedback-celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+
+        - name: feedbackapi-log
+          emptyDir: {}
+
+        - name: invoke-celery
+          configMap:
+            name: invoke-celery-{{ $enterprise.name }}
+
+      {{- if $.Values.fbtasks.customCaCert }}
+        - name: fbtasks-custom-ca
+          configMap:
+            name: fbtasks-custom-ca
+      {{- end }}
+      {{- if $.Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+      {{- end }}
+      {{- if or $.Values.fbtasks.customCaCert $.Values.mysql.customCaCert }}
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{- end }}
+---
+
+{{- range $consumerName, $consumerConfig := $fbTaskConf.consumers.config }}
+{{- $fullName := printf "fb-%s-%s" $consumerName $enterprise.name }}
+{{- $hashSuffix := sha256sum $fullName | trunc 8 }}
+{{- $shortName := trunc 50 $fullName | trimSuffix "-" | trimSuffix "." }}
+{{- $standartName := printf "%s-%s" $shortName $hashSuffix | replace "_" "-" }}
+{{- $configMapName := printf "invoke-celery-%s" $enterprise.name | replace "_" "-" }}
+{{- $queueName := printf "%s_%s" $enterprise.name $consumerConfig.queue }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $standartName }}
+  labels:
+    app: {{ $standartName }}
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-config,feedback-databases,fbtasks-logging,fbtasks-schedule-ini,{{ $configMapName }},feedback-celery-yaml,feedback-gdpr-settings,feedback-sms-gateways,feedback-enterprises"
+spec:
+  {{- if not $consumerConfig.keda }}
+  replicas: 1
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ $standartName }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $standartName }}
+        grp: fb
+        typ: pod
+        filtering: "kedadriven"
+        enterprise: {{ $enterprise.name }}
+    spec:
+      serviceAccountName: {{ $.Release.Namespace }}-main
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: fb-tasks-no-schedule
+                    operator: NotIn
+                    values:
+                      - "true"
+      {{- if $.Values.fbconfig.hostAliases }}
+      hostAliases:
+        {{- toYaml $.Values.fbconfig.hostAliases | nindent 8 }}
+      {{- end }}
+
+      {{- if $.Values.global.sysctls }}
+      securityContext:
+        sysctls:
+          {{- toYaml $.Values.global.sysctls | nindent 10 }}
+      {{- end }}
+
+      initContainers:
+      {{ include "fb-tasks.customCaInitContainer" $ | nindent 8 }}
+
+      {{- if $.Values.fbtasks.delete_rabbitmq_queues }}
+        - name: delete-rabbitmq-queries
+          image: {{ $.Values.image.repository }}/feedback-rest-api:{{ $.Values.fbtasks.image.tag }}
+          command:
+            - fbapi-mgm.py
+          args:
+            - delete_rabbitmq_queues
+            - -E
+            - {{ $enterprise.name | quote }}
+            - --skip-checks
+          env:
+            - name: TZ
+              value: {{ $.Values.global.timeZone }}
+
+          volumeMounts:
+          {{- include "fb-tasks.feedbackVolumeMounts" . | nindent 10 }}
+            - name: {{ $configMapName }}
+              mountPath: /etc/feedback/invoke_celery.yaml
+              subPath: invoke_celery.yaml
+
+            - name: feedbackapi-log
+              mountPath: /var/log/feedback/api
+              readOnly: false
+      {{- end }}
+
+      terminationGracePeriodSeconds: 120
+      containers:
+      - name: task
+        image: {{ $.Values.image.repository }}/feedback-rest-api:{{ $.Values.fbtasks.image.tag }}
+        {{- $res := $consumerConfig.resources | default $.Values.fbtasks.consumers.resources }}
+        resources:
+        {{- toYaml $res | nindent 10 }}
+
+        command:
+          - dumb-init
+          - fbapi-mgm.py
+
+        args:
+          - celery_start
+          - -E
+          - {{ $enterprise.name }}
+          - -W
+          - {{ $consumerName }}
+          - --skip-checks
+
+        env:
+          - name: SPECIFIC_ENTERPRISE
+            value: {{ $enterprise.name | quote }}
+          - name: TZ
+            value: {{ $.Values.global.timeZone }}
+          - name: REQUESTS_CA_BUNDLE
+            value: /etc/ssl/certs/ca-certificates.crt
+
+        {{- include "fb-tasks.consumers_probes" (merge (dict "arg" "python" "root" $ ) ) | nindent 8 }}
+
+        volumeMounts:
+        {{ if contains $consumerName "import-validator import-files-writer export questionnaire-processor" }}
+          - name: export-data
+            mountPath: /opt/feedback
+            readOnly: false
+        {{ end }}
+
+        {{- if or $.Values.fbtasks.customCaCert $.Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+
+        {{- include "fb-tasks.feedbackVolumeMounts" . | nindent 10 }}
+          - name: {{ $configMapName }}
+            mountPath: /etc/feedback/invoke_celery.yaml
+            subPath: invoke_celery.yaml
+
+          - name: feedbackapi-log
+            mountPath: /var/log/feedback/api
+            readOnly: false
+
+      - name: tail
+        image: {{ $.Values.image.repository }}/tailout:{{ $.Values.tailout.image.tag }}
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            cpu: 200m
+            memory: 50Mi
+
+        volumeMounts:
+          - name: feedbackapi-log
+            mountPath: /app/logs
+
+        args:
+          - -m
+          - /app/logs
+
+        env:
+          - name: TAILOUT_SLACK_TOKEN
+            value: {{ $.Values.tailout.slackToken | default "" | quote }}
+          - name: TAILOUT_SLACK_CHANNEL
+            value: {{ $.Values.tailout.slackChannel | default "" | quote }}
+
+      volumes:
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+
+        - name: fbtasks-logging
+          configMap:
+            name: fbtasks-logging
+
+        - name: schedule-ini
+          configMap:
+            name: fbtasks-schedule-ini
+
+        - name: {{ $configMapName }}
+          configMap:
+            name: {{ $configMapName }}
+
+        - name: feedback-celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+
+        - name: export-data
+          persistentVolumeClaim:
+            claimName: {{ $.Values.fbconfig.claim }}
+
+        - name: feedbackapi-log
+          emptyDir: {}
+
+      {{- if $.Values.fbtasks.customCaCert }}
+        - name: fbtasks-custom-ca
+          configMap:
+            name: fbtasks-custom-ca
+      {{- end }}
+      {{- if $.Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+      {{- end }}
+      {{- if or $.Values.fbtasks.customCaCert $.Values.mysql.customCaCert }}
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+---
+{{- /*
+KEDA autoscaler start
+*/ -}}
+{{- if $consumerConfig.keda }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $standartName | quote }}
+  labels:
+    deploymentName: {{ $standartName | quote }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $standartName | quote }}
+  minReplicaCount: {{ $consumerConfig.minReplicaCount | default $.Values.fbtasks.consumers.minReplicaCount }}
+  idleReplicaCount: {{ $consumerConfig.idleReplicaCount | default $.Values.fbtasks.consumers.idleReplicaCount }}
+  maxReplicaCount: {{ $consumerConfig.maxReplicaCount | default $.Values.fbtasks.consumers.maxReplicaCount }}
+  advanced:
+    restoreToOriginalReplicaCount: {{ $consumerConfig.restoreToOriginalReplicaCount | default $.Values.fbtasks.consumers.restoreToOriginalReplicaCount }}
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: {{ $consumerConfig.stabilizationWindowSeconds | default $.Values.fbtasks.consumers.stabilizationWindowSeconds }}
+  triggers:
+  - type: rabbitmq
+    metadata:
+      protocol: "auto"
+      queueName: {{ $queueName | quote }}
+      queueLength: "1"
+      allowSubpathsInUrl: "true"
+      vhostName: "/"
+    authenticationRef:
+      name: keda-rabbitmq-trigger
+---
+{{- end }}
+{{- /*
+KEDA autoscaler end
+*/ -}}
+{{ end }}
+{{ end }}

@@ -1,0 +1,54 @@
+{{- if .Values.enterprises }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xircl
+  annotations:
+  {{- if .Values.global.externalDNSHostTarget }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.global.externalDNSHostTarget }}
+  {{- end }}
+  {{- range $k, $v := merge .Values.xircl.ingressAnnotations .Values.global.ingressAnnotations }}
+    {{ $k }}: {{ $v | quote }}
+  {{- end }}
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+  {{- $hubhost_aliases := include "xircl.aliaseslist" . }}
+  {{- if $hubhost_aliases }}
+    nginx.ingress.kubernetes.io/server-alias: {{ template "xircl.aliaseslist" . }}
+  {{- end }}
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+
+spec:
+{{- if .Values.global.ingressClass }}
+  ingressClassName: {{ .Values.global.ingressClass | quote }}
+{{- end }}
+  rules:
+  {{- range .Values.enterprises }}
+  - host: {{ .hubhost }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: xircl
+            port:
+              name: xircl-http-port
+  {{- if .hubhost_alias }}
+  {{- range split " " .hubhost_alias }}
+
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: xircl
+            port:
+              name: xircl-http-port
+  {{- end }}
+  {{- end }}
+  {{ end }}
+{{ end }}

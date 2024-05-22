@@ -1,0 +1,4 @@
+apiVersion: v2
+description: SSO server for VoCHUB
+name: sso
+version: 11.14.10

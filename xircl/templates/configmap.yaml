@@ -1,0 +1,390 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-nginx
+data:
+  nginx.conf: |
+    user  www-data;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  4096;
+    }
+
+    http {
+        real_ip_header {{ .Values.nginx.realIP.header }};
+        set_real_ip_from 0.0.0.0/0;
+        {{ .Values.nginx.logFormat | nindent 8 }}
+
+        include         /etc/nginx/mime.types;
+        default_type    application/octet-stream;
+
+        sendfile           on;
+        keepalive_timeout  30;
+        gzip               on;
+
+        server {
+            listen 8080;
+            server_name {{ range .Values.enterprises }} {{ if .hubhost_disabled }}{{ .hubhost }} {{ .hubhost_alias }}{{- end}} {{- end }} xircl-disabled;
+            location / {
+                return 503;
+            }
+        }
+
+        server {
+            listen 8080 default_server;
+            server_name {{ range .Values.enterprises }} {{ if not .hubhost_disabled }}{{ .hubhost }}{{- end}} {{ .hubhost_alias }} {{- end }} xircl;
+            root /var/www;
+
+            client_max_body_size 200M;
+
+            location ~ ^/(user-profile|export|store/upload/|public_api|zendesk_data|license-error|dist|js|api/|nelmio-js-logger|user_info|login|logout|classify|dashboard|bundles|compiled|socket_notification) {
+                root /var/www/xircl/web;
+                try_files $uri /app.php$is_args$args;
+            }
+
+            location ~ ^/app\.php(/|$) {
+                root /var/www/xircl/web;
+                fastcgi_pass unix:/var/run/php-fpm/fpm.socket;
+                fastcgi_split_path_info ^(.+\.php)(/.*)$;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+                fastcgi_param DOCUMENT_ROOT $realpath_root;
+                fastcgi_param SF_ENVIRONMENT 'prod';
+                fastcgi_read_timeout 300;
+                internal;
+            }
+
+            location ~ /\.ht {
+                deny all;
+            }
+            location = /healthz {
+                return 200;
+                access_log off;
+            }
+            location ~ \.php$ {
+                return 404;
+            }
+            location / {
+                root /var/www/react;
+                try_files $uri /index.html;
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-enterprises
+  annotations:
+  {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+  {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+  {{- end }}
+
+data:
+{{- range .Values.enterprises }}
+  {{- $xc := dict "xc" $.Values.xircl "ent" . "mysql" $.Values.mysql }}
+  {{ .hubhost }}.yml: |
+    {{ include "xircl.enterprise.yaml" $xc }}
+  {{- if .hubhost_alias }}
+  {{- range .hubhost_alias | split " " }}
+  {{ . }}.yml: |
+    {{ include "xircl.enterprise.yaml" $xc }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-php-fpm-conf
+data:
+  php-fpm.conf: |
+    [www]
+    listen = /var/run/php-fpm/fpm.socket
+    listen.owner = www-data
+    listen.group = www-data
+    listen.mode = 0660
+    user = xircl
+    group = xircl
+    pm = dynamic
+    pm.max_children = {{ .Values.xircl.php_settings.pm_max_children }}
+    pm.start_servers = {{ .Values.xircl.php_settings.pm_start_servers }}
+    pm.min_spare_servers = {{ .Values.xircl.php_settings.pm_min_spare_servers }}
+    pm.max_spare_servers = {{ .Values.xircl.php_settings.pm_max_spare_servers }}
+    pm.max_requests = {{ .Values.xircl.php_settings.pm_max_requests }}
+    catch_workers_output = yes
+
+    [global]
+    daemonize = no
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-php-fpm-ini
+data:
+  php.ini: |
+    [PHP]
+    engine = On
+    short_open_tag = Off
+    precision = 14
+    output_buffering = 4096
+    zlib.output_compression = Off
+    implicit_flush = Off
+    unserialize_callback_func =
+    serialize_precision = -1
+    disable_functions =
+    disable_classes =
+    zend.enable_gc = On
+    expose_php = Off
+    max_execution_time = 60
+    max_input_time = 60
+    memory_limit = {{ .Values.xircl.php_settings.fpm_memory_limit }}
+    error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+    display_errors = Off
+    display_startup_errors = Off
+    log_errors = On
+    log_errors_max_len = 0
+    ignore_repeated_errors = Off
+    ignore_repeated_source = Off
+    report_memleaks = On
+    track_errors = Off
+    html_errors = On
+    ;error_log = /tmp/php_errors.log
+    ;error_log = /proc/self/fd/2
+    variables_order = "EGPCS"
+    request_order = "GP"
+    register_argc_argv = Off
+    auto_globals_jit = On
+    post_max_size = 200M
+    auto_prepend_file =
+    auto_append_file =
+    default_mimetype = "text/html"
+    default_charset = "UTF-8"
+    doc_root =
+    user_dir =
+    enable_dl = Off
+    file_uploads = On
+    upload_max_filesize = 200M
+    max_file_uploads = 20
+    allow_url_fopen = On
+    allow_url_include = Off
+    default_socket_timeout = 600
+    [CLI Server]
+    cli_server.color = On
+    [Date]
+    date.timezone = Europe/Zurich
+    [Pdo_mysql]
+    pdo_mysql.cache_size = 2000
+    pdo_mysql.default_socket=
+    [mail function]
+    SMTP = localhost
+    smtp_port = 25
+    mail.add_x_header = On
+    [SQL]
+    sql.safe_mode = Off
+    [MySQLi]
+    mysqli.max_persistent = -1
+    mysqli.allow_persistent = On
+    mysqli.max_links = -1
+    mysqli.cache_size = 2000
+    mysqli.default_port = 3306
+    mysqli.default_socket =
+    mysqli.default_host =
+    mysqli.default_user =
+    mysqli.default_pw =
+    mysqli.reconnect = Off
+    [mysqlnd]
+    mysqlnd.collect_statistics = On
+    mysqlnd.collect_memory_statistics = Off
+    [bcmath]
+    bcmath.scale = 0
+    [Session]
+    session.save_handler = files
+    session.use_strict_mode = 0
+    session.use_cookies = 1
+    session.use_only_cookies = 1
+    session.name = PHPSESSID
+    session.auto_start = 0
+    session.cookie_lifetime = 0
+    session.cookie_path = /
+    session.cookie_domain =
+    session.cookie_httponly =
+    session.serialize_handler = php
+    session.gc_probability = 1
+    session.gc_divisor = 1000
+    session.gc_maxlifetime = 43200
+    session.referer_check =
+    session.cache_limiter = nocache
+    session.cache_expire = 180
+    session.use_trans_sid = 0
+    session.hash_function = 0
+    session.hash_bits_per_character = 5
+    url_rewriter.tags = "a=href,area=href,frame=src,input=src,form=fakeentry"
+    [Assertion]
+    zend.assertions = -1
+    [Tidy]
+    tidy.clean_output = Off
+    [soap]
+    soap.wsdl_cache_enabled=1
+    soap.wsdl_cache_dir="/tmp"
+    soap.wsdl_cache_ttl=86400
+    soap.wsdl_cache_limit = 5
+    [opcache]
+    opcache.memory_consumption=256
+    opcache.max_accelerated_files=16229
+    opcache.interned_strings_buffer=16
+    opcache.validate_timestamps=0
+    opcache.fast_shutdown=1
+    opcache.enable_cli=1
+    opcache.revalidate_path=1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-php-cli-ini
+data:
+  php.ini: |
+    [PHP]
+    engine = On
+    short_open_tag = Off
+    precision = 14
+    output_buffering = 4096
+    zlib.output_compression = Off
+    implicit_flush = Off
+    unserialize_callback_func =
+    serialize_precision = -1
+    disable_functions =
+    disable_classes =
+    zend.enable_gc = On
+    expose_php = Off
+    max_execution_time = 60
+    max_input_time = 60
+    memory_limit = {{ .Values.xircl.php_settings.cli_memory_limit }}
+    error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+    display_errors = Off
+    display_startup_errors = Off
+    log_errors = On
+    log_errors_max_len = 0
+    ignore_repeated_errors = Off
+    ignore_repeated_source = Off
+    report_memleaks = On
+    track_errors = Off
+    html_errors = On
+    ;error_log = /proc/self/fd/2
+    variables_order = "EGPCS"
+    request_order = "GP"
+    register_argc_argv = Off
+    auto_globals_jit = On
+    post_max_size = 200M
+    auto_prepend_file =
+    auto_append_file =
+    default_mimetype = "text/html"
+    default_charset = "UTF-8"
+    doc_root =
+    user_dir =
+    enable_dl = Off
+    file_uploads = On
+    upload_max_filesize = 200M
+    max_file_uploads = 20
+    allow_url_fopen = On
+    allow_url_include = Off
+    default_socket_timeout = 600
+    [Date]
+    date.timezone = "Europe/Zurich"
+    [Pdo_mysql]
+    pdo_mysql.cache_size = 2000
+    pdo_mysql.default_socket =
+    [mail function]
+    sendmail_path = /usr/sbin/sendmail -t -i
+    mail.add_x_header = On
+    [SQL]
+    sql.safe_mode = Off
+    [ODBC]
+    odbc.allow_persistent = On
+    odbc.check_persistent = On
+    odbc.max_persistent = -1
+    odbc.max_links = -1
+    odbc.defaultlrl = 4096
+    odbc.defaultbinmode = 1
+    [Interbase]
+    ibase.allow_persistent = 1
+    ibase.max_persistent = -1
+    ibase.max_links = -1
+    ibase.timestampformat = "%Y-%m-%d %H:%M:%S"
+    ibase.dateformat = "%Y-%m-%d"
+    ibase.timeformat = "%H:%M:%S"
+    [MySQLi]
+    mysqli.max_persistent = -1
+    mysqli.allow_persistent = On
+    mysqli.max_links = -1
+    mysqli.cache_size = 2000
+    mysqli.default_port = 3306
+    mysqli.default_socket =
+    mysqli.default_host =
+    mysqli.default_user =
+    mysqli.default_pw =
+    mysqli.reconnect = Off
+    [mysqlnd]
+    mysqlnd.collect_statistics = On
+    mysqlnd.collect_memory_statistics = Off
+    [bcmath]
+    bcmath.scale = 0
+    [Session]
+    session.save_handler = files
+    session.use_strict_mode = 0
+    session.use_cookies = 1
+    session.use_only_cookies = 1
+    session.name = PHPSESSID
+    session.auto_start = 0
+    session.cookie_lifetime = 0
+    session.cookie_path = /
+    session.cookie_domain =
+    session.cookie_httponly =
+    session.serialize_handler = php
+    session.gc_probability = 1
+    session.gc_divisor = 1000
+    session.gc_maxlifetime = 43200
+    session.referer_check =
+    session.cache_limiter = nocache
+    session.cache_expire = 180
+    session.use_trans_sid = 0
+    session.hash_function = 0
+    session.hash_bits_per_character = 5
+    url_rewriter.tags = "a=href,area=href,frame=src,input=src,form=fakeentry"
+    [Assertion]
+    zend.assertions = -1
+    [Tidy]
+    tidy.clean_output = Off
+    [soap]
+    soap.wsdl_cache_enabled=1
+    soap.wsdl_cache_dir="/tmp"
+    soap.wsdl_cache_ttl=86400
+    soap.wsdl_cache_limit = 5
+    [ldap]
+    ldap.max_links = -1
+    [opcache]
+    opcache.memory_consumption=256
+    opcache.max_accelerated_files=16229
+    opcache.interned_strings_buffer=16
+    opcache.validate_timestamps=0
+    opcache.fast_shutdown=1
+    opcache.enable_cli=1
+    opcache.revalidate_path=1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xircl-config
+data:
+  parameters.yml: |
+    parameters:
+      api:
+         jwt_sign: {{ .Values.fbconfig.django.secret_key | quote }}
+

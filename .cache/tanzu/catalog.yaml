@@ -1,0 +1,22 @@
+indexByPath:
+    /home/ikay/.local/share/tanzu-cli/telemetry/v1.1.0_4258f6f99711847d96784f0dbd86d74f710d18e526a2175a4262e0788d0220a1_global:
+        name: telemetry
+        description: configure cluster-wide settings for vmware tanzu telemetry
+        version: v1.1.0
+        buildSHA: 4a19b20
+        digest: ""
+        group: Run
+        docURL: ""
+        completionType: 0
+        installationPath: /home/ikay/.local/share/tanzu-cli/telemetry/v1.1.0_4258f6f99711847d96784f0dbd86d74f710d18e526a2175a4262e0788d0220a1_global
+        discovery: default
+        scope: Standalone
+        status: installed
+        discoveredRecommendedVersion: v1.1.0
+        target: global
+        defaultFeatureFlags: {}
+indexByName:
+    telemetry_global:
+        - /home/ikay/.local/share/tanzu-cli/telemetry/v1.1.0_4258f6f99711847d96784f0dbd86d74f710d18e526a2175a4262e0788d0220a1_global
+standAlonePlugins:
+    telemetry_global: /home/ikay/.local/share/tanzu-cli/telemetry/v1.1.0_4258f6f99711847d96784f0dbd86d74f710d18e526a2175a4262e0788d0220a1_global

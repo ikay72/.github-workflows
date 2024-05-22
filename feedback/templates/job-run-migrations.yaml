@@ -1,0 +1,100 @@
+{{ if .Values.fbconfig.feedbackdb.run_migration }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: feedback-run-migrations
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: "Sync"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-1"
+    {{- end }}
+
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "fbconfig.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: feedback-run-migrations
+          image: {{ .Values.image.repository }}/feedback-rest-api:{{ .Values.fbconfig.image.tag }}
+          command: ["/bin/sh", "-xec"]
+          args:
+            - >
+              echo "========== Running fbapi-mgm.py initial_manage_command for all enterprises";
+              {{- range .Values.enterprises }}
+              echo "========== Running migrations for: {{ .name }}";
+              install -o 1000 -g 1000 -d /opt/feedback/export/{{ .name }} /opt/feedback/import/{{ .name }} /opt/feedback/import/{{ .name }}/.locks /opt/feedback/ivr/{{ .name }} /opt/feedback/export/archive/{{ .name }} /opt/feedback/import/archive/{{ .name }};
+              {{- end }}
+              fbapi-mgm.py initial_manage_command --skip-checks
+
+          volumeMounts:
+            - name: feedback-config
+              mountPath: /etc/feedback/common.yaml
+              subPath: common.yaml
+            - name: feedback-databases
+              mountPath: /etc/feedback/databases.yaml
+              subPath: databases.yaml
+            - name: feedback-logging
+              mountPath: /etc/feedback/logging.yaml
+              subPath: logging.yaml
+            - name: feedback-gdpr-settings
+              mountPath: /etc/feedback/gdpr_settings.yaml
+              subPath: gdpr_settings.yaml
+            - name: feedback-sms-gateways
+              mountPath: /etc/feedback/sms_gateways.yaml
+              subPath: sms_gateways.yaml
+            - name: feedback-enterprises
+              mountPath: /etc/feedback/enterprise_specific_configs.yaml
+              subPath: enterprise_specific_configs.yaml
+            - name: export-data
+              mountPath: /opt/feedback
+              readOnly: false
+            - name: celery-yaml
+              mountPath: /etc/feedback/celery.yaml
+              subPath: celery.yaml
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+      volumes:
+        - name: feedback-config
+          configMap:
+            name: feedback-config
+        - name: feedback-databases
+          configMap:
+            name: feedback-databases
+        - name: feedback-gdpr-settings
+          configMap:
+            name: feedback-gdpr-settings
+        - name: feedback-sms-gateways
+          configMap:
+            name: feedback-sms-gateways
+        - name: feedback-enterprises
+          configMap:
+            name: feedback-enterprises
+        - name: feedback-logging
+          configMap:
+            name: feedback-logging
+        - name: export-data
+          emptyDir: {}
+        - name: celery-yaml
+          configMap:
+            name: feedback-celery-yaml
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{- end }}

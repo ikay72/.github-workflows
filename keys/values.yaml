@@ -1,0 +1,4 @@
+keys:
+  certfile: "secrets/surv.biz.crt"
+  keyfile: "secrets/surv.biz.key"
+  safile: "secrets/serviceaccount.json"

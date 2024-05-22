@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: xircl
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: xircl-http-port
+  selector:
+    app: {{ template "xircl.name" . }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xircl-qry-exec
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 7777
+    protocol: TCP
+    name: xircl-qe-port
+  selector:
+    app: xircl-consumers-go-executor

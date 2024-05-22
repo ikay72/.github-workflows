@@ -1,0 +1,168 @@
+fbtasks:
+  loglevel: INFO
+  fbtasksdb:
+    host: "172.23.0.3"
+    port: "3306"
+    username: st_feedback
+    password: efohhooGo3Shuz8a
+
+
+  beatEnabled: true
+
+  # confusing name for beat resources
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: 100m
+      memory: 384Mi
+
+  consumers:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 10Mi
+    replicas: 1
+    stabilizationWindowSeconds: 5
+    restoreToOriginalReplicaCount: true
+    maxReplicaCount: 1
+    minReplicaCount: 0
+    idleReplicaCount: 0
+    celeryAutoscale: "1,1"
+    config:
+
+      periodic:
+        # resources: {}
+        # stabilizationWindowSeconds: 3600
+        # restoreToOriginalReplicaCount: false
+        stabilizationWindowSeconds: 1200
+        celeryAutoscale: "4,1"
+        queue: queue_periodic_tasks
+        resources: {requests: {cpu: 20m, memory: 300Mi}, limits: {cpu: 200m, memory: 500Mi}}
+        keda: true
+
+      casealert-processor:
+        stabilizationWindowSeconds: 1200
+        celeryAutoscale: "5,1"
+        queue: queue_casealert_processor
+        resources: {requests: {cpu: 200m, memory: 250Mi}, limits: {cpu: 2000m, memory: 2000Mi}}
+        keda: true
+
+      clean-customer:
+        celeryAutoscale: "5,1"
+        queue: queue_clean_customer
+        resources: {requests: {cpu: 20m, memory: 250Mi}, limits: {cpu: 200m, memory: 2000Mi}}
+        keda: true
+
+      data-cleaning:
+        celeryAutoscale: "4,1"
+        queue: queue_data_cleaning
+        resources: {requests: {cpu: 200m, memory: 250Mi}, limits: {cpu: 2000m, memory: 2000Mi}}
+        keda: true
+
+      delete-questionnaires:
+        celeryAutoscale: "5,1"
+        queue: delete_questionnaires
+        resources: {requests: {cpu: 50m, memory: 250Mi}, limits: {cpu: 500m, memory: 2000Mi}}
+        keda: true
+
+      housekeeper:
+        queue: queue_housekeeper
+        resources: {requests: {cpu: 20m, memory: 180Mi}, limits: {cpu: 200m, memory: 500Mi}}
+        keda: true
+
+      email-inviter:
+        stabilizationWindowSeconds: 1200
+        queue: queue_email_inviter
+        resources: {requests: {cpu: 100m, memory: 200Mi}, limits: {cpu: 1000m, memory: 400Mi}}
+        keda: true
+
+      ivr-inviter:
+        queue: queue_ivr_inviter
+        resources: {requests: {cpu: 100m, memory: 180Mi}, limits: {cpu: 1000m, memory: 500Mi}}
+        keda: true
+
+      sms-inviter:
+        queue: queue_sms_inviter
+        resources: {requests: {cpu: 50m, memory: 180Mi}, limits: {cpu: 500m, memory: 500Mi}}
+        keda: true
+
+      sms-inviter-prio:
+        queue: queue_sms_inviter_prio
+        resources: {requests: {cpu: 50m, memory: 180Mi}, limits: {cpu: 500m, memory: 500Mi}}
+        keda: true
+
+      clerk-notifier:
+        stabilizationWindowSeconds: 1200
+        queue: queue_clerk_notifier
+        resources: {requests: {cpu: 20m, memory: 200Mi}, limits: {cpu: 200m, memory: 400Mi}}
+        keda: true
+
+      import-validator:
+        maxReplicaCount: 4
+        queue: queue_import_validator
+        resources: {requests: {cpu: 200m, memory: 300Mi}, limits: {cpu: 2000m, memory: 3000Mi}}
+        keda: true
+
+      import-files-writer:
+        queue: queue_import_files_writer
+        resources: {requests: {cpu: 100m, memory: 250Mi}, limits: {cpu: 4000m, memory: 2000Mi}}
+        keda: true
+
+      export:
+        queue: queue_export
+        resources: {requests: {cpu: 100m, memory: 250Mi}, limits: {cpu: 1000m, memory: 500Mi}}
+        keda: true
+
+      invite-selector:
+        stabilizationWindowSeconds: 1200
+        queue: queue_invite_selector
+        resources: {requests: {cpu: 50m, memory: 200Mi}, limits: {cpu: 100m, memory: 500Mi}}
+        keda: true
+
+      casealert:
+        stabilizationWindowSeconds: 1200
+        queue: queue_casealert
+        resources: {requests: {cpu: 25m, memory: 180Mi}, limits: {cpu: 250m, memory: 300Mi}}
+        keda: true
+
+      create-vocact-tickets:
+        queue: queue_create_vocact_tickets
+        resources: {requests: {cpu: 10m, memory: 180Mi}, limits: {cpu: 100m, memory: 300Mi}}
+        keda: true
+
+      mail:
+        celeryAutoscale: "5,1"
+        queue: queue_mail
+        resources: {requests: {cpu: 10m, memory: 190Mi}, limits: {cpu: 100m, memory: 500Mi}}
+        keda: true
+
+      questionnaire-creator:
+        celeryAutoscale: "5,1"
+        queue: queue_questionnaire_creator
+        resources: {requests: {cpu: 100m, memory: 250Mi}, limits: {cpu: 4000m, memory: 1500Mi}}
+        keda: true
+
+      chunk-inviter:
+        stabilizationWindowSeconds: 1200
+        celeryAutoscale: "5,1"
+        queue: queue_chunk_inviter
+        resources: {requests: {cpu: 100m, memory: 250Mi}, limits: {cpu: 4000m, memory: 1Gi}}
+        keda: true
+
+      reminder:
+        queue: queue_reminder
+        resources: {requests: {cpu: 100m, memory: 200Mi}, limits: {cpu: 1000m, memory: 500Mi}}
+        keda: true
+
+      questionnaire-reminder:
+        queue: queue_questionnaire_reminder
+        resources: {requests: {cpu: 20m, memory: 250Mi}, limits: {cpu: 200m, memory: 500Mi}}
+        keda: true
+
+fbconfig:
+  claim: feedback
+  hostAliases: []
+  django:
+    devel: false

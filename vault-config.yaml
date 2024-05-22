@@ -1,0 +1,121 @@
+# vault-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: default
+data:
+  vault-0.hcl: |
+    storage "raft" {
+      path                = "/vault/data"
+      node_id             = "vault-0"
+      cluster_addr        = "http://$(POD_IP):8201"
+      bolt_open_timeout   = "10s"
+      autopilot {
+        cleanup_dead_servers      = true
+        last_contact_threshold    = "200ms"
+        max_trailing_logs         = 250
+        min_quorum                = 3
+        server_stabilization_time = "10s"
+        promote_standbys          = true
+      }
+    }
+
+    listener "tcp" {
+      address          = "0.0.0.0:8200"
+      cluster_address  = "0.0.0.0:8201"
+      tls_cert_file   = "/vault/tls/vault.crt"
+      tls_key_file    = "/vault/tls/vault.key"
+    }
+
+    api_addr = "http://$(POD_IP):8200"
+    cluster_addr = "http://$(POD_IP):8201"
+    ui = true
+    disable_mlock = true
+
+  vault-1.hcl: |
+    storage "raft" {
+      path                = "/vault/data"
+      node_id             = "vault-1"
+      cluster_addr        = "http://$(POD_IP):8201"
+      bolt_open_timeout   = "10s"
+      autopilot {
+        cleanup_dead_servers      = true
+        last_contact_threshold    = "200ms"
+        max_trailing_logs         = 250
+        min_quorum                = 3
+        server_stabilization_time = "10s"
+        promote_standbys          = true
+      }
+    }
+
+    listener "tcp" {
+      address          = "0.0.0.0:8200"
+      cluster_address  = "0.0.0.0:8201"
+      tls_disable      = true
+    }
+
+    api_addr = "http://$(POD_IP):8200"
+    cluster_addr = "http://$(POD_IP):8201"
+    ui = true
+    disable_mlock = true
+
+  vault-2.hcl: |
+    storage "raft" {
+      path                = "/vault/data"
+      node_id             = "vault-2"
+      cluster_addr        = "http://$(POD_IP):8201"
+      bolt_open_timeout   = "10s"
+      autopilot {
+        cleanup_dead_servers      = true
+        last_contact_threshold    = "200ms"
+        max_trailing_logs         = 250
+        min_quorum                = 3
+        server_stabilization_time = "10s"
+        promote_standbys          = true
+      }
+    }
+
+    listener "tcp" {
+      address          = "0.0.0.0:8200"
+      cluster_address  = "0.0.0.0:8201"
+      tls_disable      = true
+    }
+
+    api_addr = "http://$(POD_IP):8200"
+    cluster_addr = "http://$(POD_IP):8201"
+    ui = true
+    disable_mlock = true
+
+  extraconfig-from-values.hcl: |
+    # Tune the default lease TTL for secrets
+    default_lease_ttl = "1h"
+    max_lease_ttl = "24h"
+
+    # Enable auditing to a file
+    audit "file" {
+      options = {
+        file_path = "/vault/logs/audit.log"
+      }
+    }
+
+    # Example of setting up a secrets engine
+    mount "kv" {
+      path = "secret"
+      options = {
+        version = "2"
+      }
+    }
+
+    # Setup a sample policy
+    policy "example-policy" {
+      rules = <<-EOH
+        path "secret/data/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+      EOH
+    }
+
+    # Performance tuning parameters
+    disable_mlock = true
+

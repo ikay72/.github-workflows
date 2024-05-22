@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notification-manager
+{{- if or .Values.global.externalDNSHostTarget (.Values.global.ingressAnnotations | default .Values.nm.ingress.annotations) }}
+  annotations:
+  {{- if .Values.global.externalDNSHostTarget }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.global.externalDNSHostTarget }}
+  {{- end }}
+  {{- range $k, $v := merge .Values.nm.ingress.annotations .Values.global.ingressAnnotations }}
+    {{ $k }}: {{ $v | quote }}
+  {{- end }}
+{{- end }}
+
+spec:
+{{- if .Values.global.ingressClass }}
+  ingressClassName: {{ .Values.global.ingressClass | quote }}
+{{- end }}
+  rules:
+  - host: {{ .Values.nm.ingress.host }}
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: notification-manager
+            port:
+              name: nm-http

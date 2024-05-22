@@ -1,0 +1,225 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-v2-nginx
+data:
+  nginx.conf: |
+    user  www-data;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections 2048;
+    }
+
+    http {
+        real_ip_header {{ .Values.nginx.realIP.header }};
+        set_real_ip_from 0.0.0.0/0;
+        access_log off;
+        server_names_hash_bucket_size 128;
+
+        include         /etc/nginx/mime.types;
+        default_type    application/octet-stream;
+
+        sendfile        on;
+
+        keepalive_timeout  0;
+
+        gzip on;
+
+        upstream php-fpm {
+            server unix:/var/run/php-fpm/fpm.socket;
+        }
+
+        server {
+            listen 8080 default_server;
+            server_name _;
+
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+        }
+
+        server {
+            listen 8080;
+            server_name {{ .Values.fbv2.static.host }};
+
+            location / {
+                root /opt/feedback/staticfiles;
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Credentials' 'true';
+                add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+                add_header 'Access-Control-Allow-Headers' 'DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+                if ($request_method = 'OPTIONS') {
+                    add_header 'Access-Control-Max-Age' 1728000;
+                    add_header 'Content-Type' 'text/plain charset=UTF-8';
+                    add_header 'Content-Length' 0;
+                    return 204;
+                }
+                try_files $uri =404;
+            }
+
+            location /_ivr/ {
+                root /opt/feedback/ivr/_recording/;
+                rewrite ^/_ivr(.*)$ $1 break;
+                try_files $uri =404;
+            }
+        }
+
+        {{ range .Values.enterprises }}
+        server {
+            listen 8080;
+            server_name {{ .surveyhost }} {{ .surveyhost_alias }};
+
+            {{- if .surveyhost_disabled }}
+            {{- if not .astrahost_disabled }}
+            location /digi_runner.js {
+                proxy_set_header Host $host;
+
+                add_header Access-Control-Allow-Origin "*";
+                add_header Access-Control-Allow-Credentials "true";
+                add_header Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT, PATCH";
+                add_header Access-Control-Max-Age "3600";
+                add_header Access-Control-Allow-Headers "x-requested-with, Content-Type, contentType, origin, authorization, accept, client-security-token, Pragma, Expires, Cache-Control";
+                proxy_pass http://astra;
+            }
+            {{- end }}
+
+            location / {
+                return 503;
+            }
+            {{- else }}
+
+            root /var/www/feedback-v2/web;
+
+            rewrite ^/app\.php/?(.*)$ /$1 permanent;
+
+            location / {
+                index app.php;
+                try_files $uri @rewriteapp;
+            }
+
+            location /digi/ {
+                proxy_set_header Host {{ .surveyhost }};
+                proxy_redirect https://{{ .astrahost }}/digi/ https://$host/digi/;
+                proxy_pass http://astra;
+            }
+
+            location /web/ {
+                proxy_set_header Host {{ .surveyhost }};
+                proxy_set_header X-Forwarded-Host $http_host;
+                proxy_redirect https://{{ .astrahost }}/web/ https://$http_host/web/;
+                add_header Access-Control-Allow-Origin "*" always;
+                add_header Access-Control-Allow-Credentials "true" always;
+                add_header Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT, PATCH" always;
+                add_header Access-Control-Max-Age "3600" always;
+                add_header Access-Control-Allow-Headers "x-requested-with, Content-Type, contentType, origin, authorization, accept, client-security-token, Pragma, Expires, Cache-Control" always;
+                proxy_hide_header 'Access-Control-Allow-Credentials';
+                proxy_pass http://astra;
+            }
+
+
+            location /digi_runner.js {
+                proxy_set_header Host $host;
+
+                add_header Access-Control-Allow-Origin "*";
+                add_header Access-Control-Allow-Credentials "true";
+                add_header Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT, PATCH";
+                add_header Access-Control-Max-Age "3600";
+                add_header Access-Control-Allow-Headers "x-requested-with, Content-Type, contentType, origin, authorization, accept, client-security-token, Pragma, Expires, Cache-Control";
+                proxy_pass http://astra;
+            }
+
+            location @rewriteapp {
+                rewrite ^(.*)$ /app.php/$1 last;
+            }
+
+            location ~ ^/(app|config|index)\.php(/|$) {
+                fastcgi_pass  unix:/var/run/php-fpm/fpm.socket;
+                fastcgi_split_path_info ^(.+\.php)(/.*)$;
+
+                fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+                fastcgi_param  QUERY_STRING       $query_string;
+                fastcgi_param  REQUEST_METHOD     $request_method;
+                fastcgi_param  CONTENT_TYPE       $content_type;
+                fastcgi_param  CONTENT_LENGTH     $content_length;
+
+                fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+                fastcgi_param  REQUEST_URI        $request_uri;
+                fastcgi_param  DOCUMENT_URI       $document_uri;
+                fastcgi_param  DOCUMENT_ROOT      $document_root;
+                fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+                fastcgi_param  REQUEST_SCHEME     $scheme;
+                fastcgi_param  HTTPS              $https if_not_empty;
+
+                fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+                fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+
+                fastcgi_param  REMOTE_ADDR        $remote_addr;
+                fastcgi_param  REMOTE_PORT        $remote_port;
+                fastcgi_param  SERVER_ADDR        $server_addr;
+                fastcgi_param  SERVER_PORT        $server_port;
+                fastcgi_param  SERVER_NAME        $server_name;
+
+                # PHP only, required if PHP was built with --enable-force-cgi-redirect
+                fastcgi_param  REDIRECT_STATUS    200;
+
+                fastcgi_param FEEDBACK_ENTERPRISE {{ .name }};
+                fastcgi_param HTTPS off;
+            }
+            {{- end }}
+        }
+    {{ end }}
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-v2-php-fpm-conf
+data:
+  php-fpm.conf: |
+    [www]
+    listen = /var/run/php-fpm/fpm.socket
+    listen.owner = www-data
+    listen.group = www-data
+    listen.mode = 0660
+    user = www-data
+    group = www-data
+    pm = dynamic
+    pm.max_children = 50
+    pm.start_servers = 2
+    pm.min_spare_servers = 2
+    pm.max_spare_servers = 5
+    catch_workers_output = yes
+    php_flag[display_errors] = off
+    php_admin_value[error_log] = /tmp/fpm-php.www.log
+    php_admin_flag[log_errors] = on
+
+    [global]
+    daemonize = no
+    error_log = /dev/stderr
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-v2-config
+data:
+  parameters.yml: |
+    parameters:
+        locale: en
+        secret: asdfasdf34tr3rfg4g5yg
+        log_mongo_server: 'mongodb://{{ .Values.fbconfig.mongodb.host }}'
+        log_mongo_database: fb_invite
+        log_mongo_collection.sms: sms
+        log_mongo_collection.mail: mail
+        log_mongo_collection.casealert: casealert
+        api.connector.url: 'http://feedback-api/api/channel'
+        rabbit.inbox.sms: feedback-inbox-sms
+        rabbit.outbox.sms: feedback-outbox-sms
+        rabbit.outbox.mail: feedback-outbox-mail
+        rabbit.host: fb-services.sandsiv.local
+        rabbit.outbox_primary.sms: feedback-outbox-primary-sms
+        rabbit.outbox_delayed.sms: feedback-outbox-delayed-sms
+        rabbit.heartbeat: 60
+        rabbit.read_write_timeout: 120

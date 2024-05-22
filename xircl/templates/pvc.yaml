@@ -1,0 +1,165 @@
+{{- if .Values.xircl.nfs_volumes.host }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.xircl.volumes.uploads }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  capacity:
+    storage: {{ .Values.xircl.persistence.storage }}
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.xircl.persistence.claims.uploads }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.xircl.nfs_volumes.host }}
+    path: {{ .Values.xircl.nfs_volumes.uploads_share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+    - nfsvers=4.2
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.xircl.volumes.cache }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  capacity:
+    storage: {{ .Values.xircl.persistence.storage }}
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.xircl.persistence.claims.cache }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.xircl.nfs_volumes.host }}
+    path: {{ .Values.xircl.nfs_volumes.cache_share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+    - nfsvers=4.2
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.xircl.volumes.sessions }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  capacity:
+    storage: {{ .Values.xircl.persistence.storage }}
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.xircl.persistence.claims.sessions }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.xircl.nfs_volumes.host }}
+    path: {{ .Values.xircl.nfs_volumes.session_share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+    - nfsvers=4.2
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.xircl.volumes.bg }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  capacity:
+    storage: {{ .Values.xircl.persistence.storage }}
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: {{ .Values.xircl.persistence.claims.bg }}
+  accessModes:
+  {{- if .Values.global.readOnlyMany }}
+    - ReadOnlyMany
+  {{- else }}
+    - ReadWriteMany
+  {{- end }}
+  nfs:
+    server: {{ .Values.xircl.nfs_volumes.host }}
+    path: {{ .Values.xircl.nfs_volumes.bg_share }}
+  mountOptions:
+    - noatime
+    - tcp
+    - timeo=14
+    - nfsvers=4.2
+  persistentVolumeReclaimPolicy: Retain
+---
+{{- end }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.xircl.persistence.claims.uploads }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  {{- if .Values.xircl.nfs_volumes.host }}
+  volumeName: {{ .Values.xircl.volumes.uploads }}
+  {{- end }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.xircl.persistence.storage }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.xircl.persistence.claims.cache }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  {{- if .Values.xircl.nfs_volumes.host }}
+  volumeName: {{ .Values.xircl.volumes.cache }}
+  {{- end }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.xircl.persistence.storage }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.xircl.persistence.claims.sessions }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  {{- if .Values.xircl.nfs_volumes.host }}
+  volumeName: {{ .Values.xircl.volumes.sessions }}
+  {{- end }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.xircl.persistence.storage }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.xircl.persistence.claims.bg }}
+spec:
+  storageClassName: {{ template "xircl.storageClass" . }}
+  {{- if .Values.xircl.nfs_volumes.host }}
+  volumeName: {{ .Values.xircl.volumes.bg }}
+  {{- end }}
+  volumeMode: Filesystem
+  accessModes:
+  {{- if .Values.global.readOnlyMany }}
+    - ReadOnlyMany
+  {{- else }}
+    - ReadWriteMany
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.xircl.persistence.storage }}

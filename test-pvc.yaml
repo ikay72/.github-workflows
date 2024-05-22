@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-pvc
+  namespace: vault  # Change according to your actual namespace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "vochub"
+  resources:
+    requests:
+      storage: 1Gi
+

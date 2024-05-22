@@ -1,0 +1,174 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: xircl-super-charts-rebuild
+  annotations:
+    configmap.reloader.stakater.com/reload: "xircl-enterprises,xircl-php-cli-ini"
+
+spec:
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 10
+  startingDeadlineSeconds: 172800
+  concurrencyPolicy: Forbid
+  schedule: "0 */4 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            grp: xircl
+            rabbitmq-client: "true"
+        spec:
+          serviceAccountName: {{ .Release.Namespace }}-main
+          automountServiceAccountToken: false
+        {{- if .Values.mysql.customCaCert }}
+          initContainers:
+            {{- include "xircl.customCaInitContainer" . | nindent 12 }}
+        {{- end }}
+          containers:
+          - name: xircl-super-charts-rebuild
+            image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+
+            command: ["/bin/sh", "-ec"]
+            args:
+              - >
+                install -o xircl -g xircl -m 0777 -d /sessions;
+                {{- range .Values.enterprises }}
+                {{- if not .skip_gadget_cache_rebuild }}
+                install -o xircl -g xircl -m 0777 -d /var/www/xircl/app/logs/{{ .hubhost }};
+                runuser -l xircl -c 'php app/console xircl:dashboard:cache:super_charts:rebuild --enterprise={{ .hubhost }} --env=prod';
+                {{- end }}
+                {{- end }}
+
+            env:
+              - name: SYMFONY_ENV
+                value: "prod"
+              - name: GO_QUERY_EXECUTOR_URL
+                value: "xircl-qry-exec"
+
+            volumeMounts:
+              - name: xircl-php-cli-ini
+                mountPath: /etc/php/7.4/cli/php.ini
+                subPath: php.ini
+              - name: xircl-enterprises
+                mountPath: /var/www/xircl/app/config/enterprise
+              - name: xircl-cache
+                mountPath: /var/www/xircl/app/vochub_cache
+            {{- if .Values.mysql.customCaCert }}
+              - name: ssl-certs
+                mountPath: /etc/ssl/certs
+                readOnly: false
+            {{- end }}
+            resources:
+              {{- toYaml .Values.xircl.superchartsrebuild.resources | nindent 14 }}
+
+          restartPolicy: Never
+
+          volumes:
+            - name: xircl-php-cli-ini
+              configMap:
+                name: xircl-php-cli-ini
+            - name: xircl-enterprises
+              configMap:
+                name: xircl-enterprises
+            - name: xircl-app-cache
+              emptyDir: {}
+            - name: xircl-cache
+              persistentVolumeClaim:
+                claimName: {{ .Values.xircl.persistence.claims.cache }}
+          {{- if .Values.mysql.customCaCert }}
+            - name: mysql-custom-ca
+              configMap:
+                name: mysql-custom-ca
+            - name: ssl-certs
+              emptyDir: {}
+          {{- end }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: xircl-scheduler-execute
+  annotations:
+    configmap.reloader.stakater.com/reload: "xircl-enterprises,xircl-php-cli-ini"
+
+spec:
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 10
+  startingDeadlineSeconds: 172800
+  concurrencyPolicy: Forbid
+  schedule: "0 */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            grp: xircl
+            rabbitmq-client: "true"
+        spec:
+          automountServiceAccountToken: false
+          serviceAccountName: {{ .Release.Namespace }}-main
+        {{- if .Values.mysql.customCaCert }}
+          initContainers:
+            {{- include "xircl.customCaInitContainer" . | nindent 12 }}
+        {{- end }}
+          containers:
+          - name: xircl-scheduler-execute
+            image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+
+            command: ["/bin/sh", "-ec"]
+            args:
+              - >
+                {{- range .Values.enterprises }}
+                install -o xircl -g xircl -m 0777 -d /var/www/xircl/app/logs/{{ .hubhost }} || true;
+                runuser -l xircl -c 'php app/console xircl:scheduler:execute --enterprise={{ .hubhost }} --env=prod';
+                {{- end }}
+
+            env:
+              - name: SYMFONY_ENV
+                value: "prod"
+              - name: GO_QUERY_EXECUTOR_URL
+                value: "xircl-qry-exec"
+            volumeMounts:
+              - name: xircl-php-cli-ini
+                mountPath: /etc/php/7.4/cli/php.ini
+                subPath: php.ini
+              - name: xircl-enterprises
+                mountPath: /var/www/xircl/app/config/enterprise
+              - name: xircl-cache
+                mountPath: /var/www/xircl/app/vochub_cache
+              - name: sessions-volume
+                mountPath: /sessions
+            {{- if .Values.mysql.customCaCert }}
+              - name: ssl-certs
+                mountPath: /etc/ssl/certs
+                readOnly: false
+            {{- end }}
+
+            resources:
+              requests:
+                ephemeral-storage: 512Mi
+
+          restartPolicy: Never
+
+          volumes:
+            - name: xircl-php-cli-ini
+              configMap:
+                name: xircl-php-cli-ini
+            - name: xircl-enterprises
+              configMap:
+                name: xircl-enterprises
+            - name: xircl-app-cache
+              emptyDir: {}
+            - name: xircl-cache
+              persistentVolumeClaim:
+                claimName: {{ .Values.xircl.persistence.claims.cache }}
+            - name: sessions-volume
+              persistentVolumeClaim:
+                claimName: {{ .Values.xircl.persistence.claims.sessions }}
+          {{- if .Values.mysql.customCaCert }}
+            - name: mysql-custom-ca
+              configMap:
+                name: mysql-custom-ca
+            - name: ssl-certs
+              emptyDir: {}
+          {{- end }}

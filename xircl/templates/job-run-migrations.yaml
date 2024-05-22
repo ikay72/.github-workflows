@@ -1,0 +1,82 @@
+{{ if .Values.xircl.db.run_migration }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-run-migrations
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: "Sync"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-1"
+    {{- end }}
+
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      restartPolicy: Never
+    {{- if .Values.mysql.customCaCert }}
+      initContainers:
+        {{- include "xircl.customCaInitContainer" . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: mysql
+          image: {{ .Values.image.repository }}/xircl-api:{{ .Values.xircl.image.tag }}
+          command: ["/bin/sh", "-xec"]
+          args:
+            - >
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:doctrine:schema:update --force --env=prod";
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:core:tables-charset-migration --env=prod";
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:migrate --env=prod";
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:core:create-cron-commands --env=prod";
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:dashboard:create-predefined-items --env=prod";
+            {{- if .Values.xircl.db.run_create }}
+              runuser -l xircl -c "php /var/www/xircl/app/console xircl:initial:global-config:create --env=prod";
+            {{- end }}
+          env:
+            - name: TZ
+              value: {{ .Values.global.timeZone }}
+            - name: SYMFONY_ENV
+              value: "prod"
+
+          volumeMounts:
+            - name: xircl-enterprises
+              mountPath: /var/www/xircl/app/config/enterprise
+            - name: xircl-uploads
+              mountPath: /var/www/xircl/web/uploads
+            - name: sessions
+              mountPath: /sessions
+            - name: symfony-tmpfs-cache
+              mountPath: /var/www/xircl/app/cache
+          {{- if .Values.mysql.customCaCert }}
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: false
+          {{- end }}
+      volumes:
+        - name: xircl-enterprises
+          configMap:
+            name: xircl-enterprises
+
+        - name: xircl-uploads
+          emptyDir: {}
+
+        - name: sessions
+          emptyDir: {}
+
+        - name: symfony-tmpfs-cache
+          emptyDir:
+            medium: Memory
+
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}
+{{- end }}

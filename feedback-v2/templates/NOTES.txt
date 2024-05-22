@@ -1,0 +1,11 @@
+***************************************
+feedback-v2 (PHP) old Feedback frontend part
+Chart name: {{ .Chart.Name }}-{{ .Chart.Version }}
+Release: {{ .Release.Name }}
+{{ range .Values.enterprises }}
+enterprise: {{ .name }}
+dbname:     {{ .dbname }}
+hostname:   {{ .surveyhost }}
+{{ end }}
+Image: {{ .Values.image.repository }}/feedback-v2:{{ .Values.fbv2.image.tag }}
+***************************************

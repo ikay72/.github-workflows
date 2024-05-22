@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-api
+  labels:
+    app: feedback-api
+    rabbitmq-client: "true"
+  annotations:
+    configmap.reloader.stakater.com/reload: "feedback-api-nginx,feedback-api-php-fpm-conf,feedback-api-databases,feedback-api-parameters"
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedback-api
+
+  template:
+    metadata:
+      labels:
+        app: feedback-api
+        grp: fb
+    spec:
+      serviceAccountName: {{ .Release.Namespace }}-main
+      {{- include "fbapi.customCaInitContainer" . | nindent 6 }}
+      containers:
+
+      # php-fpm for feedback-api
+      - name: feedback-api
+        image: {{ .Values.image.repository }}/feedback-api:{{ .Values.fbapi.image.tag }}
+        resources:
+          {{- toYaml .Values.fbapi.resources | nindent 10 }}
+        command: ["/usr/sbin/php-fpm5.6", "-y", "/etc/php-fpm.conf"]
+
+        livenessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+          periodSeconds: 60
+        readinessProbe:
+          exec:
+            command:
+              - /usr/bin/test
+              - -S
+              - /var/run/php-fpm/fpm.socket
+          initialDelaySeconds: 10
+
+        volumeMounts:
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+          - name: php-fpm-conf
+            mountPath: /etc/php-fpm.conf
+            subPath: php-fpm.conf
+          - name: databases-yml
+            mountPath: /var/www/feedback-api/app/config/databases.yml
+            subPath: databases.yml
+          - name: parameters-yml
+            mountPath: /var/www/feedback-api/app/config/parameters.yml
+            subPath: parameters.yml
+          - name: feedback-api-cache
+            mountPath: /var/www/feedback-api/app/cache
+
+      # nginx provides processing for HTTP requests
+      - name: nginx
+        image: {{ .Values.image.registry }}nginx:{{ .Values.nginx.image.tag }}
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx","-s","quit"]
+
+        ports:
+        - name: fb-api-http
+          containerPort: 8080
+
+        resources:
+          requests:
+            cpu: 20m
+            memory: 24Mi
+
+        volumeMounts:
+          - name: feedback-api-nginx
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+          - name: phpfpm-socket
+            mountPath: /var/run/php-fpm
+        {{- if .Values.mysql.customCaCert }}
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+            readOnly: false
+        {{- end }}
+      volumes:
+        - name: feedback-api-nginx
+          configMap:
+            name: feedback-api-nginx
+
+        - name: phpfpm-socket
+          emptyDir: {}
+
+        - name: php-fpm-conf
+          configMap:
+            name: feedback-api-php-fpm-conf
+
+        - name: databases-yml
+          configMap:
+            name: feedback-api-databases
+
+        - name: parameters-yml
+          configMap:
+            name: feedback-api-parameters
+
+        - name: feedback-api-cache
+          emptyDir:
+            medium: Memory
+
+      {{- if .Values.mysql.customCaCert }}
+        - name: mysql-custom-ca
+          configMap:
+            name: mysql-custom-ca
+        - name: ssl-certs
+          emptyDir: {}
+      {{- end }}

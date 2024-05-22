@@ -1,0 +1,71 @@
+{{- if not .Values.ivr.external_asterisk }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-asterisk
+data:
+  rtp.conf: |
+    {{- .Values.ivr.rtpconf | nindent 4 }}
+  pjsip.conf: |
+    {{- if .Values.ivr.pjsipconf }}
+    {{- .Values.ivr.pjsipconf | nindent 4 }}
+{{- else }}
+    [global]
+    type = global
+
+    [transport-udp]
+    type = transport
+    protocol = udp
+    bind = 0.0.0.0
+
+    [mysipprovider-out]
+    type = aor
+    contact = sip:{{ .Values.ivr.fromuser }}@{{ .Values.ivr.siphost }}
+
+    [mysipprovider-out]
+    type = identify
+    endpoint = mysipprovider-out
+    match = {{ .Values.ivr.siphost }}
+
+    [mysipprovider-out]
+    type = auth
+    username = {{ .Values.ivr.username }}
+    password = {{ .Values.ivr.secret }}
+
+    [mysipprovider-out]
+    type = endpoint
+    context = from-mysipprovider
+    dtmf_mode = auto
+    disallow = all
+    allow = alaw
+    allow = ulaw
+    rtp_symmetric = yes
+    force_rport = yes
+    rewrite_contact = yes
+    rtp_timeout = 600
+    direct_media = no
+    from_user = {{ .Values.ivr.fromuser }}
+    auth = mysipprovider-out
+    outbound_auth = mysipprovider-out
+    aors = mysipprovider-out
+{{- end }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  enterprises.yaml: |
+  {{- range .Values.enterprises }}
+    - slug: {{ .name }}
+      feedback_api_uri: https://{{ .fbhost }}
+      access_code: {{ .ssoac }}
+    {{- if $.Values.ivr.speechtotext }}
+      speech_to_text_enabled: true
+    {{- else }}
+      speech_to_text_enabled: false
+    {{- end }}
+  {{ end }}
+  routes.yaml: |
+    {{- .Values.ivr.routes | toYaml | nindent 4 }}

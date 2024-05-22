@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: "2023-11-24T05:11:37Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app.kubernetes.io/instance: rabbitmq
+    app.kubernetes.io/name: rabbitmq
+  name: data-rabbitmq-1
+  namespace: default
+  resourceVersion: "27226321"
+  uid: 1708897e-aa00-4c22-a5ee-3426d892c743
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: vochub
+  volumeMode: Filesystem
+status:
+  phase: Pending

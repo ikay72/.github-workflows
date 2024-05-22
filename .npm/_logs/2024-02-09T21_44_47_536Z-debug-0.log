@@ -1,0 +1,165 @@
+0 verbose cli [ '/usr/bin/node', '/usr/bin/npm', 'install', '-g', 'smpp-cli' ]
+1 info using npm@8.3.1
+2 info using node@v16.14.0
+3 timing npm:load:whichnode Completed in 0ms
+4 timing config:load:defaults Completed in 3ms
+5 timing config:load:file:/usr/lib/node_modules/npm/npmrc Completed in 1ms
+6 timing config:load:builtin Completed in 1ms
+7 timing config:load:cli Completed in 1ms
+8 timing config:load:env Completed in 0ms
+9 timing config:load:project Completed in 7ms
+10 timing config:load:file:/home/ikay/.npmrc Completed in 1ms
+11 timing config:load:user Completed in 1ms
+12 timing config:load:file:/usr/etc/npmrc Completed in 1ms
+13 timing config:load:global Completed in 1ms
+14 timing config:load:validate Completed in 0ms
+15 timing config:load:credentials Completed in 2ms
+16 timing config:load:setEnvs Completed in 0ms
+17 timing config:load Completed in 20ms
+18 timing npm:load:configload Completed in 20ms
+19 timing npm:load:setTitle Completed in 0ms
+20 timing config:load:flatten Completed in 3ms
+21 timing npm:load:display Completed in 5ms
+22 verbose logfile /home/ikay/.npm/_logs/2024-02-09T21_44_47_536Z-debug-0.log
+23 timing npm:load:logFile Completed in 5ms
+24 timing npm:load:timers Completed in 0ms
+25 timing npm:load:configScope Completed in 0ms
+26 timing npm:load Completed in 30ms
+27 timing arborist:ctor Completed in 1ms
+28 timing idealTree:init Completed in 5ms
+29 timing idealTree:userRequests Completed in 1ms
+30 silly idealTree buildDeps
+31 silly fetch manifest smpp-cli@*
+32 http fetch GET 200 https://registry.npmjs.org/smpp-cli 1651ms (cache miss)
+33 silly placeDep ROOT smpp-cli@1.0.3 OK for:  want: *
+34 silly fetch manifest chalk@^1.1.3
+35 silly fetch manifest commander@^2.9.0
+36 silly fetch manifest dnode@^1.2.2
+37 silly fetch manifest moment@^2.18.1
+38 silly fetch manifest q@^1.5.0
+39 silly fetch manifest smpp@^0.3.1
+40 http fetch GET 200 https://registry.npmjs.org/commander 111ms (cache miss)
+41 http fetch GET 200 https://registry.npmjs.org/chalk 129ms (cache miss)
+42 http fetch GET 200 https://registry.npmjs.org/q 257ms (cache miss)
+43 http fetch GET 200 https://registry.npmjs.org/moment 295ms (cache miss)
+44 http fetch GET 200 https://registry.npmjs.org/dnode 946ms (cache miss)
+45 http fetch GET 200 https://registry.npmjs.org/smpp 1866ms (cache miss)
+46 timing idealTree:#root Completed in 3529ms
+47 silly placeDep node_modules/smpp-cli chalk@1.1.3 OK for: smpp-cli@1.0.3 want: ^1.1.3
+48 silly placeDep node_modules/smpp-cli commander@2.20.3 OK for: smpp-cli@1.0.3 want: ^2.9.0
+49 silly placeDep node_modules/smpp-cli dnode@1.2.2 OK for: smpp-cli@1.0.3 want: ^1.2.2
+50 silly placeDep node_modules/smpp-cli moment@2.30.1 OK for: smpp-cli@1.0.3 want: ^2.18.1
+51 silly placeDep node_modules/smpp-cli q@1.5.1 OK for: smpp-cli@1.0.3 want: ^1.5.0
+52 silly placeDep node_modules/smpp-cli smpp@0.3.1 OK for: smpp-cli@1.0.3 want: ^0.3.1
+53 silly fetch manifest ansi-styles@^2.2.1
+54 silly fetch manifest escape-string-regexp@^1.0.2
+55 silly fetch manifest has-ansi@^2.0.0
+56 silly fetch manifest strip-ansi@^3.0.0
+57 silly fetch manifest supports-color@^2.0.0
+58 silly fetch manifest dnode-protocol@~0.2.2
+59 silly fetch manifest jsonify@~0.0.0
+60 silly fetch manifest weak@^1.0.0
+61 silly fetch manifest iconv-lite@0.x
+62 http fetch GET 200 https://registry.npmjs.org/ansi-styles 106ms (cache miss)
+63 http fetch GET 200 https://registry.npmjs.org/strip-ansi 104ms (cache miss)
+64 http fetch GET 200 https://registry.npmjs.org/escape-string-regexp 114ms (cache miss)
+65 http fetch GET 200 https://registry.npmjs.org/iconv-lite 264ms (cache miss)
+66 http fetch GET 200 https://registry.npmjs.org/jsonify 287ms (cache miss)
+67 http fetch GET 200 https://registry.npmjs.org/weak 629ms (cache miss)
+68 http fetch GET 200 https://registry.npmjs.org/has-ansi 1379ms (cache miss)
+69 http fetch GET 200 https://registry.npmjs.org/supports-color 1378ms (cache miss)
+70 http fetch GET 200 https://registry.npmjs.org/dnode-protocol 1388ms (cache miss)
+71 timing idealTree:node_modules/smpp-cli Completed in 1405ms
+72 silly placeDep node_modules/smpp-cli ansi-styles@2.2.1 OK for: chalk@1.1.3 want: ^2.2.1
+73 silly placeDep node_modules/smpp-cli escape-string-regexp@1.0.5 OK for: chalk@1.1.3 want: ^1.0.2
+74 silly placeDep node_modules/smpp-cli has-ansi@2.0.0 OK for: chalk@1.1.3 want: ^2.0.0
+75 silly placeDep node_modules/smpp-cli strip-ansi@3.0.1 OK for: chalk@1.1.3 want: ^3.0.0
+76 silly placeDep node_modules/smpp-cli supports-color@2.0.0 OK for: chalk@1.1.3 want: ^2.0.0
+77 silly fetch manifest ansi-regex@^2.0.0
+78 http fetch GET 200 https://registry.npmjs.org/ansi-regex 104ms (cache miss)
+79 timing idealTree:node_modules/smpp-cli/node_modules/chalk Completed in 110ms
+80 timing idealTree:node_modules/smpp-cli/node_modules/ansi-styles Completed in 0ms
+81 timing idealTree:node_modules/smpp-cli/node_modules/commander Completed in 0ms
+82 silly placeDep node_modules/smpp-cli dnode-protocol@0.2.2 OK for: dnode@1.2.2 want: ~0.2.2
+83 silly placeDep node_modules/smpp-cli jsonify@0.0.1 OK for: dnode@1.2.2 want: ~0.0.0
+84 silly placeDep node_modules/smpp-cli weak@1.0.1 OK for: dnode@1.2.2 want: ^1.0.0
+85 silly fetch manifest traverse@~0.6.3
+86 silly fetch manifest bindings@^1.2.1
+87 silly fetch manifest nan@^2.0.5
+88 http fetch GET 200 https://registry.npmjs.org/nan 121ms (cache miss)
+89 http fetch GET 200 https://registry.npmjs.org/traverse 1367ms (cache miss)
+90 http fetch GET 200 https://registry.npmjs.org/bindings 1367ms (cache miss)
+91 timing idealTree:node_modules/smpp-cli/node_modules/dnode Completed in 1372ms
+92 silly placeDep node_modules/smpp-cli traverse@0.6.8 OK for: dnode-protocol@0.2.2 want: ~0.6.3
+93 timing idealTree:node_modules/smpp-cli/node_modules/dnode-protocol Completed in 1ms
+94 timing idealTree:node_modules/smpp-cli/node_modules/escape-string-regexp Completed in 0ms
+95 silly placeDep node_modules/smpp-cli ansi-regex@2.1.1 OK for: has-ansi@2.0.0 want: ^2.0.0
+96 timing idealTree:node_modules/smpp-cli/node_modules/has-ansi Completed in 1ms
+97 timing idealTree:node_modules/smpp-cli/node_modules/ansi-regex Completed in 0ms
+98 timing idealTree:node_modules/smpp-cli/node_modules/jsonify Completed in 0ms
+99 timing idealTree:node_modules/smpp-cli/node_modules/moment Completed in 0ms
+100 timing idealTree:node_modules/smpp-cli/node_modules/q Completed in 0ms
+101 silly placeDep node_modules/smpp-cli iconv-lite@0.6.3 OK for: smpp@0.3.1 want: 0.x
+102 silly fetch manifest safer-buffer@>= 2.1.2 < 3.0.0
+103 http fetch GET 200 https://registry.npmjs.org/safer-buffer 109ms (cache miss)
+104 timing idealTree:node_modules/smpp-cli/node_modules/smpp Completed in 111ms
+105 silly placeDep node_modules/smpp-cli safer-buffer@2.1.2 OK for: iconv-lite@0.6.3 want: >= 2.1.2 < 3.0.0
+106 timing idealTree:node_modules/smpp-cli/node_modules/iconv-lite Completed in 1ms
+107 timing idealTree:node_modules/smpp-cli/node_modules/safer-buffer Completed in 0ms
+108 timing idealTree:node_modules/smpp-cli/node_modules/strip-ansi Completed in 0ms
+109 timing idealTree:node_modules/smpp-cli/node_modules/supports-color Completed in 0ms
+110 timing idealTree:node_modules/smpp-cli/node_modules/traverse Completed in 0ms
+111 silly placeDep node_modules/smpp-cli bindings@1.5.0 OK for: weak@1.0.1 want: ^1.2.1
+112 silly placeDep node_modules/smpp-cli nan@2.18.0 OK for: weak@1.0.1 want: ^2.0.5
+113 silly fetch manifest file-uri-to-path@1.0.0
+114 http fetch GET 200 https://registry.npmjs.org/file-uri-to-path 1361ms (cache miss)
+115 timing idealTree:node_modules/smpp-cli/node_modules/weak Completed in 1365ms
+116 silly placeDep node_modules/smpp-cli file-uri-to-path@1.0.0 OK for: bindings@1.5.0 want: 1.0.0
+117 timing idealTree:node_modules/smpp-cli/node_modules/bindings Completed in 1ms
+118 timing idealTree:node_modules/smpp-cli/node_modules/file-uri-to-path Completed in 0ms
+119 timing idealTree:node_modules/smpp-cli/node_modules/nan Completed in 0ms
+120 timing idealTree:buildDeps Completed in 7900ms
+121 timing idealTree:fixDepFlags Completed in 1ms
+122 timing idealTree Completed in 7907ms
+123 timing reify:loadTrees Completed in 7909ms
+124 timing reify:diffTrees Completed in 2ms
+125 silly reify moves {}
+126 timing reify:retireShallow Completed in 0ms
+127 timing reify:rollback:createSparse Completed in 0ms
+128 timing reify:rollback:retireShallow Completed in 0ms
+129 timing command:install Completed in 7954ms
+130 notice
+130 notice New [31mmajor[39m version of npm available! [31m8.3.1[39m -> [32m10.4.0[39m
+130 notice Changelog: [36mhttps://github.com/npm/cli/releases/tag/v10.4.0[39m
+130 notice Run [32mnpm install -g npm@10.4.0[39m to update!
+130 notice
+131 verbose stack Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules'
+132 verbose cwd /home/ikay
+133 verbose Linux 5.4.17-2136.307.3.1.el8uek.x86_64
+134 verbose argv "/usr/bin/node" "/usr/bin/npm" "install" "-g" "smpp-cli"
+135 verbose node v16.14.0
+136 verbose npm  v8.3.1
+137 error code EACCES
+138 error syscall mkdir
+139 error path /usr/local/lib/node_modules
+140 error errno -13
+141 error [Error: EACCES: permission denied, mkdir '/usr/local/lib/node_modules'] {
+141 error   errno: -13,
+141 error   code: 'EACCES',
+141 error   syscall: 'mkdir',
+141 error   path: '/usr/local/lib/node_modules'
+141 error }
+142 error
+142 error The operation was rejected by your operating system.
+142 error It is likely you do not have the permissions to access this file as the current user
+142 error
+142 error If you believe this might be a permissions issue, please double-check the
+142 error permissions of the file and its containing directories, or try running
+142 error the command again as root/Administrator.
+143 verbose exit -13
+144 timing npm Completed in 8162ms
+145 verbose unfinished npm timer reify 1707515087741
+146 verbose unfinished npm timer reify:createSparse 1707515095687
+147 verbose code -13
+148 error A complete log of this run can be found in:
+148 error     /home/ikay/.npm/_logs/2024-02-09T21_44_47_536Z-debug-0.log

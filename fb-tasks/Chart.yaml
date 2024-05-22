@@ -1,0 +1,4 @@
+apiVersion: v2
+description: Feedback Celery tasks
+name: fb-tasks
+version: 11.14.8

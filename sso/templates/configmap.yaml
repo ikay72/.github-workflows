@@ -1,0 +1,208 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-nginx
+data:
+  nginx.conf: |
+    user  nginx;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  4096;
+    }
+
+    http {
+        real_ip_header {{ .Values.nginx.realIP.header }};
+        set_real_ip_from 0.0.0.0/0;
+        {{ .Values.nginx.logFormat | nindent 8 }}
+
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+
+        keepalive_timeout  0;
+
+        gzip  on;
+
+        upstream sso-uwsgi {
+            server unix:///var/run/sso/uwsgi.sock;
+        }
+
+        server {
+            listen 8080;
+            listen 8443 ssl;
+            ssl_certificate /etc/ssl/tls.crt;
+            ssl_certificate_key /etc/ssl/tls.key;
+            server_name {{ join " " .Values.sso.ingress.hosts }} localhost;
+
+            location /healthz {
+                return 200;
+                access_log off;
+            }
+
+            {{- if .Values.sso.ingress.disabled }}
+            location / {
+                return 503;
+            }
+            {{- else }}
+
+            location / {
+                include uwsgi_params;
+                uwsgi_param HTTP_X_FORWARDED_HOST $http_host;
+                uwsgi_pass sso-uwsgi;
+                uwsgi_buffer_size 32k;
+                uwsgi_buffers 8 32k;
+                uwsgi_busy_buffers_size 32k;
+                uwsgi_ignore_client_abort off;
+                uwsgi_intercept_errors on;
+                uwsgi_read_timeout 120s;
+                uwsgi_send_timeout 120s;
+            }
+
+            location /static {
+                root /static;
+            }
+            {{- end }}
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-config
+  annotations:
+    {{- if .Values.argocd }}
+    argocd.argoproj.io/sync-wave: "-3"
+    {{- else }}
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-3"
+    {{- end }}
+data:
+  sso.ini: |
+    [sso]
+    django.debug = {{ .Values.sso.django.debug }}
+
+    [DJANGO]
+    debug = {{ .Values.sso.django.debug }}
+    allowed_hosts = *
+
+    redir_whitelist =
+      {{ range .Values.enterprises -}}
+      {{ .hubhost }}
+      {{- if .hubhost_alias }}
+      {{- range split " " .hubhost_alias }}
+      {{ . }}
+      {{- end }}
+      {{- end }}
+      {{ end }}
+    secret_key = {{ .Values.sso.django.secret_key }}
+    password_reset_timeout_days = {{ .Values.sso.django.password_reset_timeout_days }}
+
+    # The following parameters may be configured via environment variables
+    [DB]
+    dbname = not_configured.dbname
+    host = not_configured.host
+    user = root
+    password = example
+    port = 3306
+
+    [SMTP]
+    host = {{ .Values.smtp.host }}
+    port = {{ .Values.smtp.port }}
+    user = {{ .Values.smtp.user }}
+    password = {{ .Values.smtp.pass }}
+    use_tls = {{ .Values.smtp.tls }}
+    default_sender = {{ .Values.smtp.from }}
+
+    [SMS]
+    gateway = {{ .Values.sso.smsgw.uri }}
+    username = {{ .Values.sso.smsgw.username }}
+    password = {{ .Values.sso.smsgw.password }}
+    otp_length = 5
+    otp_charset = digits
+    otp_expired = 10
+    tfa_expired = 5
+    text_notify_prefix = VoC Hub one-time password:
+
+    [CUSTOM_AUTHENTICATOR]
+    secret_salt = {{ .Values.sso.django.secret_salt }}
+
+    [REST]
+    secret_key = {{ .Values.sso.django.rest.secret_key }}
+
+    [ZENDESK]
+    url = {{ .Values.sso.zendesk.url }}
+    user_urlpath = {{ .Values.sso.zendesk.user_urlpath }}
+    list_user_urlpath = {{ .Values.sso.zendesk.list_user_urlpath }}
+    job_status_urlpath = {{ .Values.sso.zendesk.job_status_urlpath }}
+    email = {{ .Values.sso.zendesk.email }}
+    token = {{ .Values.sso.zendesk.token }}
+    support_email = {{ .Values.sso.zendesk.support_email }}
+    support_url = {{ .Values.sso.zendesk.support_url }}
+    password_reset_url = {{ .Values.sso.zendesk.password_reset_url }}
+    education_url = {{ .Values.sso.zendesk.education_url }}
+
+  uwsgi.ini: |
+    [uwsgi]
+    hook-master-start = unix_signal:15 gracefully_kill_them_all
+    die-on-term = true
+    chmod-socket = 666
+    uid = sso
+    gid = sso
+    processes = 20
+    threads = 20
+    harakiri = 40
+    harakiri-verbose = 1
+    max-requests = 5000
+    buffer-size = 65535
+    pidfile = /var/run/uwsgi.pid
+    log-format = [%(ltime)] %(addr) - %(user) %(method) "%(uri)" %(proto) %(status) %(size) "%(var.HTTP_X_REQUEST_ID)"
+    log-req-encoder = json {"message": ${msg}, "level": "INFO"}
+
+  logging.yaml: |
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+      verbose:
+        format: "%(levelname)s: %(message)s"
+    handlers:
+      console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: verbose
+    loggers:
+      '':
+        handlers:
+          - console
+        level: INFO
+      sso:
+        handlers:
+          - console
+        level: INFO
+        propagate: false
+
+  enterprise_domains.yaml: |
+    {{- range .Values.enterprises }}
+    {{ .name }}:
+      - https://{{ .hubhost }}
+    {{- end }}
+
+  {{- range .Values.enterprises }}
+  {{- if .user }}
+  user-{{ .name | replace "_" "-" }}.csv: |
+    email;username;firstname;lastname;app_groups;enterprise_groups
+    {{ .user.email }};{{ .user.username }};{{ .user.firstname }};{{ .user.lastname }};{{ .user.app_groups }};{{ .user.enterprise_groups }}
+  {{- end }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-adfs
+data:
+  {{- range $key, $value := .Values.sso.adfs_config }}
+  adfs-{{ $key }}.ini: {{ $value.configcontent | quote }}
+  {{- end }}
